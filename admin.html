@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0047)file:///C:/Users/shirley/Downloads/admin_3.html -->
+<html lang="zh-Hant-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>後台管理｜戰鬥陀螺爭霸戰</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<link href="./後台管理｜戰鬥陀螺爭霸戰_後台0707_files/css2" rel="stylesheet">
+<script src="./後台管理｜戰鬥陀螺爭霸戰_後台0707_files/firebase-app-compat.js.下載"></script>
+<script src="./後台管理｜戰鬥陀螺爭霸戰_後台0707_files/firebase-firestore-compat.js.下載"></script>
 <style>
   :root{
     --void:#080b14; --panel:#111a2e; --panel-alt:#0d1424; --line:#223055;
@@ -76,19 +76,8 @@
 
 <div class="wrap">
 
-  <!-- LOGIN -->
-  <div id="loginView" class="login-box panel">
-    <h1>後台登入</h1>
-    <div class="sub">戰鬥陀螺爭霸戰 管理系統</div>
-    <label>管理密碼</label>
-    <input type="password" id="pw" placeholder="請輸入密碼">
-    <div style="height:12px;"></div>
-    <button class="btn" style="width:100%" id="loginBtn">登入</button>
-    <div class="msg err" id="loginMsg"></div>
-  </div>
-
   <!-- ADMIN -->
-  <div id="adminView" class="hidden">
+  <div id="adminView">
     <h1>後台管理｜戰鬥陀螺爭霸戰</h1>
     <div class="sub">報名資料查詢 · 付款狀態管理 · 賽前通知</div>
 
@@ -148,24 +137,12 @@
   };
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 
-  // ====== TODO：請自行更改此後台登入密碼（僅為簡易門檻，非高強度安全機制）======
-  const ADMIN_PASSCODE = "yuhao2026";
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const COL = "registrations";
   let allRecords = [];
 
-  document.getElementById('loginBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('pw').value;
-    if(val === ADMIN_PASSCODE){
-      document.getElementById('loginView').classList.add('hidden');
-      document.getElementById('adminView').classList.remove('hidden');
-      loadData();
-    }else{
-      document.getElementById('loginMsg').textContent = "密碼錯誤，請再試一次";
-    }
-  });
+  loadData();
 
   function pushToSheet(action, data){
     fetch(APPS_SCRIPT_URL, {
@@ -292,5 +269,6 @@
     });
   });
 </script>
-</body>
-</html>
+
+
+</body></html>
