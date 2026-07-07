@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後台管理｜戰鬥陀螺爭霸戰</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --void:#080b14; --panel:#111a2e; --panel-alt:#0d1424; --line:#223055;
+    --teal:#2ce0d9; --teal-glow:#8ff5ef; --purple:#b357f7; --purple-glow:#e79bff;
+    --gold:#ffb627; --silver:#dfe7f2; --dim:#7d8aab; --warn:#ff5f6d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--void); color:var(--silver); font-family:'Noto Sans TC',sans-serif;}
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 20px 80px;}
+  h1{
+    font-family:'Orbitron',sans-serif; font-weight:800; letter-spacing:3px; font-size:22px;
+    background:linear-gradient(100deg, var(--teal), var(--purple));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-bottom:6px;
+  }
+  .sub{color:var(--dim); font-size:13px; margin-bottom:24px;}
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-alt));
+    border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:20px;
+  }
+  .login-box{max-width:340px; margin:80px auto;}
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--line);
+    background:var(--void); color:var(--silver); font-family:'Noto Sans TC'; font-size:14px;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--teal);}
+  label{display:block; font-size:12.5px; color:var(--dim); margin-bottom:6px;}
+  .btn{
+    padding:11px 18px; border-radius:10px; border:none; cursor:pointer;
+    font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:1px; font-size:13px;
+    background:linear-gradient(100deg, var(--teal), var(--purple)); color:#08101f;
+  }
+  .btn-outline{background:transparent; border:1px solid var(--teal); color:var(--teal-glow);}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px; margin-bottom:20px;}
+  .stat-card{background:rgba(44,224,217,0.05); border:1px solid var(--line); border-radius:12px; padding:16px; text-align:center;}
+  .stat-card .k{font-size:11px; color:var(--dim); letter-spacing:1px;}
+  .stat-card .v{font-family:'Orbitron'; font-size:24px; font-weight:800; color:var(--teal-glow);}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th, td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap;}
+  th{color:var(--dim); font-size:11.5px; letter-spacing:1px; text-transform:uppercase;}
+  tr:hover{background:rgba(44,224,217,0.04);}
+  .table-scroll{overflow-x:auto;}
+  select.status-select{padding:6px 8px; font-size:12.5px; width:auto;}
+  .status-unpaid{color:var(--warn); border-color:var(--warn) !important;}
+  .status-pending{color:var(--gold); border-color:var(--gold) !important;}
+  .status-confirmed{color:var(--teal-glow); border-color:var(--teal) !important;}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;}
+  .toolbar input[type=text]{max-width:240px;}
+  .sec-title{
+    font-family:'Orbitron'; font-weight:800; font-size:12.5px; letter-spacing:2px;
+    color:var(--purple-glow); margin-bottom:14px; text-transform:uppercase;
+  }
+  .notify-list{max-height:260px; overflow-y:auto; margin-top:12px;}
+  .notify-item{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;
+  }
+  .copy-btn{font-size:11.5px; padding:5px 10px; border-radius:8px;}
+  .msg{font-size:13px; margin-top:8px;}
+  .msg.ok{color:var(--teal-glow);} .msg.err{color:var(--warn);}
+  .hidden{display:none !important;}
+  textarea{min-height:90px; resize:vertical; font-family:'Noto Sans TC';}
+  .checkbox-cell{text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginView" class="login-box panel">
+    <h1>後台登入</h1>
+    <div class="sub">戰鬥陀螺爭霸戰 管理系統</div>
+    <label>管理密碼</label>
+    <input type="password" id="pw" placeholder="請輸入密碼">
+    <div style="height:12px;"></div>
+    <button class="btn" style="width:100%" id="loginBtn">登入</button>
+    <div class="msg err" id="loginMsg"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminView" class="hidden">
+    <h1>後台管理｜戰鬥陀螺爭霸戰</h1>
+    <div class="sub">報名資料查詢 · 付款狀態管理 · 賽前通知</div>
+
+    <div class="stats">
+      <div class="stat-card"><div class="k">總報名數</div><div class="v" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="k">總參與人數（含家長）</div><div class="v" id="statPeople">0</div></div>
+      <div class="stat-card"><div class="k">已確認收款</div><div class="v" id="statConfirmed">0</div></div>
+      <div class="stat-card"><div class="k">待確認 / 未繳費</div><div class="v" id="statPending">0</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="sec-title">報名清單 REGISTRATIONS</div>
+      <div class="toolbar">
+        <input type="text" id="searchBox" placeholder="搜尋姓名 / 暱稱 / 電話 / 編號">
+        <button class="btn-outline btn" id="refreshBtn">重新整理</button>
+        <button class="btn-outline btn" id="exportBtn">匯出 CSV</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="checkbox-cell"><input type="checkbox" id="selectAll"></th>
+              <th>報名編號</th><th>參賽者</th><th>暱稱</th><th>陪同人數</th>
+              <th>電話</th><th>Email</th><th>LINE ID</th><th>付款狀態</th><th>備註</th><th>報名時間</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sec-title">賽前發送通知 NOTIFY</div>
+      <div class="sub" style="margin-bottom:10px;">勾選上方名單後，系統會產生提醒訊息文字與聯絡清單，供您手動貼到 LINE / 簡訊發送（本系統不會自動發送訊息）。</div>
+      <label>通知訊息內容</label>
+      <textarea id="notifyTemplate">親愛的陀螺小戰士家長您好！
+提醒您，8/22（六）14:30 於小樹屋共享空間，戰鬥陀螺爭霸戰即將登場 ⚡
+請記得攜帶您的戰鬥陀螺與發射器，我們現場見！
+主辦人 禹皓媽媽</textarea>
+      <div style="height:10px;"></div>
+      <button class="btn" id="genNotifyBtn">產生通知清單</button>
+      <div class="notify-list" id="notifyList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ====== TODO：請將下方 firebaseConfig 換成與 index.html 相同的設定值 ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+    authDomain: "beyblade-x-event.firebaseapp.com",
+    projectId: "beyblade-x-event",
+    storageBucket: "beyblade-x-event.firebasestorage.app",
+    messagingSenderId: "866394169939",
+    appId: "1:866394169939:web:a73222040a99a433425ca6"
+  };
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+  // ====== TODO：請自行更改此後台登入密碼（僅為簡易門檻，非高強度安全機制）======
+  const ADMIN_PASSCODE = "yuhao2026";
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const COL = "registrations";
+  let allRecords = [];
+
+  document.getElementById('loginBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('pw').value;
+    if(val === ADMIN_PASSCODE){
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('adminView').classList.remove('hidden');
+      loadData();
+    }else{
+      document.getElementById('loginMsg').textContent = "密碼錯誤，請再試一次";
+    }
+  });
+
+  function pushToSheet(action, data){
+    fetch(APPS_SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain"},
+      body: JSON.stringify({action, data})
+    }).catch(()=>{});
+  }
+
+  async function loadData(){
+    const snap = await db.collection(COL).orderBy("createdAt","desc").get();
+    allRecords = [];
+    snap.forEach(doc=> allRecords.push({id: doc.id, ...doc.data()}));
+    renderTable(allRecords);
+    renderStats(allRecords);
+  }
+
+  function renderStats(records){
+    document.getElementById('statTotal').textContent = records.length;
+    const people = records.reduce((sum,r)=> sum + 1 + Number(r.parents||0), 0);
+    document.getElementById('statPeople').textContent = people;
+    document.getElementById('statConfirmed').textContent = records.filter(r=>r.paymentStatus==="已確認收款").length;
+    document.getElementById('statPending').textContent = records.filter(r=>r.paymentStatus!=="已確認收款").length;
+  }
+
+  function statusClass(status){
+    if(status === "已確認收款") return "status-confirmed";
+    if(status === "已回報待確認") return "status-pending";
+    return "status-unpaid";
+  }
+
+  function renderTable(records){
+    const body = document.getElementById('tableBody');
+    body.innerHTML = "";
+    records.forEach(r=>{
+      const tr = document.createElement('tr');
+      const created = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleString('zh-TW') : "-";
+      tr.innerHTML = `
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="${r.id}"></td>
+        <td>${r.id}</td>
+        <td>${r.name||""}</td>
+        <td>${r.nickname||""}</td>
+        <td>${r.parents||0}</td>
+        <td>${r.phone||""}</td>
+        <td>${r.email||""}</td>
+        <td>${r.lineId||""}</td>
+        <td>
+          <select class="status-select ${statusClass(r.paymentStatus)}" data-id="${r.id}">
+            <option value="未繳費" ${r.paymentStatus==="未繳費"?"selected":""}>未繳費</option>
+            <option value="已回報待確認" ${r.paymentStatus==="已回報待確認"?"selected":""}>已回報待確認</option>
+            <option value="已確認收款" ${r.paymentStatus==="已確認收款"?"selected":""}>已確認收款</option>
+          </select>
+        </td>
+        <td>${r.paymentNote||""}</td>
+        <td>${created}</td>
+      `;
+      body.appendChild(tr);
+    });
+
+    document.querySelectorAll('.status-select').forEach(sel=>{
+      sel.addEventListener('change', async (e)=>{
+        const id = e.target.dataset.id;
+        const newStatus = e.target.value;
+        e.target.className = "status-select " + statusClass(newStatus);
+        await db.collection(COL).doc(id).update({paymentStatus: newStatus});
+        pushToSheet("updateStatus", {regId: id, paymentStatus: newStatus});
+        const rec = allRecords.find(r=>r.id===id);
+        if(rec) rec.paymentStatus = newStatus;
+        renderStats(allRecords);
+      });
+    });
+  }
+
+  document.getElementById('searchBox').addEventListener('input', (e)=>{
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = allRecords.filter(r=>
+      (r.name||"").toLowerCase().includes(q) ||
+      (r.nickname||"").toLowerCase().includes(q) ||
+      (r.phone||"").includes(q) ||
+      (r.id||"").toLowerCase().includes(q)
+    );
+    renderTable(filtered);
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+  document.getElementById('selectAll').addEventListener('change', (e)=>{
+    document.querySelectorAll('.rowCheck').forEach(cb=> cb.checked = e.target.checked);
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const rows = [["報名編號","參賽者","暱稱","陪同人數","電話","Email","LINE ID","付款狀態","備註"]];
+    allRecords.forEach(r=> rows.push([r.id, r.name, r.nickname, r.parents, r.phone, r.email, r.lineId, r.paymentStatus, r.paymentNote||""]));
+    const csv = rows.map(row=> row.map(c=> `"${String(c||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = "戰鬥陀螺爭霸戰_報名清單.csv";
+    a.click();
+  });
+
+  document.getElementById('genNotifyBtn').addEventListener('click', ()=>{
+    const checked = Array.from(document.querySelectorAll('.rowCheck:checked')).map(cb=>cb.dataset.id);
+    const targets = checked.length > 0 ? allRecords.filter(r=> checked.includes(r.id)) : allRecords;
+    const template = document.getElementById('notifyTemplate').value;
+    const list = document.getElementById('notifyList');
+    list.innerHTML = "";
+    targets.forEach(r=>{
+      const item = document.createElement('div');
+      item.className = "notify-item";
+      item.innerHTML = `
+        <span>${r.nickname || r.name}（LINE：${r.lineId || "-"} / 電話：${r.phone || "-"}）</span>
+        <button class="btn-outline btn copy-btn" data-msg="${encodeURIComponent(template)}">複製訊息</button>
+      `;
+      list.appendChild(item);
+    });
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const msg = decodeURIComponent(e.target.dataset.msg);
+        navigator.clipboard.writeText(msg);
+        e.target.textContent = "已複製 ✓";
+        setTimeout(()=> e.target.textContent = "複製訊息", 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/index_76.html -->
+<html lang="zh-Hant-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戰鬥陀螺爭霸戰｜圓圓幼兒園同學會</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./index_files/css2" rel="stylesheet">
+<script src="./index_files/firebase-app-compat.js.下載"></script>
+<script src="./index_files/firebase-firestore-compat.js.下載"></script>
+<style>
+  :root{
+    --void:#080b14;
+    --panel:#111a2e;
+    --panel-alt:#0d1424;
+    --line:#223055;
+    --teal:#2ce0d9;
+    --teal-glow:#8ff5ef;
+    --purple:#b357f7;
+    --purple-glow:#e79bff;
+    --gold:#ffb627;
+    --silver:#dfe7f2;
+    --dim:#7d8aab;
+    --warn:#ff5f6d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--void);
+    color:var(--silver);
+    font-family:'Noto Sans TC', sans-serif;
+    line-height:1.7;
+    overflow-x:hidden;
+  }
+  .hexbg{
+    position:fixed; inset:0; z-index:0;
+    background-color:var(--void);
+    background-image:
+      linear-gradient(30deg, var(--line) 1px, transparent 1px),
+      linear-gradient(150deg, var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 110px;
+    opacity:0.28;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 40%, transparent 90%);
+  }
+  .wrap{position:relative; z-index:1; max-width:880px; margin:0 auto; padding:0 20px;}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:28px 0 20px; text-align:center;}
+  .eyebrow{
+    font-family:'Orbitron',sans-serif; font-size:12px; letter-spacing:4px;
+    color:var(--teal-glow); text-transform:uppercase; margin-bottom:18px;
+    display:inline-block; padding:6px 16px; border:1px solid var(--teal);
+    border-radius:100px; background:rgba(44,224,217,0.07);
+  }
+
+  /* 主視覺圖片容器：固定長寬比 + object-fit:cover，手機/電腦皆等比裁切、不跑版 */
+  .hero-visual{
+    position:relative;
+    width:100%;
+    aspect-ratio: 16 / 10;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+    background:linear-gradient(135deg, var(--panel), var(--panel-alt));
+    border:1px solid var(--line);
+  }
+  .hero-visual img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    object-position:center;
+    display:block;
+  }
+  .hero-visual .veil{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(8,11,20,0.05) 0%, rgba(8,11,20,0.35) 55%, rgba(8,11,20,0.96) 100%);
+  }
+  .hero-visual .hero-text{
+    position:absolute; left:0; right:0; bottom:0;
+    padding: clamp(16px,4vw,32px) 20px 22px;
+    z-index:2;
+  }
+  .hero-visual .fallback-hint{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--dim); font-size:12px; letter-spacing:1px; text-align:center; padding:0 20px; z-index:1;
+  }
+  @media(max-width:520px){
+    .hero-visual{ aspect-ratio: 4 / 5; }
+  }
+
+  .title-x{
+    font-family:'Orbitron', sans-serif; font-weight:900;
+    font-size:clamp(34px,8vw,64px); line-height:1;
+    letter-spacing:2px;
+    background:linear-gradient(100deg, var(--teal) 10%, var(--silver) 45%, var(--purple) 90%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 18px rgba(179,87,247,0.35));
+  }
+  .title-cn{
+    font-size:clamp(22px,5.5vw,38px); font-weight:900; letter-spacing:6px;
+    margin-top:8px; transform:skewX(-6deg);
+    color:var(--silver);
+    text-shadow: 0 0 22px rgba(44,224,217,0.45);
+  }
+  .subtitle{color:var(--dim); font-size:13px; letter-spacing:1.5px; margin-top:8px;}
+
+  /* ---------- CLASH DIVIDER (signature element) ---------- */
+  .clash{position:relative; height:150px; margin:24px auto 8px; max-width:420px;}
+  .ring{position:absolute; top:50%; border-radius:50%; border-style:dashed;}
+  .ring-teal{
+    left:36%; width:120px; height:120px; margin:-60px 0 0 -60px;
+    border-width:2px; border-color:var(--teal);
+    box-shadow:0 0 24px rgba(44,224,217,0.55), inset 0 0 18px rgba(44,224,217,0.35);
+    animation:spinL 6s linear infinite;
+  }
+  .ring-purple{
+    left:64%; width:120px; height:120px; margin:-60px 0 0 -60px;
+    border-width:2px; border-color:var(--purple);
+    box-shadow:0 0 24px rgba(179,87,247,0.55), inset 0 0 18px rgba(179,87,247,0.35);
+    animation:spinR 5s linear infinite;
+  }
+  @keyframes spinL{ to{ transform:rotate(360deg);} }
+  @keyframes spinR{ to{ transform:rotate(-360deg);} }
+  .spark{
+    position:absolute; top:50%; left:50%; width:70px; height:2px;
+    background:linear-gradient(90deg, var(--gold), transparent);
+    transform-origin:0 50%;
+    animation:burst 1.6s ease-out infinite;
+    opacity:0;
+  }
+  .spark:nth-child(3){ transform:rotate(20deg); animation-delay:0s;}
+  .spark:nth-child(4){ transform:rotate(-35deg); animation-delay:.3s;}
+  .spark:nth-child(5){ transform:rotate(60deg); animation-delay:.6s;}
+  .spark:nth-child(6){ transform:rotate(-70deg); animation-delay:.9s;}
+  .spark:nth-child(7){ transform:rotate(100deg); animation-delay:1.2s;}
+  @keyframes burst{
+    0%{opacity:0; width:0;}
+    15%{opacity:1; width:70px;}
+    100%{opacity:0; width:100px;}
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:36px 0;}
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-alt));
+    border:1px solid var(--line); border-radius:18px; padding:28px 24px;
+    box-shadow:0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+  .sec-title{
+    font-family:'Orbitron',sans-serif; font-weight:800; font-size:13px;
+    letter-spacing:3px; text-transform:uppercase; color:var(--purple-glow);
+    margin-bottom:16px; display:flex; align-items:center; gap:10px;
+  }
+  .sec-title::before{content:""; width:22px; height:2px; background:var(--purple-glow); display:inline-block;}
+
+  /* ---------- INFO GRID ---------- */
+  .info-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:6px;}
+  .info-card{
+    background:rgba(44,224,217,0.05); border:1px solid var(--line); border-radius:12px;
+    padding:16px; text-align:center;
+  }
+  .info-card .k{font-size:11px; color:var(--dim); letter-spacing:2px; margin-bottom:6px;}
+  .info-card .v{font-family:'Orbitron',sans-serif; font-weight:700; font-size:19px; letter-spacing:1.5px; color:var(--teal-glow); white-space:nowrap;}
+  .info-card .v.small{font-family:'Noto Sans TC'; font-size:14px; color:var(--silver); font-weight:500; letter-spacing:0.5px; white-space:normal;}
+  .info-card .hint{font-size:11px; color:var(--dim); margin-top:6px; line-height:1.5;}
+
+  /* ---------- FLYER ---------- */
+  .flyer p{margin-bottom:12px; color:var(--silver); font-size:15px;}
+  .flyer .heart{color:var(--purple-glow);}
+  .contact-line{
+    margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    font-size:14px; color:var(--dim);
+  }
+  .contact-line b{color:var(--teal-glow);}
+
+  /* ---------- FORM ---------- */
+  .field{margin-bottom:16px;}
+  label{display:block; font-size:13px; color:var(--dim); margin-bottom:6px; letter-spacing:1px;}
+  label .req{color:var(--warn);}
+  input, textarea{
+    width:100%; padding:12px 14px; border-radius:10px;
+    border:1px solid var(--line); background:var(--void); color:var(--silver);
+    font-family:'Noto Sans TC'; font-size:15px;
+  }
+  input:focus, textarea:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(44,224,217,0.15);}
+  .btn{
+    width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
+    font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:2px; font-size:14px;
+    background:linear-gradient(100deg, var(--teal), var(--purple)); color:#08101f;
+    box-shadow:0 10px 24px -8px rgba(179,87,247,0.6);
+    transition:transform .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+  .btn-ghost{
+    background:transparent; border:1px solid var(--teal); color:var(--teal-glow);
+    box-shadow:none;
+  }
+  .warn-text{
+    color:var(--warn); font-size:12.5px; text-align:center; margin-top:10px; letter-spacing:.5px;
+  }
+
+  /* ---------- QR ---------- */
+  .qr-box{
+    margin-top:20px; border:1.5px dashed var(--purple); border-radius:14px;
+    padding:26px; text-align:center; color:var(--dim); font-size:13px;
+    background:rgba(179,87,247,0.05);
+  }
+  .qr-box img{max-width:160px; margin-bottom:10px; border-radius:8px;}
+
+  /* ---------- RESULT / STATUS ---------- */
+  .result-card{display:none; margin-top:18px;}
+  .id-badge{
+    font-family:'Orbitron'; font-weight:800; letter-spacing:2px; color:var(--gold);
+    background:rgba(255,182,39,0.08); border:1px solid var(--gold); padding:8px 14px;
+    border-radius:10px; display:inline-block; font-size:16px;
+  }
+  .status-pill{
+    display:inline-block; padding:4px 12px; border-radius:100px; font-size:12.5px;
+    font-weight:700; letter-spacing:1px;
+  }
+  .status-unpaid{background:rgba(255,95,109,0.15); color:var(--warn);}
+  .status-pending{background:rgba(255,182,39,0.15); color:var(--gold);}
+  .status-confirmed{background:rgba(44,224,217,0.15); color:var(--teal-glow);}
+
+  .tabs{display:flex; gap:10px; margin-bottom:18px;}
+  .tab-btn{
+    flex:1; padding:10px; border-radius:10px; border:1px solid var(--line);
+    background:var(--panel-alt); color:var(--dim); cursor:pointer;
+    font-weight:700; font-size:13.5px; letter-spacing:1px;
+  }
+  .tab-btn.active{border-color:var(--teal); color:var(--teal-glow); background:rgba(44,224,217,0.08);}
+  .hidden{display:none !important;}
+
+  footer{padding:40px 0 60px; text-align:center; color:var(--dim); font-size:12.5px;}
+  .msg{font-size:13.5px; margin-top:10px; text-align:center;}
+  .msg.err{color:var(--warn);}
+  .msg.ok{color:var(--teal-glow);}
+  @media(max-width:520px){ .clash{transform:scale(.8);} }
+</style>
+</head>
+<body>
+<div class="hexbg"></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="eyebrow">圓圓幼兒園 ‧ 畢業前哨戰</span>
+    <div class="hero-visual">
+      <div class="fallback-hint">主視覺圖片尚未放入<br>請將圖片存為 beyblade-hero.jpg 放到與本網頁相同資料夾</div>
+      <img src="file:///C:/Users/shirley/Downloads/beyblade-hero.jpg" alt="戰鬥陀螺 X 主視覺" onerror="this.style.display=&#39;none&#39;" style="display: none;">
+      <div class="veil"></div>
+      <div class="hero-text">
+        <div class="title-x">BEYBLADE X</div>
+        <div class="title-cn">戰鬥陀螺爭霸戰</div>
+        <div class="subtitle">邀請所有熱愛旋轉對決的小小戰士，一起同樂 ❤️</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLYER -->
+  <section id="flyer">
+    <div class="panel flyer">
+      <div class="sec-title">出戰公告 ANNOUNCEMENT</div>
+      <p style="text-align:center; font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; letter-spacing:1px; color:var(--gold); font-size:15px;">⚔️ 3、2、1——GO SHOOT！⚔️</p>
+      <p style="text-align:center; color:var(--teal-glow); font-weight:700;">「全力發射！戰鬥開始！」</p>
+      <p>親愛的爸爸媽媽：</p>
+      <p>轉眼間，孩子們即將告別充滿歡笑的圓圓幼兒園，迎接嶄新的小學生活。</p>
+      <p>還記得每週玩具日，孩子們總是興奮地帶著自己的戰鬥陀螺到學校，迫不及待和同學一起對戰、歡笑，也在一次次的發射中留下許多美好的回憶。</p>
+      <p>想趁著升上國小前，為這群熱愛戰鬥陀螺的小戰士舉辦一場專屬的趣味陀螺競賽，讓大家再次相聚，一起享受對戰的刺激、為彼此加油，也替幼兒園生活留下最熱血、最難忘的回憶！</p>
+      <p>誠摯邀請各位大小朋友一起來同樂，讓我們一起大喊：</p>
+      <p style="text-align:center; font-weight:700; color:var(--purple-glow);">🔥「3、2、1——GO SHOOT！」🔥</p>
+      <p>一起發射、一起歡笑，為幼兒園生活畫下最精彩的句點，並迎接新的冒險！<span class="heart">❤️</span></p>
+    </div>
+  </section>
+
+  <!-- EVENT INFO -->
+  <section id="info">
+    <div class="panel">
+      <div class="sec-title">對戰情報 EVENT INFO</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="k">比賽日期</div><div class="v">8/22（六）</div></div>
+        <div class="info-card"><div class="k">比賽時間</div><div class="v">14:30–17:30</div></div>
+        <div class="info-card"><div class="k">報名截止</div><div class="v">7/15（三）</div></div>
+        <div class="info-card">
+          <div class="k">地點</div>
+          <div class="v small">預計租用小樹屋空間</div>
+          <div class="hint">（若爸爸媽媽有適合的地點也歡迎提供建議唷）</div>
+        </div>
+        <div class="info-card"><div class="k">費用</div><div class="v small">依當日參加人數<br>平均分攤，將另行通知</div></div>
+      </div>
+      <div class="contact-line">
+        📍 聯絡人：<b>禹皓媽媽</b>　💬 LINE ID：<b>shirley0606</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTICE -->
+  <section id="notice">
+    <div class="panel">
+      <div class="sec-title">📢 報名須知　BEFORE YOU ENTER</div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0;">①</span>
+          <div>
+            <div style="font-weight:700; color:var(--teal-glow); font-size:14.5px; margin-bottom:4px;">活動成團</div>
+            <div style="font-size:14.5px; color:var(--silver);">本活動滿 <b style="color:var(--gold);">5 位小選手</b> 報名即正式開戰！⚔️</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0;">②</span>
+          <div>
+            <div style="font-weight:700; color:var(--teal-glow); font-size:14.5px; margin-bottom:4px;">場地費用</div>
+            <div style="font-size:14.5px; color:var(--silver);">報名截止後，將統一通知繳交活動費用，主要用於支付場地租借費，以完成場地保留。</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0;">③</span>
+          <div>
+            <div style="font-weight:700; color:var(--teal-glow); font-size:14.5px; margin-bottom:4px;">加入 LINE 群組</div>
+            <div style="font-size:14.5px; color:var(--silver);">完成報名後，請加入主辦人的 LINE，後續將成立活動群組，提供賽程安排、活動資訊及最新公告。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section id="register">
+    <div class="panel">
+      <div class="sec-title">選手登錄 REGISTRATION</div>
+      <form id="regForm">
+        <div class="field">
+          <label>參賽者姓名 <span class="req">*</span></label>
+          <input type="text" id="f_name" required="">
+        </div>
+        <div class="field">
+          <label>暱稱 <span class="req">*</span></label>
+          <input type="text" id="f_nickname" required="">
+        </div>
+        <div class="field">
+          <label>陪同家長人數 <span class="req">*</span></label>
+          <input type="number" id="f_parents" min="0" value="1" required="">
+        </div>
+        <div class="field">
+          <label>聯絡電話 <span class="req">*</span></label>
+          <input type="tel" id="f_phone" required="">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="f_email">
+        </div>
+        <div class="field">
+          <label>LINE ID <span class="req">*</span>（請務必提供，以便後續聯繫）</label>
+          <input type="text" id="f_line" required="">
+        </div>
+        <button type="submit" class="btn" id="submitBtn">送出報名 ⚡ ENTER BATTLE</button>
+        <div class="warn-text">⚠️ 送出後請截圖保留您的報名編號，作為後續查詢與繳費依據</div>
+        <div class="msg" id="regMsg"></div>
+      </form>
+
+      <div class="result-card" id="resultCard">
+        <div class="sec-title">報名成功 ENTRY CONFIRMED</div>
+        <p>您的報名編號：</p>
+        <div class="id-badge" id="resultId"></div>
+        <div class="qr-box" id="qrBox">
+          <div>📱 加入官方 LINE / 掃碼查詢報名資料</div>
+          <div style="margin-top:8px; font-size:12px;">（主辦人請將 QR Code 圖片放置於此區塊）</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUERY / PAYMENT -->
+  <section id="query">
+    <div class="panel">
+      <div class="sec-title">查詢戰績 QUERY &amp; PAYMENT</div>
+      <div class="field">
+        <label>報名編號 <span class="req">*</span></label>
+        <input type="text" id="q_id" placeholder="例如：BX7F3K2A">
+      </div>
+      <div class="field">
+        <label>聯絡電話 <span class="req">*</span>（用於身分核對）</label>
+        <input type="tel" id="q_phone">
+      </div>
+      <button class="btn btn-ghost" id="queryBtn">查詢報名資料</button>
+      <div class="msg" id="queryMsg"></div>
+
+      <div id="queryResult" class="hidden" style="margin-top:20px;">
+        <div class="info-grid">
+          <div class="info-card"><div class="k">參賽者</div><div class="v small" id="r_name"></div></div>
+          <div class="info-card"><div class="k">暱稱</div><div class="v small" id="r_nickname"></div></div>
+          <div class="info-card"><div class="k">陪同人數</div><div class="v small" id="r_parents"></div></div>
+          <div class="info-card"><div class="k">付款狀態</div><div class="v small"><span class="status-pill" id="r_status"></span></div></div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="sec-title">回報匯款 PAYMENT REPORT</div>
+          <div class="field">
+            <label>轉帳帳號後五碼 / 備註</label>
+            <input type="text" id="p_note" placeholder="例如：轉帳帳號後五碼 12345">
+          </div>
+          <button class="btn" id="payBtn">回報已完成匯款</button>
+          <div class="msg" id="payMsg"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    戰鬥陀螺爭霸戰 · 圓圓幼兒園同學會活動 ｜ 主辦人：禹皓媽媽（LINE：shirley0606）
+  </footer>
+
+</div>
+
+<script>
+  // ====== TODO：請將下方 firebaseConfig 換成您自己 Firebase 專案的設定值 ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+    authDomain: "beyblade-x-event.firebaseapp.com",
+    projectId: "beyblade-x-event",
+    storageBucket: "beyblade-x-event.firebasestorage.app",
+    messagingSenderId: "866394169939",
+    appId: "1:866394169939:web:a73222040a99a433425ca6"
+  };
+  // ====== TODO：請將下方換成您部署 Google Apps Script 後取得的 Web App 網址 ======
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const COL = "registrations";
+
+  function genId(){
+    return "BX" + Date.now().toString(36).toUpperCase().slice(-6);
+  }
+
+  function pushToSheet(action, data){
+    // 使用 no-cors 方式送出，僅需成功寫入 Google Sheet，不需讀取回應
+    fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"text/plain"},
+      body: JSON.stringify({action, data})
+    }).catch(()=>{});
+  }
+
+  document.getElementById('regForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const msg = document.getElementById('regMsg');
+    btn.disabled = true; msg.textContent = "";
+
+    const record = {
+      regId: genId(),
+      name: document.getElementById('f_name').value.trim(),
+      nickname: document.getElementById('f_nickname').value.trim(),
+      parents: Number(document.getElementById('f_parents').value || 0),
+      phone: document.getElementById('f_phone').value.trim(),
+      email: document.getElementById('f_email').value.trim(),
+      lineId: document.getElementById('f_line').value.trim(),
+      paymentStatus: "未繳費",
+      paymentNote: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try{
+      await db.collection(COL).doc(record.regId).set(record);
+      pushToSheet("add", {...record, createdAt: new Date().toLocaleString('zh-TW')});
+      document.getElementById('resultId').textContent = record.regId;
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('regForm').reset();
+      msg.className = "msg ok";
+      msg.textContent = "報名成功！請保留您的報名編號。";
+    }catch(err){
+      msg.className = "msg err";
+      msg.textContent = "送出失敗，請確認網路連線或稍後再試。";
+      console.error(err);
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  let currentDocId = null;
+
+  document.getElementById('queryBtn').addEventListener('click', async ()=>{
+    const id = document.getElementById('q_id').value.trim().toUpperCase();
+    const phone = document.getElementById('q_phone').value.trim();
+    const msg = document.getElementById('queryMsg');
+    msg.textContent = "";
+    document.getElementById('queryResult').classList.add('hidden');
+
+    if(!id || !phone){
+      msg.className = "msg err";
+      msg.textContent = "請輸入報名編號與聯絡電話";
+      return;
+    }
+    try{
+      const doc = await db.collection(COL).doc(id).get();
+      if(!doc.exists || doc.data().phone !== phone){
+        msg.className = "msg err";
+        msg.textContent = "查無此筆報名資料，請確認報名編號與電話是否正確";
+        return;
+      }
+      const d = doc.data();
+      currentDocId = id;
+      document.getElementById('r_name').textContent = d.name;
+      document.getElementById('r_nickname').textContent = d.nickname;
+      document.getElementById('r_parents').textContent = d.parents;
+      const pill = document.getElementById('r_status');
+      pill.textContent = d.paymentStatus;
+      pill.className = "status-pill " + (
+        d.paymentStatus === "已確認收款" ? "status-confirmed" :
+        d.paymentStatus === "已回報待確認" ? "status-pending" : "status-unpaid"
+      );
+      document.getElementById('queryResult').classList.remove('hidden');
+      msg.className = "msg ok";
+      msg.textContent = "查詢成功";
+    }catch(err){
+      msg.className = "msg err";
+      msg.textContent = "查詢發生錯誤，請稍後再試";
+      console.error(err);
+    }
+  });
+
+  document.getElementById('payBtn').addEventListener('click', async ()=>{
+    const msg = document.getElementById('payMsg');
+    if(!currentDocId){ return; }
+    const note = document.getElementById('p_note').value.trim();
+    try{
+      await db.collection(COL).doc(currentDocId).update({
+        paymentStatus: "已回報待確認",
+        paymentNote: note
+      });
+      pushToSheet("updatePayment", {regId: currentDocId, paymentStatus:"已回報待確認", paymentNote: note});
+      msg.className = "msg ok";
+      msg.textContent = "已回報匯款，主辦人確認收款後狀態將更新為「已確認收款」";
+      document.getElementById('r_status').textContent = "已回報待確認";
+      document.getElementById('r_status').className = "status-pill status-pending";
+    }catch(err){
+      msg.className = "msg err";
+      msg.textContent = "回報失敗，請稍後再試";
+      console.error(err);
+    }
+  });
+</script>
+
+
+</body></html>
