@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/index_79.html -->
+<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/index_86.html -->
 <html lang="zh-Hant-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>戰鬥陀螺爭霸戰｜圓圓幼兒園同學會</title>
+<title>戰鬥陀螺爭霸戰｜畢業最終戰</title>
+<meta name="description" content="圓圓幼兒園畢業最終戰，戰鬥陀螺爭霸戰即將登場！8/22（六）14:30-17:30，邀請所有熱愛旋轉對決的小小戰士一起同樂。">
+<meta property="og:title" content="戰鬥陀螺爭霸戰｜畢業最終戰">
+<meta property="og:description" content="圓圓幼兒園畢業最終戰，戰鬥陀螺爭霸戰即將登場！8/22（六）14:30-17:30，邀請所有熱愛旋轉對決的小小戰士一起同樂。">
+<meta property="og:image" content="beyblade-hero.png">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0707_files/css2" rel="stylesheet">
-<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0707_files/firebase-app-compat.js.下載"></script>
-<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0707_files/firebase-firestore-compat.js.下載"></script>
+<link href="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0708_files/css2" rel="stylesheet">
+<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0708_files/firebase-app-compat.js.下載"></script>
+<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0708_files/firebase-firestore-compat.js.下載"></script>
 <style>
   :root{
     --void:#080b14;
@@ -250,7 +255,7 @@
   <div class="hero">
     <span class="eyebrow">圓圓幼兒園 ‧ 畢業最終戰</span>
     <div class="hero-visual">
-      <img src="beyblade-hero.jpg" alt="戰鬥陀螺 X 主視覺" onerror="this.style.display='none'">
+      <img src="file:///C:/Users/shirley/Downloads/beyblade-hero.png" alt="戰鬥陀螺 X 主視覺" onerror="this.style.display=&#39;none&#39;" style="display: none;">
       <div class="veil"></div>
       <div class="hero-text">
         <div class="title-x">BEYBLADE X</div>
@@ -283,10 +288,10 @@
       <div class="info-grid">
         <div class="info-card"><div class="k">比賽日期</div><div class="v">8/22（六）</div></div>
         <div class="info-card"><div class="k">比賽時間</div><div class="v">14:30–17:30</div></div>
-        <div class="info-card"><div class="k">報名截止</div><div class="v">7/15（三）</div></div>
+        <div class="info-card"><div class="k">報名截止</div><div class="v">7/20（一）</div></div>
         <div class="info-card">
           <div class="k">地點</div>
-          <div class="v small">預計租用小樹屋空間</div>
+          <div class="v small">預計租用小樹屋或桌遊場地空間</div>
           <div class="hint">（若爸爸媽媽有適合的地點也歡迎提供建議唷）</div>
         </div>
         <div class="info-card"><div class="k">費用</div><div class="v small">依當日參加人數<br>平均分攤，將另行通知</div></div>
@@ -314,6 +319,9 @@
           <div>
             <div style="font-weight:700; color:var(--teal-glow); font-size:14.5px; margin-bottom:4px;">場地費用</div>
             <div style="font-size:14.5px; color:var(--silver);">報名截止後，將統一通知繳交活動費用，主要用於支付場地租借費，以完成場地保留。</div>
+            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;"><b style="color:var(--silver);">場地費用：</b>預計每位不超過 <b style="color:var(--gold);">NT$500</b>（實際金額依最終場地及參加人數計算後公告）。</div>
+            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;"><b style="color:var(--silver);">人頭計算方式：</b>以現場參與人數計算，包含選手本人、父母及滿 5 歲（含）以上兒童；未滿 5 歲兒童免收人頭費用。</div>
+            <div style="font-size:14.5px; color:var(--gold); font-weight:700; margin-top:8px;">希望能找到 CP 值高、場租又低的場地，若家長們有推薦的場地也歡迎和我說唷 🙏</div>
           </div>
         </div>
         <div style="display:flex; gap:12px; align-items:flex-start;">
@@ -341,8 +349,12 @@
           <input type="text" id="f_nickname" required="">
         </div>
         <div class="field">
-          <label>陪同家長人數 <span class="req">*</span></label>
+          <label>陪同人數（家長及滿 5 歲以上兒童皆列入場租平均人數計算）<span class="req">*</span></label>
           <input type="number" id="f_parents" min="0" value="1" required="">
+        </div>
+        <div class="field">
+          <label>陪同 5 歲以下兒童人數（免計費）</label>
+          <input type="number" id="f_under5" min="0" value="0">
         </div>
         <div class="field">
           <label>聯絡電話 <span class="req">*</span></label>
@@ -378,7 +390,18 @@
     <div class="panel">
       <div class="sec-title">⚔️ 戰隊交流基地　LET'S TALK</div>
       <p style="font-size:14.5px; color:var(--silver); margin-bottom:10px;">這場戰鬥陀螺同樂會，是為孩子們留下美好回憶而準備的小小活動。</p>
-      <p style="font-size:14.5px; color:var(--silver);">如果爸爸媽媽有任何想法、建議或希望活動可以增加的內容，都歡迎在這裡與我們分享！</p>
+      <p style="font-size:14.5px; color:var(--silver); margin-bottom:16px;">如果爸爸媽媽有任何想法、建議或希望活動可以增加的內容，都歡迎在這裡與我們分享！</p>
+
+      <div class="field">
+        <label>您的稱呼（選填）</label>
+        <input type="text" id="m_name" placeholder="例如：禹皓媽媽">
+      </div>
+      <div class="field">
+        <label>留言內容 <span class="req">*</span></label>
+        <textarea id="m_message" rows="3" placeholder="想跟主辦人分享的想法、建議都可以寫在這裡"></textarea>
+      </div>
+      <button class="btn btn-ghost" id="msgBtn" style="width:100%;">送出留言</button>
+      <div class="msg" id="msgMsg"></div>
     </div>
   </section>
 
@@ -387,8 +410,8 @@
     <div class="panel">
       <div class="sec-title">報名查詢 QUERY &amp; PAYMENT</div>
       <div class="field">
-        <label>報名編號 <span class="req">*</span></label>
-        <input type="text" id="q_id" placeholder="例如：BX7F3K2A">
+        <label>選手名字 <span class="req">*</span></label>
+        <input type="text" id="q_name" placeholder="請輸入參賽者姓名">
       </div>
       <div class="field">
         <label>聯絡電話 <span class="req">*</span>（用於身分核對）</label>
@@ -401,7 +424,8 @@
         <div class="info-grid">
           <div class="info-card"><div class="k">參賽者</div><div class="v small" id="r_name"></div></div>
           <div class="info-card"><div class="k">暱稱</div><div class="v small" id="r_nickname"></div></div>
-          <div class="info-card"><div class="k">陪同人數</div><div class="v small" id="r_parents"></div></div>
+          <div class="info-card"><div class="k">陪同人數（需計費）</div><div class="v small" id="r_parents"></div></div>
+          <div class="info-card"><div class="k">5歲以下兒童（免計費）</div><div class="v small" id="r_under5"></div></div>
           <div class="info-card"><div class="k">付款狀態</div><div class="v small"><span class="status-pill" id="r_status"></span></div></div>
         </div>
 
@@ -418,8 +442,9 @@
     </div>
   </section>
 
-  <footer>
-    戰鬥陀螺爭霸戰 · 圓圓幼兒園同學會活動 ｜ 主辦人：禹皓媽媽（LINE：shirley0606）
+  <footer style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+    <span>戰鬥陀螺爭霸戰 ｜ 主辦人：禹皓媽媽（LINE：shirley0606）</span>
+    <div style="width:64px; height:64px; border:1px dashed var(--purple); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;"><span style="font-size:9px;color:var(--dim);text-align:center;padding:4px;">QR Code</span></div>
   </footer>
 
 </div>
@@ -466,6 +491,7 @@
       name: document.getElementById('f_name').value.trim(),
       nickname: document.getElementById('f_nickname').value.trim(),
       parents: Number(document.getElementById('f_parents').value || 0),
+      under5: Number(document.getElementById('f_under5').value || 0),
       phone: document.getElementById('f_phone').value.trim(),
       email: document.getElementById('f_email').value.trim(),
       lineId: document.getElementById('f_line').value.trim(),
@@ -494,29 +520,31 @@
   let currentDocId = null;
 
   document.getElementById('queryBtn').addEventListener('click', async ()=>{
-    const id = document.getElementById('q_id').value.trim().toUpperCase();
+    const name = document.getElementById('q_name').value.trim();
     const phone = document.getElementById('q_phone').value.trim();
     const msg = document.getElementById('queryMsg');
     msg.textContent = "";
     document.getElementById('queryResult').classList.add('hidden');
 
-    if(!id || !phone){
+    if(!name || !phone){
       msg.className = "msg err";
-      msg.textContent = "請輸入報名編號與聯絡電話";
+      msg.textContent = "請輸入選手名字與聯絡電話";
       return;
     }
     try{
-      const doc = await db.collection(COL).doc(id).get();
-      if(!doc.exists || doc.data().phone !== phone){
+      const snap = await db.collection(COL).where('name','==',name).where('phone','==',phone).limit(1).get();
+      if(snap.empty){
         msg.className = "msg err";
-        msg.textContent = "查無此筆報名資料，請確認報名編號與電話是否正確";
+        msg.textContent = "查無此筆報名資料，請確認選手名字與電話是否正確";
         return;
       }
+      const doc = snap.docs[0];
       const d = doc.data();
-      currentDocId = id;
+      currentDocId = doc.id;
       document.getElementById('r_name').textContent = d.name;
       document.getElementById('r_nickname').textContent = d.nickname;
       document.getElementById('r_parents').textContent = d.parents;
+      document.getElementById('r_under5').textContent = (d.under5 || 0);
       const pill = document.getElementById('r_status');
       pill.textContent = d.paymentStatus;
       pill.className = "status-pill " + (
@@ -550,6 +578,32 @@
     }catch(err){
       msg.className = "msg err";
       msg.textContent = "回報失敗，請稍後再試";
+      console.error(err);
+    }
+  });
+
+  document.getElementById('msgBtn').addEventListener('click', async ()=>{
+    const msg = document.getElementById('msgMsg');
+    const name = document.getElementById('m_name').value.trim() || "匿名家長";
+    const message = document.getElementById('m_message').value.trim();
+    if(!message){
+      msg.className = "msg err";
+      msg.textContent = "請輸入留言內容";
+      return;
+    }
+    try{
+      await db.collection("messages").add({
+        name, message,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      pushToSheet("addMessage", {name, message, createdAt: new Date().toLocaleString('zh-TW')});
+      document.getElementById('m_name').value = "";
+      document.getElementById('m_message').value = "";
+      msg.className = "msg ok";
+      msg.textContent = "已收到您的留言，謝謝分享！❤️";
+    }catch(err){
+      msg.className = "msg err";
+      msg.textContent = "送出失敗，請稍後再試";
       console.error(err);
     }
   });
