@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/index_92.html -->
+<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/index_96.html -->
 <html lang="zh-Hant-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +11,9 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./戰鬥陀螺爭霸戰｜畢業最終戰_0708V1_files/css2" rel="stylesheet">
-<script src="./戰鬥陀螺爭霸戰｜畢業最終戰_0708V1_files/firebase-app-compat.js.下載"></script>
-<script src="./戰鬥陀螺爭霸戰｜畢業最終戰_0708V1_files/firebase-firestore-compat.js.下載"></script>
+<link href="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0709_files/css2" rel="stylesheet">
+<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0709_files/firebase-app-compat.js.下載"></script>
+<script src="./戰鬥陀螺爭霸戰｜圓圓幼兒園前台_0709_files/firebase-firestore-compat.js.下載"></script>
 <style>
   :root{
     --void:#080b14;
@@ -190,6 +190,14 @@
     font-family:'Noto Sans TC'; font-size:15px;
   }
   input:focus, textarea:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(44,224,217,0.15);}
+  .radio-group{display:flex; flex-direction:column; gap:10px;}
+  .radio-option{
+    display:flex; align-items:center; gap:10px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:10px; background:var(--void);
+    cursor:pointer; font-size:14.5px; color:var(--silver);
+  }
+  .radio-option input{width:auto; accent-color:var(--teal);}
+  .radio-option:has(input:checked){border-color:var(--teal); background:rgba(44,224,217,0.08); color:var(--teal-glow);}
   .btn{
     width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer;
     font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:2px; font-size:14px;
@@ -255,7 +263,7 @@
   <div class="hero">
     <span class="eyebrow">圓圓幼兒園 ‧ 畢業最終戰</span>
     <div class="hero-visual">
-      <img src="beyblade-hero.png" alt="戰鬥陀螺 X 主視覺" onerror="this.style.display='none'">
+      <img src="file:///C:/Users/shirley/Downloads/beyblade-hero.png" alt="戰鬥陀螺 X 主視覺" onerror="this.style.display=&#39;none&#39;" style="display: none;">
       <div class="veil"></div>
       <div class="hero-text">
         <div class="title-x">BEYBLADE X</div>
@@ -272,6 +280,7 @@
       <p style="text-align:center; font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; letter-spacing:1px; color:var(--gold); font-size:15px;">⚔️ 3、2、1——GO SHOOT！⚔️</p>
       <p style="text-align:center; color:var(--teal-glow); font-weight:700;">「全力發射！戰鬥開始！」</p>
       <p>親愛的爸爸媽媽：</p>
+      <p>哈囉，我是禹皓媽媽</p>
       <p>轉眼間，孩子們即將告別充滿歡笑的圓圓幼兒園，迎接嶄新的小學生活。</p>
       <p>還記得每週玩具日，孩子們總是興奮地帶著自己的戰鬥陀螺到學校，迫不及待和同學一起對戰、歡笑，也在一次次的發射中留下許多美好的回憶。</p>
       <p>想趁著升上國小前，為這群熱愛戰鬥陀螺的小戰士舉辦一場專屬的趣味陀螺競賽，讓大家再次相聚，一起享受對戰的刺激、為彼此加油，也替幼兒園生活留下最熱血、最難忘的回憶！</p>
@@ -294,7 +303,7 @@
           <div class="v small">預計租用小樹屋或桌遊場地空間</div>
           <div class="hint">（若爸爸媽媽有適合的地點也歡迎提供建議唷）</div>
         </div>
-        <div class="info-card"><div class="k">費用</div><div class="v small">依當日參加人數<br>平均分攤，將另行通知</div></div>
+        <div class="info-card"><div class="k">費用</div><div class="v small">預計每位不超過 NT$400<br>將依人數平均分攤</div></div>
       </div>
       <div class="contact-line">
         📍 聯絡人：<b>禹皓媽媽</b>　💬 LINE ID：<b>shirley0606</b>
@@ -318,10 +327,10 @@
           <span style="font-family:&#39;Orbitron&#39;,sans-serif; font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0;">②</span>
           <div>
             <div style="font-weight:700; color:var(--teal-glow); font-size:14.5px; margin-bottom:4px;">場地費用</div>
-            <div style="font-size:14.5px; color:var(--silver);">報名截止後，將統一通知繳交活動費用，主要用於支付場地租借費，以完成場地保留。</div>
-            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;"><b style="color:var(--silver);">場地費用：</b>預計每位不超過 <b style="color:var(--gold);">NT$500</b>（實際金額依最終場地及參加人數計算後公告）。</div>
-            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;"><b style="color:var(--silver);">人頭計算方式：</b>以現場參與人數計算，包含選手本人、父母及滿 5 歲（含）以上兒童；未滿 5 歲兒童免收人頭費用。</div>
-            <div style="font-size:14.5px; color:var(--gold); font-weight:700; margin-top:8px;">希望能找到 CP 值高、場租又低的場地，若家長們有推薦的場地也歡迎和我說唷 🙏</div>
+            <div style="font-size:14.5px; color:var(--silver);">報名截止後，將依實際參加人數與最終確認場地，統一通知繳交活動費用，費用主要用於支付場地租借，以完成場地保留。</div>
+            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;">目前希望場地費用能控制在每位 <b style="color:var(--gold);">NT$400</b> 以內，實際金額仍會依最終場地及參加人數計算後再公告。</div>
+            <div style="font-size:14.5px; color:var(--silver); margin-top:8px;">人頭計算方式以現場參與人數為準，包含選手本人、父母，以及滿 5 歲（含）以上兒童；未滿 5 歲兒童不列入收費人數。</div>
+            <div style="font-size:14.5px; color:var(--gold); font-weight:700; margin-top:8px;">也會盡量尋找 CP 值高、場租合理又適合孩子們對戰的場地。若家長們有推薦的場地，也非常歡迎提供給我唷！</div>
           </div>
         </div>
         <div style="display:flex; gap:12px; align-items:flex-start;">
@@ -345,8 +354,21 @@
           <input type="text" id="f_name" required="">
         </div>
         <div class="field">
-          <label>暱稱 <span class="req">*</span></label>
+          <label>暱稱（孩子們想要用來參加戰鬥的玩家名字）<span class="req">*</span></label>
           <input type="text" id="f_nickname" required="">
+        </div>
+        <div class="field">
+          <label>參賽身份 <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="f_role" value="參賽選手" checked="">
+              <span>🏆 參賽選手（下場對戰）</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="f_role" value="僅觀戰">
+              <span>👀 僅觀戰（不參戰）</span>
+            </label>
+          </div>
         </div>
         <div class="field">
           <label>陪同人數（家長及滿 5 歲以上兒童皆列入場租平均人數計算）<span class="req">*</span></label>
@@ -423,6 +445,7 @@
         <div class="info-grid">
           <div class="info-card"><div class="k">參賽者</div><div class="v small" id="r_name"></div></div>
           <div class="info-card"><div class="k">暱稱</div><div class="v small" id="r_nickname"></div></div>
+          <div class="info-card"><div class="k">參賽身份</div><div class="v small" id="r_role"></div></div>
           <div class="info-card"><div class="k">陪同人數（需計費）</div><div class="v small" id="r_parents"></div></div>
           <div class="info-card"><div class="k">5歲以下兒童（免計費）</div><div class="v small" id="r_under5"></div></div>
           <div class="info-card"><div class="k">付款狀態</div><div class="v small"><span class="status-pill" id="r_status"></span></div></div>
@@ -488,6 +511,7 @@
       regId: genId(),
       name: document.getElementById('f_name').value.trim(),
       nickname: document.getElementById('f_nickname').value.trim(),
+      role: document.querySelector('input[name="f_role"]:checked').value,
       parents: Number(document.getElementById('f_parents').value || 0),
       under5: Number(document.getElementById('f_under5').value || 0),
       phone: document.getElementById('f_phone').value.trim(),
@@ -541,6 +565,7 @@
       currentDocId = doc.id;
       document.getElementById('r_name').textContent = d.name;
       document.getElementById('r_nickname').textContent = d.nickname;
+      document.getElementById('r_role').textContent = d.role || "參賽選手";
       document.getElementById('r_parents').textContent = d.parents;
       document.getElementById('r_under5').textContent = (d.under5 || 0);
       const pill = document.getElementById('r_status');
