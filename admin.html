@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0048)file:///C:/Users/shirley/Downloads/admin_11.html -->
+<html lang="zh-Hant-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>後台管理｜戰鬥陀螺爭霸戰</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<link href="./後台管理｜戰鬥陀螺爭霸戰_後台0721新增刪除功能_files/css2" rel="stylesheet">
+<script src="./後台管理｜戰鬥陀螺爭霸戰_後台0721新增刪除功能_files/firebase-app-compat.js.下載"></script>
+<script src="./後台管理｜戰鬥陀螺爭霸戰_後台0721新增刪除功能_files/firebase-firestore-compat.js.下載"></script>
 <style>
   :root{
     --void:#080b14; --panel:#111a2e; --panel-alt:#0d1424; --line:#223055;
@@ -82,13 +82,13 @@
     <div class="sub">報名資料查詢 · 付款狀態管理 · 賽前通知</div>
 
     <div class="stats">
-      <div class="stat-card"><div class="k">總報名數</div><div class="v" id="statTotal">0</div></div>
-      <div class="stat-card"><div class="k">參賽選手</div><div class="v" id="statPlayers">0</div></div>
+      <div class="stat-card"><div class="k">總報名數</div><div class="v" id="statTotal">9</div></div>
+      <div class="stat-card"><div class="k">參賽選手</div><div class="v" id="statPlayers">9</div></div>
       <div class="stat-card"><div class="k">僅觀戰</div><div class="v" id="statSpectators">0</div></div>
-      <div class="stat-card"><div class="k">需付費人數</div><div class="v" id="statPeople">0</div></div>
-      <div class="stat-card"><div class="k">5歲以下（免計費）</div><div class="v" id="statUnder5">0</div></div>
+      <div class="stat-card"><div class="k">需付費人數</div><div class="v" id="statPeople">27</div></div>
+      <div class="stat-card"><div class="k">5歲以下（免計費）</div><div class="v" id="statUnder5">2</div></div>
       <div class="stat-card"><div class="k">已確認收款</div><div class="v" id="statConfirmed">0</div></div>
-      <div class="stat-card"><div class="k">待確認 / 未繳費</div><div class="v" id="statPending">0</div></div>
+      <div class="stat-card"><div class="k">待確認 / 未繳費</div><div class="v" id="statPending">9</div></div>
     </div>
 
     <div class="panel">
@@ -104,10 +104,199 @@
             <tr>
               <th class="checkbox-cell"><input type="checkbox" id="selectAll"></th>
               <th>報名編號</th><th>參賽者</th><th>暱稱</th><th>身份</th><th>陪同人數（需計費）</th><th>5歲以下（免計費）</th>
-              <th>電話</th><th>Email</th><th>LINE ID</th><th>付款狀態</th><th>備註</th><th>報名時間</th>
+              <th>電話</th><th>Email</th><th>LINE ID</th><th>付款狀態</th><th>備註</th><th>報名時間</th><th>操作</th>
             </tr>
           </thead>
-          <tbody id="tableBody"></tbody>
+          <tbody id="tableBody"><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXT84NPS"></td>
+        <td>BXT84NPS</td>
+        <td>陳致允</td>
+        <td>喬治</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>0</td>
+        <td>0934321325</td>
+        <td>mify2001.tw@gmail.com</td>
+        <td>dodora128</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXT84NPS">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/20 下午8:51:46</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXT84NPS" data-name="陳致允" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXT2TNOO"></td>
+        <td>BXT2TNOO</td>
+        <td>蔣定亞</td>
+        <td>興安陀螺王</td>
+        <td>🏆 參賽選手</td>
+        <td>4</td>
+        <td>0</td>
+        <td>0931199968</td>
+        <td>s8518414@yahoo.com.tw</td>
+        <td>katychieh</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXT2TNOO">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/20 下午6:23:15</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXT2TNOO" data-name="蔣定亞" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXRRNZD3"></td>
+        <td>BXRRNZD3</td>
+        <td>周宸緯</td>
+        <td>宸緯</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>0</td>
+        <td>0961111075</td>
+        <td></td>
+        <td>irene750404</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXRRNZD3">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/19 下午8:23:08</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXRRNZD3" data-name="周宸緯" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXP132QJ"></td>
+        <td>BXP132QJ</td>
+        <td>李浩宇</td>
+        <td>浩宇</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>0</td>
+        <td>0911259926</td>
+        <td>fjuitaf0701@gmail.com</td>
+        <td>freda.lin</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXP132QJ">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/17 下午10:23:30</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXP132QJ" data-name="李浩宇" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXMA4D6W"></td>
+        <td>BXMA4D6W</td>
+        <td>林予千</td>
+        <td>林予千</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>0</td>
+        <td>0952729780</td>
+        <td>pencillin@gmail.com</td>
+        <td>pencilx4</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXMA4D6W">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/16 上午12:13:09</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXMA4D6W" data-name="林予千" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXM4URP2"></td>
+        <td>BXM4URP2</td>
+        <td>陳品睿</td>
+        <td>陳品睿</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>0</td>
+        <td>0920216327</td>
+        <td>cme1217@gmail.com</td>
+        <td>chtan</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXM4URP2">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/15 下午9:45:43</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXM4URP2" data-name="陳品睿" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXLXNC3B"></td>
+        <td>BXLXNC3B</td>
+        <td>鄭海晨</td>
+        <td>假面人格</td>
+        <td>🏆 參賽選手</td>
+        <td>2</td>
+        <td>1</td>
+        <td>0910219689</td>
+        <td>balabi0816@gmail.com</td>
+        <td>balabi0816</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXLXNC3B">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/15 下午6:23:59</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXLXNC3B" data-name="鄭海晨" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXIYYYV1"></td>
+        <td>BXIYYYV1</td>
+        <td>邱禹皓</td>
+        <td>COODY</td>
+        <td>🏆 參賽選手</td>
+        <td>1</td>
+        <td>1</td>
+        <td>1231654654</td>
+        <td>shirley.u.huang@gmail.com</td>
+        <td>shirley0606</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXIYYYV1">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/13 下午4:37:43</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXIYYYV1" data-name="邱禹皓" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr><tr>
+        <td class="checkbox-cell"><input type="checkbox" class="rowCheck" data-id="BXIYTTE1"></td>
+        <td>BXIYTTE1</td>
+        <td>邱禹皓</td>
+        <td>COODY</td>
+        <td>🏆 參賽選手</td>
+        <td>1</td>
+        <td>0</td>
+        <td>0933920330</td>
+        <td>shirley.u.huang@gmail.com</td>
+        <td>shirley0606</td>
+        <td>
+          <select class="status-select status-unpaid" data-id="BXIYTTE1">
+            <option value="未繳費" selected="">未繳費</option>
+            <option value="已回報待確認">已回報待確認</option>
+            <option value="已確認收款">已確認收款</option>
+          </select>
+        </td>
+        <td></td>
+        <td>2026/7/13 下午4:33:43</td>
+        <td><button class="btn-outline btn del-btn" data-id="BXIYTTE1" data-name="邱禹皓" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
+      </tr></tbody>
         </table>
       </div>
     </div>
@@ -127,7 +316,19 @@
 
     <div class="panel">
       <div class="sec-title">家長留言 MESSAGES</div>
-      <div id="messageList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <div id="messageList" style="display:flex; flex-direction:column; gap:12px;"><div style="border: 1px solid var(--line); border-radius: 10px; padding: 12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); margin-bottom:6px;">
+            <span style="color:var(--teal-glow); font-weight:700;">Irene(宸緯媽媽)</span>
+            <span>2026/7/19 下午8:23:06</span>
+          </div>
+          <div style="font-size:14px; color:var(--silver); white-space:pre-wrap;">謝謝舉辦！小朋友一定很開心</div>
+        </div><div style="border: 1px solid var(--line); border-radius: 10px; padding: 12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); margin-bottom:6px;">
+            <span style="color:var(--teal-glow); font-weight:700;">123</span>
+            <span>2026/7/17 上午10:39:42</span>
+          </div>
+          <div style="font-size:14px; color:var(--silver); white-space:pre-wrap;">123</div>
+        </div></div>
     </div>
   </div>
 
@@ -242,6 +443,7 @@
         </td>
         <td>${r.paymentNote||""}</td>
         <td>${created}</td>
+        <td><button class="btn-outline btn del-btn" data-id="${r.id}" data-name="${r.name||""}" style="padding:6px 10px; font-size:11.5px; color:var(--warn); border-color:var(--warn);">刪除</button></td>
       `;
       body.appendChild(tr);
     });
@@ -256,6 +458,23 @@
         const rec = allRecords.find(r=>r.id===id);
         if(rec) rec.paymentStatus = newStatus;
         renderStats(allRecords);
+      });
+    });
+
+    document.querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        const id = e.target.dataset.id;
+        const name = e.target.dataset.name;
+        if(!confirm(`確定要刪除「${name}」（${id}）這筆報名資料嗎？此動作無法復原。`)) return;
+        try{
+          await db.collection(COL).doc(id).delete();
+          allRecords = allRecords.filter(r=>r.id!==id);
+          renderTable(allRecords);
+          renderStats(allRecords);
+        }catch(err){
+          alert("刪除失敗，請稍後再試");
+          console.error(err);
+        }
       });
     });
   }
@@ -313,5 +532,6 @@
     });
   });
 </script>
-</body>
-</html>
+
+
+</body></html>
