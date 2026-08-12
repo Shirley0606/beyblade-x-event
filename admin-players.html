@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>參賽者管理 - 戰鬥陀螺比賽系統</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: #f4f5f7;
+    margin: 0;
+    padding: 20px;
+    color: #1a1a1a;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card h2 { font-size: 15px; margin: 0 0 4px; }
+  .card .desc { font-size: 12px; color: #888; margin: 0 0 14px; }
+  label { display: block; font-size: 13px; color: #555; margin: 12px 0 6px; font-weight: 600; }
+  input[type="text"] {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 15px;
+  }
+  .photo-input-row { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+  .preview {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: #eee; object-fit: cover; border: 2px solid #ddd;
+    display: flex; align-items: center; justify-content: center;
+    color: #aaa; font-size: 11px; flex-shrink: 0;
+  }
+  input[type="file"] { font-size: 13px; }
+  button {
+    padding: 12px 20px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary { background: #d85a30; color: #fff; width: 100%; margin-top: 16px; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-outline {
+    background: #fff; color: #d85a30; border: 1px solid #d85a30;
+    width: 100%; font-size: 14px; padding: 10px;
+  }
+  #status, #importStatus { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .ok { color: #1d9e75; }
+  .err { color: #e24b4a; }
+  .list-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .count { font-size: 12px; color: #999; font-weight: 400; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .player-card {
+    background: #fafafa; border-radius: 10px; padding: 10px;
+    text-align: center; position: relative; border: 1px solid #eee;
+  }
+  .player-card img, .placeholder-photo {
+    width: 64px; height: 64px; border-radius: 50%;
+    object-fit: cover; margin: 0 auto 6px; background: #ddd;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #b8b8b8;
+  }
+  .no-photo-badge {
+    font-size: 10px; color: #d85a30; background: #fdeee8;
+    border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 4px;
+  }
+  .p-name { font-size: 13px; font-weight: 600; margin: 0; }
+  .p-battle { font-size: 11px; color: #d85a30; margin: 2px 0 8px; }
+  .row-btns { display: flex; gap: 6px; justify-content: center; }
+  .row-btns button {
+    font-size: 11px; padding: 5px 8px; border-radius: 6px;
+    background: #fff; border: 1px solid #ddd; color: #555; font-weight: 400;
+  }
+  .row-btns .del { color: #e24b4a; border-color: #f0c0c0; }
+  .row-btns .upload-highlight { color: #d85a30; border-color: #f0c0a8; font-weight: 600; }
+  .empty { color: #999; font-size: 13px; padding: 20px 0; text-align: center; }
+  .reg-list { max-height: 280px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-top: 10px; }
+  .reg-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0; font-size: 14px;
+  }
+  .reg-row:last-child { border-bottom: none; }
+  .reg-row.already { opacity: 0.45; }
+  .reg-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
+  .reg-name { flex: 1; }
+  .reg-tag { font-size: 11px; color: #888; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; }
+  .reg-tag.player { color: #1d9e75; background: #e5f6ef; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>參賽者管理</h1>
+  <p class="sub">新增選手姓名與照片，大螢幕會即時同步更新，不需要重新整理。</p>
+
+  <div class="card">
+    <h2>從報名名單匯入</h2>
+    <p class="desc">直接從現有的線上報名資料（registrations 集合）挑選要參賽的人，姓名自動帶入，之後只要補上照片即可。</p>
+    <button class="btn-outline" id="loadRegBtn">讀取報名名單</button>
+    <div class="reg-list" id="regList" style="display:none;"></div>
+    <button class="btn-primary" id="importBtn" style="display:none;">匯入勾選名單</button>
+    <div id="importStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2>手動新增參賽者</h2>
+    <p class="desc">如果報名名單裡沒有這個人，也可以直接手動新增。</p>
+    <label>姓名</label>
+    <input type="text" id="playerName" placeholder="例如：陳小明">
+
+    <label>Battle Name（比賽稱號，可留空）</label>
+    <input type="text" id="battleName" placeholder="例如：烈焰龍王">
+
+    <label>照片（可留空，之後再補）</label>
+    <div class="photo-input-row">
+      <img id="previewImg" class="preview" alt="預覽">
+      <input type="file" id="photoFile" accept="image/*">
+    </div>
+
+    <button class="btn-primary" id="submitBtn">新增參賽者</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="card">
+    <div class="list-title">
+      <span>目前參賽者名單</span>
+      <span class="count" id="playerCount">0 位</span>
+    </div>
+    <div class="grid" id="playerGrid"></div>
+    <div class="empty" id="emptyMsg" style="display:none;">尚未新增任何參賽者</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy, serverTimestamp, getDocs
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
+
+// 沿用「戰鬥陀螺爭霸戰」報名系統同一個 Firebase 專案
+const firebaseConfig = {
+  apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain: "beyblade-x-event.firebaseapp.com",
+  projectId: "beyblade-x-event",
+  storageBucket: "beyblade-x-event.firebasestorage.app",
+  messagingSenderId: "866394169939",
+  appId: "1:866394169939:web:a73222040a99a433425ca6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const playerName = document.getElementById('playerName');
+const battleName = document.getElementById('battleName');
+const photoFile = document.getElementById('photoFile');
+const previewImg = document.getElementById('previewImg');
+const submitBtn = document.getElementById('submitBtn');
+const statusEl = document.getElementById('status');
+const playerGrid = document.getElementById('playerGrid');
+const playerCount = document.getElementById('playerCount');
+const emptyMsg = document.getElementById('emptyMsg');
+const loadRegBtn = document.getElementById('loadRegBtn');
+const regList = document.getElementById('regList');
+const importBtn = document.getElementById('importBtn');
+const importStatus = document.getElementById('importStatus');
+
+let selectedFile = null;
+let currentPlayerNames = new Set();
+
+photoFile.addEventListener('change', () => {
+  const file = photoFile.files[0];
+  if (!file) return;
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => { previewImg.src = e.target.result; };
+  reader.readAsDataURL(file);
+});
+
+function setStatus(el, msg, type) {
+  el.textContent = msg;
+  el.className = type || '';
+}
+
+// ---------- 手動新增 ----------
+submitBtn.addEventListener('click', async () => {
+  const name = playerName.value.trim();
+  if (!name) { setStatus(statusEl, '請輸入姓名', 'err'); return; }
+
+  submitBtn.disabled = true;
+  setStatus(statusEl, selectedFile ? '上傳照片中…' : '新增中…', '');
+
+  try {
+    let photoUrl = '', photoPath = '';
+    if (selectedFile) {
+      const path = `player-photos/${Date.now()}_${selectedFile.name}`;
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, selectedFile);
+      photoUrl = await getDownloadURL(storageRef);
+      photoPath = path;
+    }
+
+    await addDoc(collection(db, 'players'), {
+      name,
+      battleName: battleName.value.trim() || name,
+      photoUrl,
+      photoPath,
+      totalPoints: 0,
+      createdAt: serverTimestamp()
+    });
+
+    setStatus(statusEl, '新增成功', 'ok');
+    playerName.value = '';
+    battleName.value = '';
+    photoFile.value = '';
+    previewImg.src = '';
+    selectedFile = null;
+  } catch (err) {
+    console.error(err);
+    setStatus(statusEl, '發生錯誤：' + err.message, 'err');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// ---------- 從報名名單匯入 ----------
+function pickRegName(data) {
+  return data.name || data['姓名'] || data.playerName || data['參賽者姓名'] || '';
+}
+function pickRegType(data) {
+  return data.type || data['參與類型'] || data.participateType || data.role || '';
+}
+
+loadRegBtn.addEventListener('click', async () => {
+  loadRegBtn.disabled = true;
+  loadRegBtn.textContent = '讀取中…';
+  try {
+    const snap = await getDocs(collection(db, 'registrations'));
+    regList.innerHTML = '';
+    if (snap.empty) {
+      regList.innerHTML = '<div class="reg-row">目前沒有報名資料</div>';
+    } else {
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const name = pickRegName(data);
+        if (!name) return;
+        const typeTag = pickRegType(data);
+        const already = currentPlayerNames.has(name);
+        const row = document.createElement('label');
+        row.className = 'reg-row' + (already ? ' already' : '');
+        row.innerHTML = `
+          <input type="checkbox" value="${name}" ${already ? 'disabled' : ''}>
+          <span class="reg-name">${name}</span>
+          ${typeTag ? `<span class="reg-tag">${typeTag}</span>` : ''}
+          ${already ? '<span class="reg-tag player">已在名單</span>' : ''}
+        `;
+        regList.appendChild(row);
+      });
+    }
+    regList.style.display = 'block';
+    importBtn.style.display = 'block';
+  } catch (err) {
+    console.error(err);
+    setStatus(importStatus, '讀取失敗：' + err.message + '（請確認 Firestore 規則允許讀取 registrations）', 'err');
+  } finally {
+    loadRegBtn.disabled = false;
+    loadRegBtn.textContent = '重新讀取報名名單';
+  }
+});
+
+importBtn.addEventListener('click', async () => {
+  const checked = Array.from(regList.querySelectorAll('input[type="checkbox"]:checked'));
+  if (checked.length === 0) { setStatus(importStatus, '請至少勾選一位', 'err'); return; }
+
+  importBtn.disabled = true;
+  setStatus(importStatus, `匯入中… (0/${checked.length})`, '');
+  let done = 0;
+  for (const box of checked) {
+    const name = box.value;
+    try {
+      await addDoc(collection(db, 'players'), {
+        name,
+        battleName: name,
+        photoUrl: '',
+        photoPath: '',
+        totalPoints: 0,
+        importedFromRegistration: true,
+        createdAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error('匯入失敗：', name, err);
+    }
+    done++;
+    setStatus(importStatus, `匯入中… (${done}/${checked.length})`, '');
+  }
+  setStatus(importStatus, `完成！已匯入 ${done} 位，請至下方名單補上照片`, 'ok');
+  importBtn.disabled = false;
+});
+
+// ---------- 即時監聽參賽者名單 ----------
+const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
+onSnapshot(q, (snapshot) => {
+  playerGrid.innerHTML = '';
+  playerCount.textContent = snapshot.size + ' 位';
+  emptyMsg.style.display = snapshot.empty ? 'block' : 'none';
+  currentPlayerNames = new Set();
+
+  snapshot.forEach((docSnap) => {
+    const p = docSnap.data();
+    currentPlayerNames.add(p.name);
+
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    const photoHtml = p.photoUrl
+      ? `<img src="${p.photoUrl}" alt="${p.name}">`
+      : `<div class="placeholder-photo">${p.name ? p.name[0] : '?'}</div>`;
+    card.innerHTML = `
+      ${!p.photoUrl ? '<div class="no-photo-badge">尚無照片</div>' : ''}
+      ${photoHtml}
+      <p class="p-name">${p.name}</p>
+      <p class="p-battle">${p.battleName || ''}</p>
+      <div class="row-btns">
+        <button class="replace-btn ${!p.photoUrl ? 'upload-highlight' : ''}">${p.photoUrl ? '換照片' : '上傳照片'}</button>
+        <button class="del">刪除</button>
+      </div>
+    `;
+
+    const replaceInput = document.createElement('input');
+    replaceInput.type = 'file';
+    replaceInput.accept = 'image/*';
+    replaceInput.style.display = 'none';
+    card.appendChild(replaceInput);
+
+    card.querySelector('.replace-btn').addEventListener('click', () => replaceInput.click());
+    replaceInput.addEventListener('change', async () => {
+      const file = replaceInput.files[0];
+      if (!file) return;
+      try {
+        const newPath = `player-photos/${Date.now()}_${file.name}`;
+        const newRef = ref(storage, newPath);
+        await uploadBytes(newRef, file);
+        const newUrl = await getDownloadURL(newRef);
+        await updateDoc(doc(db, 'players', docSnap.id), { photoUrl: newUrl, photoPath: newPath });
+        if (p.photoPath) {
+          deleteObject(ref(storage, p.photoPath)).catch(() => {});
+        }
+      } catch (err) {
+        alert('上傳失敗：' + err.message);
+      }
+    });
+
+    card.querySelector('.del').addEventListener('click', async () => {
+      if (!confirm(`確定要刪除「${p.name}」嗎？`)) return;
+      try {
+        await deleteDoc(doc(db, 'players', docSnap.id));
+        if (p.photoPath) {
+          deleteObject(ref(storage, p.photoPath)).catch(() => {});
+        }
+      } catch (err) {
+        alert('刪除失敗：' + err.message);
+      }
+    });
+
+    playerGrid.appendChild(card);
+  });
+});
+</script>
+</body>
+</html>

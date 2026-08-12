@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>參賽者照片牆 - 戰鬥陀螺比賽系統</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: #060a14;
+    margin: 0;
+    padding: 40px;
+    color: #fff;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center; font-size: 22px; letter-spacing: 4px;
+    color: #5da0ff; margin-bottom: 40px; font-weight: 500;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .photo-ring {
+    position: relative;
+    width: 130px; height: 130px;
+    margin: 0 auto 12px;
+  }
+  .photo-ring img {
+    width: 130px; height: 130px; border-radius: 50%;
+    object-fit: cover; border: 3px solid #d85a30;
+    box-shadow: 0 0 20px rgba(216,90,48,0.35);
+    background: #1a1a1a;
+  }
+  .name { font-size: 16px; font-weight: 500; margin: 0; }
+  .battle { font-size: 12px; color: #f0997b; margin: 3px 0 0; }
+  .empty {
+    text-align: center; color: #5a6788; font-size: 14px;
+    padding: 60px 0;
+  }
+</style>
+</head>
+<body>
+<h1>🔥 參賽選手 🔥</h1>
+<div class="grid" id="grid"></div>
+<div class="empty" id="emptyMsg" style="display:none;">尚未有參賽者，請至後台新增</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// 沿用「戰鬥陀螺爭霸戰」報名系統同一個 Firebase 專案
+const firebaseConfig = {
+  apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain: "beyblade-x-event.firebaseapp.com",
+  projectId: "beyblade-x-event",
+  storageBucket: "beyblade-x-event.firebasestorage.app",
+  messagingSenderId: "866394169939",
+  appId: "1:866394169939:web:a73222040a99a433425ca6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const grid = document.getElementById('grid');
+const emptyMsg = document.getElementById('emptyMsg');
+
+const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
+onSnapshot(q, (snapshot) => {
+  emptyMsg.style.display = snapshot.empty ? 'block' : 'none';
+  grid.innerHTML = '';
+  snapshot.forEach((docSnap) => {
+    const p = docSnap.data();
+    if (!p.photoUrl) return; // 尚未上傳照片的參賽者，大螢幕先不顯示
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="photo-ring"><img src="${p.photoUrl}" alt="${p.name}"></div>
+      <p class="name">${p.name}</p>
+      <p class="battle">${p.battleName || ''}</p>
+    `;
+    grid.appendChild(card);
+  });
+});
+</script>
+</body>
+</html>
