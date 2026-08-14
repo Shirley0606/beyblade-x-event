@@ -1,67 +1,786 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>參賽者照片牆 - 戰鬥陀螺比賽系統</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>選手登場｜FINAL BATTLE</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
-    background: #060a14;
-    margin: 0;
-    padding: 40px;
-    color: #fff;
-    min-height: 100vh;
+:root{
+  --bg:#04060b;
+  --red:#ff304b;
+  --red2:#a01328;
+  --blue:#2a8dff;
+  --blue2:#10408f;
+  --text:#f7f9ff;
+  --muted:#98a3b7;
+  --line:#2a3650;
+  --panel:#09101a;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 12% 32%, rgba(255,48,75,.13), transparent 24%),
+    radial-gradient(circle at 88% 32%, rgba(42,141,255,.14), transparent 25%),
+    linear-gradient(135deg,#030409 0%,#090d15 50%,#030409 100%);
+}
+
+/* 背景能量旋風 */
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  top:8vh;
+  width:64vw;
+  height:64vw;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:.55;
+  z-index:0;
+}
+body::before{
+  left:-44vw;
+  border:2px solid rgba(255,48,75,.32);
+  box-shadow:
+    0 0 80px rgba(255,48,75,.12),
+    40px 0 130px rgba(255,48,75,.08);
+  animation:spin 20s linear infinite;
+}
+body::after{
+  right:-45vw;
+  border:2px solid rgba(42,141,255,.35);
+  box-shadow:
+    0 0 90px rgba(42,141,255,.12),
+    -40px 0 130px rgba(42,141,255,.08);
+  animation:spinBack 24s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinBack{to{transform:rotate(-360deg)}}
+
+.shell{
+  position:relative;
+  z-index:2;
+  width:min(100%, 1920px);
+  margin:0 auto;
+  padding:12px;
+}
+
+/* ======== 16:9 舞台 ======== */
+.stage{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  min-height:560px;
+  max-height:calc(100vh - 24px);
+  border-radius:28px;
+  overflow:hidden;
+  border:1px solid rgba(96,116,156,.35);
+  background:
+    linear-gradient(90deg,rgba(120,10,28,.18),rgba(7,11,18,.92) 48%,rgba(9,54,115,.18)),
+    rgba(5,8,13,.95);
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.45),
+    inset 0 0 80px rgba(255,255,255,.02);
+}
+
+/* 頂部欄 */
+.topbar{
+  position:absolute;
+  left:0; right:0; top:0;
+  height:72px;
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(180deg,rgba(2,4,8,.92),rgba(2,4,8,.55));
+  border-bottom:1px solid rgba(67,84,114,.36);
+  z-index:10;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brand-logo{
+  width:50px;height:50px;border-radius:50%;
+  display:grid;place-items:center;
+  font-size:24px;font-weight:900;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(135deg,rgba(155,19,39,.7),rgba(12,24,46,.9));
+  box-shadow:0 0 18px rgba(255,48,75,.15),0 0 18px rgba(42,141,255,.12);
+}
+.brand-text strong{
+  display:block;
+  font-size:22px;
+  letter-spacing:.06em;
+}
+.brand-text span{
+  display:block;
+  font-size:11px;
+  letter-spacing:.22em;
+  color:#91a0b9;
+  margin-top:3px;
+}
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.nav-chip{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  padding:10px 14px;
+  background:rgba(8,12,19,.76);
+  color:#dfe8f9;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+/* 舞台主體 */
+.stage-inner{
+  position:absolute;
+  inset:72px 0 0 0;
+  display:grid;
+  grid-template-rows:auto 1fr auto auto;
+  padding:10px 22px 18px;
+}
+
+/* 標題 */
+.stage-title{
+  text-align:center;
+  padding-top:10px;
+}
+.stage-title .main{
+  font-size:clamp(44px,4vw,84px);
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:.12em;
+  text-shadow:0 0 30px rgba(255,255,255,.08);
+}
+.stage-title .sub{
+  margin-top:8px;
+  font-size:14px;
+  letter-spacing:.28em;
+  color:#bac5d7;
+}
+.stage-title .main .red{color:#ff5a6d}
+.stage-title .main .blue{color:#67afff}
+
+/* 主秀區 */
+.hero-wrap{
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-height:0;
+  padding:8px 22px 0;
+}
+.hero-card{
+  position:relative;
+  width:min(82vw, 1320px);
+  aspect-ratio:2.48/1;
+  border-radius:24px;
+  overflow:hidden;
+  border:1px solid rgba(100,120,162,.4);
+  background:
+    linear-gradient(90deg,rgba(140,15,34,.22),rgba(6,10,16,.84) 46%,rgba(10,58,124,.24)),
+    #060a11;
+  box-shadow:
+    0 0 40px rgba(255,48,75,.10),
+    0 0 40px rgba(42,141,255,.10),
+    inset 0 0 60px rgba(255,255,255,.02);
+}
+.hero-card::before,
+.hero-card::after{
+  content:"";
+  position:absolute;
+  inset:14px;
+  pointer-events:none;
+  z-index:4;
+}
+.hero-card::before{
+  border-left:2px solid rgba(255,68,90,.82);
+  border-top:1px solid rgba(255,68,90,.28);
+  border-bottom:1px solid rgba(255,68,90,.18);
+}
+.hero-card::after{
+  border-right:2px solid rgba(63,156,255,.88);
+  border-top:1px solid rgba(63,156,255,.26);
+  border-bottom:1px solid rgba(63,156,255,.18);
+}
+
+.hero-grid{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:44% 56%;
+  overflow:hidden;
+}
+
+.hero-photo-area{
+  position:relative;
+  overflow:hidden;
+  min-height:100%;
+}
+.hero-photo-area::before{
+  content:"";
+  position:absolute;
+  width:72%;
+  aspect-ratio:1/1;
+  left:-6%;
+  top:8%;
+  border-radius:50%;
+  border:2px solid rgba(255,48,75,.48);
+  box-shadow:0 0 40px rgba(255,48,75,.18), inset 0 0 50px rgba(255,48,75,.06);
+  animation:spin 10s linear infinite;
+}
+.hero-photo-area::after{
+  content:"";
+  position:absolute;
+  width:50%;
+  aspect-ratio:1/1;
+  left:10%;
+  top:21%;
+  border-radius:50%;
+  border:1px solid rgba(255,80,105,.28);
+  box-shadow:0 0 35px rgba(255,48,75,.10);
+  animation:spinBack 8s linear infinite;
+}
+
+.hero-photo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 18%;
+  z-index:1;
+  animation:photoIn .65s cubic-bezier(.2,.8,.2,1);
+}
+.hero-placeholder{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:80px;
+  color:#526078;
+  background:linear-gradient(145deg,#241018,#091525);
+}
+.hero-photo-fade{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:
+    linear-gradient(90deg,transparent 58%,rgba(5,9,15,.95) 100%),
+    linear-gradient(0deg,rgba(5,8,13,.75) 0%,transparent 36%);
+}
+
+.hero-info{
+  position:relative;
+  z-index:3;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:3.4% 6.4%;
+}
+.info-label{
+  color:#d3d9e6;
+  font-size:clamp(14px,1.15vw,22px);
+  letter-spacing:.18em;
+  margin-bottom:2.5%;
+  font-weight:800;
+}
+.name-plate{
+  position:relative;
+  padding:3.6% 4.2%;
+  clip-path:polygon(4% 0,100% 0,96% 100%,0 100%);
+  background:
+    linear-gradient(90deg,rgba(154,16,36,.62),rgba(9,12,20,.48) 48%,rgba(18,71,146,.34));
+  border-top:1px solid rgba(255,255,255,.10);
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.name-plate::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:5px;
+  background:linear-gradient(var(--red),transparent 48%,var(--blue));
+}
+.hero-name{
+  font-size:clamp(44px,5vw,92px);
+  font-weight:1000;
+  line-height:1.02;
+  letter-spacing:.08em;
+  word-break:break-word;
+  text-shadow:0 0 22px rgba(255,255,255,.08);
+  animation:nameIn .55s cubic-bezier(.2,.8,.2,1);
+}
+.number-block{
+  margin-top:5%;
+  display:flex;
+  align-items:center;
+  gap:4%;
+  flex-wrap:wrap;
+}
+.player-id{
+  min-width:180px;
+}
+.player-id small{
+  display:block;
+  color:#95a2b6;
+  font-size:12px;
+  letter-spacing:.22em;
+}
+.player-id strong{
+  display:block;
+  margin-top:8px;
+  font-size:clamp(34px,3.2vw,66px);
+  letter-spacing:.10em;
+}
+.player-bars{
+  display:flex;
+  gap:8px;
+}
+.player-bars span{
+  display:block;
+  width:18px;
+  height:52px;
+  transform:skewX(-22deg);
+  border-radius:2px;
+}
+.player-bars .r1{background:#e2203c}
+.player-bars .r2{background:#c61c36}
+.player-bars .b1{background:#2479e8}
+
+.slogan{
+  margin-top:4.4%;
+  font-size:clamp(14px,1.22vw,24px);
+  letter-spacing:.20em;
+  color:#d6dde9;
+  font-weight:800;
+  text-align:center;
+}
+
+/* 左右隊色裝飾 */
+.side-tag{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:48px;
+  height:180px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  letter-spacing:.25em;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  background:rgba(8,12,19,.78);
+  color:#dfe7f6;
+  z-index:6;
+}
+.side-tag.left{
+  left:20px;
+  border-color:rgba(255,68,90,.26);
+  box-shadow:0 0 18px rgba(255,48,75,.08);
+}
+.side-tag.right{
+  right:20px;
+  border-color:rgba(63,156,255,.26);
+  box-shadow:0 0 18px rgba(42,141,255,.08);
+}
+
+/* 輪播控制 */
+.controls{
+  position:absolute;
+  left:0; right:0;
+  bottom:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  z-index:10;
+  pointer-events:none;
+}
+.arrow{
+  pointer-events:auto;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(9,13,21,.82);
+  color:#fff;
+  font-size:28px;
+  display:grid;
+  place-items:center;
+}
+.counter{
+  pointer-events:auto;
+  min-width:88px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:rgba(8,12,19,.76);
+  border:1px solid rgba(255,255,255,.10);
+  text-align:center;
+  font-size:13px;
+  letter-spacing:.12em;
+  color:#a8b4c8;
+}
+
+/* 選手縮圖列 */
+.roster-wrap{
+  padding:8px 42px 0;
+}
+.roster-title{
+  text-align:center;
+  font-size:14px;
+  letter-spacing:.18em;
+  color:#d4dce9;
+  margin-bottom:10px;
+  font-weight:900;
+}
+.roster{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:4px 4px 8px;
+  scrollbar-width:thin;
+}
+.thumb{
+  flex:0 0 196px;
+  height:88px;
+  display:grid;
+  grid-template-columns:70px 1fr;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #2d3951;
+  background:#08101a;
+  position:relative;
+  cursor:pointer;
+  transition:.22s ease;
+}
+.thumb::before{
+  content:"";
+  position:absolute;
+  left:0; top:0;
+  width:3px; height:100%;
+  background:linear-gradient(var(--red),transparent 44%,var(--blue));
+}
+.thumb.active{
+  transform:translateY(-3px);
+  border-color:#7085a8;
+  box-shadow:0 0 18px rgba(255,48,75,.08), 0 0 18px rgba(42,141,255,.08);
+}
+.thumb img{
+  width:70px;height:88px;object-fit:cover;
+}
+.thumb .ph{
+  width:70px;height:88px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#231017,#091423);
+  color:#556279;font-size:24px;
+}
+.thumb-info{
+  min-width:0;
+  padding:11px 10px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.thumb-name{
+  font-size:15px;
+  font-weight:900;
+  line-height:1.18;
+  word-break:break-word;
+}
+.thumb-id{
+  margin-top:6px;
+  font-size:11px;
+  color:#89a1c5;
+  letter-spacing:.12em;
+}
+
+/* 底部主按鈕 */
+.bottom-actions{
+  display:flex;
+  justify-content:center;
+  padding-top:12px;
+}
+.enter-battle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:260px;
+  padding:14px 34px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(90deg,#b5172f 0%,#82172f 42%,#174d9f 100%);
+  color:#fff;
+  text-decoration:none;
+  font-size:28px;
+  font-weight:1000;
+  letter-spacing:.14em;
+  box-shadow:0 0 22px rgba(255,48,75,.10), 0 0 22px rgba(42,141,255,.10);
+}
+
+/* 空狀態 */
+.empty{
+  margin:20px auto 0;
+  width:min(100%,900px);
+  text-align:center;
+  padding:40px 20px;
+  border:1px dashed rgba(109,126,157,.35);
+  border-radius:18px;
+  color:#74839a;
+  background:rgba(7,11,17,.42);
+}
+
+/* 切換閃光 */
+.flash{
+  position:absolute;
+  inset:0;
+  z-index:9;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.20) 49%,transparent 63%);
+}
+.flash.go{animation:flash .55s ease}
+@keyframes flash{
+  0%{opacity:0;transform:translateX(-40%)}
+  35%{opacity:.8}
+  100%{opacity:0;transform:translateX(40%)}
+}
+@keyframes photoIn{
+  from{opacity:0;transform:scale(1.03) translateX(-10px);filter:blur(4px)}
+  to{opacity:1;transform:none;filter:none}
+}
+@keyframes nameIn{
+  from{opacity:0;transform:translateX(18px)}
+  to{opacity:1;transform:none}
+}
+
+/* ======== 手機版 ======== */
+.mobile-header{display:none}
+@media (max-width: 900px){
+  .shell{padding:10px}
+  .stage{
+    aspect-ratio:auto;
+    min-height:unset;
+    max-height:none;
+    border-radius:22px;
   }
-  h1 {
-    text-align: center; font-size: 22px; letter-spacing: 4px;
-    color: #5da0ff; margin-bottom: 40px; font-weight: 500;
+  .topbar{display:none}
+  .stage-inner{
+    position:relative;
+    inset:auto;
+    display:block;
+    padding:16px 14px 18px;
   }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
+  .mobile-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:8px;
   }
-  .card {
-    text-align: center;
-    animation: fadeIn 0.5s ease;
+  .mobile-header .title{
+    font-size:22px;
+    font-weight:1000;
+    letter-spacing:.12em;
   }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+  .mobile-header .title .red{color:#ff5a6d}
+  .mobile-header .title .blue{color:#67afff}
+  .mobile-header .mini-btn{
+    font-size:12px;
+    font-weight:900;
+    padding:10px 12px;
+    text-decoration:none;
+    color:#fff;
+    border-radius:10px;
+    background:linear-gradient(90deg,#b5172f,#174d9f);
+    border:1px solid rgba(255,255,255,.10);
   }
-  .photo-ring {
-    position: relative;
-    width: 130px; height: 130px;
-    margin: 0 auto 12px;
+  .stage-title{
+    padding-top:0;
+    margin-bottom:10px;
   }
-  .photo-ring img {
-    width: 130px; height: 130px; border-radius: 50%;
-    object-fit: cover; border: 3px solid #d85a30;
-    box-shadow: 0 0 20px rgba(216,90,48,0.35);
-    background: #1a1a1a;
+  .stage-title .main{font-size:38px}
+  .stage-title .sub{font-size:11px;letter-spacing:.18em}
+  .hero-wrap{
+    padding:0;
   }
-  .name { font-size: 16px; font-weight: 500; margin: 0; }
-  .battle { font-size: 12px; color: #f0997b; margin: 3px 0 0; }
-  .empty {
-    text-align: center; color: #5a6788; font-size: 14px;
-    padding: 60px 0;
+  .hero-card{
+    width:100%;
+    aspect-ratio:auto;
+    min-height:420px;
   }
+  .hero-grid{
+    position:relative;
+    grid-template-columns:1fr;
+    min-height:420px;
+  }
+  .hero-photo-area{
+    min-height:270px;
+  }
+  .hero-photo-fade{
+    background:
+      linear-gradient(0deg,rgba(5,9,15,.95) 0%,rgba(5,9,15,.28) 48%,transparent 72%);
+  }
+  .hero-info{
+    padding:20px 18px 22px;
+  }
+  .hero-name{
+    font-size:42px;
+  }
+  .number-block{
+    gap:16px;
+  }
+  .player-id strong{
+    font-size:38px;
+  }
+  .player-bars span{
+    height:38px;
+    width:14px;
+  }
+  .slogan{
+    margin-top:16px;
+    font-size:13px;
+  }
+  .side-tag{
+    display:none;
+  }
+  .controls{
+    position:relative;
+    bottom:auto;
+    margin-top:10px;
+    justify-content:center;
+    gap:10px;
+    padding:0;
+    pointer-events:auto;
+  }
+  .arrow{
+    width:44px;
+    height:44px;
+    font-size:24px;
+  }
+  .roster-wrap{
+    padding:14px 0 0;
+  }
+  .thumb{
+    flex-basis:170px;
+    height:82px;
+    grid-template-columns:62px 1fr;
+  }
+  .thumb img,.thumb .ph{
+    width:62px;height:82px;
+  }
+  .thumb-name{font-size:14px}
+  .bottom-actions{
+    padding-top:14px;
+  }
+  .enter-battle{
+    min-width:220px;
+    font-size:22px;
+    padding:12px 28px;
+  }
+}
 </style>
 </head>
 <body>
-<h1>🔥 參賽選手 🔥</h1>
-<div class="grid" id="grid"></div>
-<div class="empty" id="emptyMsg" style="display:none;">尚未有參賽者，請至後台新增</div>
+<div class="shell">
+  <section class="stage" id="stage">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo">🌀</div>
+        <div class="brand-text">
+          <strong>旋風戰魂盃</strong>
+          <span>FINAL BATTLE TOURNAMENT</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <a class="nav-chip" href="admin-players.html">選手登錄</a>
+        <a class="nav-chip" href="battle.html">進入比賽</a>
+      </div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+
+    <div class="stage-inner">
+      <div class="mobile-header">
+        <div class="title"><span class="red">選手</span><span class="blue">登場</span></div>
+        <a class="mini-btn" href="battle.html">進入比賽</a>
+      </div>
+
+      <div class="stage-title">
+        <div class="main"><span class="red">選手</span>登<span class="blue">場</span></div>
+        <div class="sub">頂尖對決・旋出榮耀</div>
+      </div>
+
+      <div class="hero-wrap">
+        <div class="side-tag left">紅方陣營</div>
+        <div class="side-tag right">藍方陣營</div>
+
+        <div class="hero-card">
+          <div class="hero-grid">
+            <div class="hero-photo-area" id="heroPhotoArea">
+              <div class="hero-placeholder">—</div>
+              <div class="hero-photo-fade"></div>
+            </div>
+            <div class="hero-info">
+              <div class="info-label">戰鬥名號</div>
+              <div class="name-plate">
+                <div class="hero-name" id="heroName">等待選手登錄</div>
+              </div>
+
+              <div class="number-block">
+                <div class="player-id">
+                  <small>選手編號</small>
+                  <strong id="playerNo">001</strong>
+                </div>
+                <div class="player-bars" aria-hidden="true">
+                  <span class="r1"></span>
+                  <span class="r2"></span>
+                  <span class="b1"></span>
+                </div>
+              </div>
+
+              <div class="slogan">全力以赴・旋出勝利！</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="roster-wrap">
+        <div class="roster-title">已報名選手</div>
+        <div class="roster" id="roster"></div>
+        <div class="empty" id="empty" style="display:none;">目前還沒有選手完成登錄</div>
+      </div>
+
+      <div class="bottom-actions">
+        <a class="enter-battle" href="battle.html">進入比賽</a>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="arrow" id="prevBtn" aria-label="上一位">‹</button>
+      <div class="counter" id="counter">0 / 0</div>
+      <button class="arrow" id="nextBtn" aria-label="下一位">›</button>
+    </div>
+  </section>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-// 沿用「戰鬥陀螺爭霸戰」報名系統同一個 Firebase 專案
 const firebaseConfig = {
   apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
   authDomain: "beyblade-x-event.firebaseapp.com",
@@ -74,25 +793,210 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const grid = document.getElementById('grid');
-const emptyMsg = document.getElementById('emptyMsg');
+const heroPhotoArea = document.getElementById("heroPhotoArea");
+const heroName = document.getElementById("heroName");
+const playerNo = document.getElementById("playerNo");
+const counter = document.getElementById("counter");
+const roster = document.getElementById("roster");
+const empty = document.getElementById("empty");
+const flash = document.getElementById("flash");
+const stage = document.getElementById("stage");
 
-const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
-onSnapshot(q, (snapshot) => {
-  emptyMsg.style.display = snapshot.empty ? 'block' : 'none';
-  grid.innerHTML = '';
-  snapshot.forEach((docSnap) => {
-    const p = docSnap.data();
-    if (!p.photoUrl) return; // 尚未上傳照片的參賽者，大螢幕先不顯示
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="photo-ring"><img src="${p.photoUrl}" alt="${p.name}"></div>
-      <p class="name">${p.name}</p>
-      <p class="battle">${p.battleName || ''}</p>
+let players = [];
+let currentIndex = 0;
+let autoplayTimer = null;
+let resumeTimeout = null;
+let knownIds = new Set();
+let initialized = false;
+
+const AUTO_MS = 4500;
+const NEW_PLAYER_SPOTLIGHT_MS = 8000;
+
+function esc(value = ""){
+  return String(value).replace(/[&<>"']/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[m]));
+}
+
+function getName(p){
+  return p?.battleName || p?.name || "未命名選手";
+}
+function getNo(index){
+  return String(index + 1).padStart(3, "0");
+}
+
+function runFlash(){
+  flash.classList.remove("go");
+  void flash.offsetWidth;
+  flash.classList.add("go");
+}
+
+function renderHero(index, manual = false){
+  if(!players.length){
+    heroPhotoArea.innerHTML = `
+      <div class="hero-placeholder">—</div>
+      <div class="hero-photo-fade"></div>
     `;
-    grid.appendChild(card);
+    heroName.textContent = "等待選手登錄";
+    playerNo.textContent = "001";
+    counter.textContent = "0 / 0";
+    return;
+  }
+
+  currentIndex = (index + players.length) % players.length;
+  const p = players[currentIndex];
+
+  heroPhotoArea.innerHTML = p.photoUrl
+    ? `
+      <img class="hero-photo" src="${esc(p.photoUrl)}" alt="${esc(getName(p))}">
+      <div class="hero-photo-fade"></div>
+    `
+    : `
+      <div class="hero-placeholder">—</div>
+      <div class="hero-photo-fade"></div>
+    `;
+
+  heroName.style.animation = "none";
+  void heroName.offsetWidth;
+  heroName.style.animation = "";
+  heroName.textContent = getName(p);
+
+  playerNo.textContent = getNo(currentIndex);
+  counter.textContent = `${currentIndex + 1} / ${players.length}`;
+
+  document.querySelectorAll(".thumb").forEach((el, i)=>{
+    el.classList.toggle("active", i === currentIndex);
   });
+
+  document.querySelector(`.thumb[data-index="${currentIndex}"]`)?.scrollIntoView({
+    behavior:"smooth",
+    block:"nearest",
+    inline:"center"
+  });
+
+  runFlash();
+
+  if(manual) restartAutoplay();
+}
+
+function renderRoster(){
+  roster.innerHTML = "";
+  empty.style.display = players.length ? "none" : "block";
+
+  players.forEach((p, i)=>{
+    const card = document.createElement("div");
+    card.className = "thumb";
+    card.dataset.index = i;
+
+    card.innerHTML = `
+      ${
+        p.photoUrl
+          ? `<img src="${esc(p.photoUrl)}" alt="${esc(getName(p))}">`
+          : `<div class="ph">—</div>`
+      }
+      <div class="thumb-info">
+        <div class="thumb-name">${esc(getName(p))}</div>
+        <div class="thumb-id">${getNo(i)}</div>
+      </div>
+    `;
+
+    card.addEventListener("click", ()=>{
+      renderHero(i, true);
+    });
+
+    roster.appendChild(card);
+  });
+}
+
+function nextSlide(){
+  if(players.length <= 1) return;
+  renderHero(currentIndex + 1);
+}
+function prevSlide(){
+  if(players.length <= 1) return;
+  renderHero(currentIndex - 1, true);
+}
+
+function restartAutoplay(delay = AUTO_MS){
+  clearInterval(autoplayTimer);
+  clearTimeout(resumeTimeout);
+  autoplayTimer = setInterval(nextSlide, delay);
+}
+
+function spotlightNewPlayer(index){
+  clearInterval(autoplayTimer);
+  clearTimeout(resumeTimeout);
+  renderHero(index);
+  resumeTimeout = setTimeout(()=>{
+    restartAutoplay();
+  }, NEW_PLAYER_SPOTLIGHT_MS);
+}
+
+document.getElementById("prevBtn").addEventListener("click", prevSlide);
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  renderHero(currentIndex + 1, true);
+});
+
+stage.addEventListener("mouseenter", ()=>{
+  if(window.innerWidth > 900) clearInterval(autoplayTimer);
+});
+stage.addEventListener("mouseleave", ()=>{
+  if(window.innerWidth > 900) restartAutoplay();
+});
+
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "ArrowLeft") prevSlide();
+  if(e.key === "ArrowRight") renderHero(currentIndex + 1, true);
+});
+
+const q = query(collection(db, "players"), orderBy("createdAt", "asc"));
+
+onSnapshot(q, (snapshot)=>{
+  const previousIds = new Set(knownIds);
+
+  players = [];
+  snapshot.forEach(docSnap=>{
+    players.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  renderRoster();
+
+  if(!players.length){
+    initialized = false;
+    knownIds = new Set();
+    clearInterval(autoplayTimer);
+    clearTimeout(resumeTimeout);
+    renderHero(0);
+    return;
+  }
+
+  const currentIds = new Set(players.map(p => p.id));
+  const added = players.filter(p => !previousIds.has(p.id));
+
+  if(!initialized){
+    initialized = true;
+    knownIds = currentIds;
+    currentIndex = 0;
+    renderHero(0);
+    restartAutoplay();
+    return;
+  }
+
+  knownIds = currentIds;
+
+  if(added.length){
+    const newest = added[added.length - 1];
+    const idx = players.findIndex(p => p.id === newest.id);
+    spotlightNewPlayer(idx);
+  }else{
+    if(currentIndex >= players.length) currentIndex = 0;
+    renderHero(currentIndex);
+    restartAutoplay();
+  }
 });
 </script>
 </body>
