@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PK 車輪戰控制台 - 戰鬥陀螺比賽系統</title>
+<title>對戰控制台 - 戰鬥陀螺比賽系統</title>
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
     background: #f4f5f7; margin: 0; padding: 20px; color: #1a1a1a;
   }
-  .wrap { max-width: 720px; margin: 0 auto; }
-  .top-links { display: flex; gap: 14px; margin-bottom: 14px; font-size: 12px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .top-links { display: flex; gap: 14px; margin-bottom: 14px; font-size: 12px; flex-wrap: wrap; }
   .top-links a { color: #888; text-decoration: none; }
   .top-links a.active { color: #d85a30; font-weight: 700; }
   h1 { font-size: 20px; margin-bottom: 4px; }
@@ -21,15 +21,30 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
 
-  .draw-panel { text-align: center; padding: 24px 4px; }
-  .draw-panel p { color: #666; font-size: 13px; margin-bottom: 20px; }
+  /* ---------- Mode select ---------- */
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mode-btn {
+    display: block; text-decoration: none; text-align: center; padding: 34px 14px;
+    border-radius: 14px; font-size: 17px; font-weight: 800; color: #fff;
+    cursor: pointer; border: none;
+  }
+  .mode-btn.pk { background: linear-gradient(135deg, #d81f3a, #a80f28); }
+  .mode-btn.team { background: linear-gradient(135deg, #2454c2, #16337e); }
+  .mode-btn .emoji { display: block; font-size: 30px; margin-bottom: 8px; }
+
+  /* ---------- Shared ---------- */
   .btn-draw {
     background: #d85a30; color: #fff; border: none; border-radius: 999px;
     font-size: 16px; font-weight: 700; padding: 16px 40px; cursor: pointer;
   }
   .btn-draw:disabled { background: #ccc; cursor: not-allowed; }
-  #drawStatus { font-size: 13px; margin-top: 14px; min-height: 18px; }
-  #drawStatus.err { color: #e24b4a; }
+  .btn-outline {
+    background: #fff; color: #d85a30; border: 1px solid #d85a30;
+    border-radius: 8px; font-size: 13px; padding: 9px 14px; cursor: pointer;
+  }
+  #drawStatus, #teamStatus { font-size: 13px; margin-top: 14px; min-height: 18px; }
+  .err { color: #e24b4a; }
+  .ok { color: #1d9e75; }
 
   .match-progress { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
   .dot {
@@ -51,16 +66,18 @@
   .fighter-tag { font-size: 10px; letter-spacing: 1px; color: #999; margin-top: 8px; }
   .fighter-name { font-size: 16px; font-weight: 700; margin-top: 2px; }
   .fighter-score { font-size: 12px; color: #d85a30; margin-top: 4px; font-weight: 700; }
+  .fighter-total { font-size: 11px; color: #999; margin-top: 2px; }
   .vs-mid { font-size: 20px; font-weight: 800; color: #333; text-align: center; }
 
   .result-btns { display: flex; gap: 10px; margin-bottom: 10px; }
-  .btn-champ-win, .btn-chal-win {
+  .btn-champ-win, .btn-chal-win, .btn-red-win, .btn-blue-win {
     flex: 1; padding: 16px 8px; border: none; border-radius: 10px;
     font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
   }
-  .btn-champ-win { background: #d81f3a; }
-  .btn-chal-win { background: #298dff; }
-  .btn-champ-win:disabled, .btn-chal-win:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-champ-win, .btn-red-win { background: #d81f3a; }
+  .btn-chal-win, .btn-blue-win { background: #298dff; }
+  .btn-champ-win:disabled, .btn-chal-win:disabled,
+  .btn-red-win:disabled, .btn-blue-win:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .session-summary { text-align: center; padding: 10px 4px; }
   .session-summary h2 { font-size: 18px; margin-bottom: 10px; }
@@ -73,40 +90,102 @@
     display: block; margin: 20px auto 0; background: none; border: none;
     color: #999; font-size: 12px; text-decoration: underline; cursor: pointer;
   }
-
-  .log-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
-  .log-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; color: #444; }
-
   .link-live {
     display: block; text-align: center; font-size: 12px; color: #298dff;
     margin-top: 16px; text-decoration: none;
   }
+
+  .log-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
+  .log-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; color: #444; }
+
+  /* ---------- Pool grid (PK champion pool) ---------- */
+  .pool-section-title { font-size: 13px; font-weight: 700; margin: 18px 0 10px; color: #444; }
+  .pool-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+  .pool-card {
+    background: #fafafa; border-radius: 10px; padding: 8px; text-align: center;
+    border: 1px solid #eee; position: relative;
+  }
+  .pool-card.used { opacity: 0.5; }
+  .pool-card img {
+    width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+    margin: 0 auto 4px; background: #ddd; display: block;
+  }
+  .pool-card .pn { font-size: 11px; font-weight: 600; margin: 0; }
+  .pool-score {
+    font-size: 10px; color: #d85a30; font-weight: 700; margin-top: 2px;
+    background: #fdeee8; border-radius: 4px; padding: 1px 5px; display: inline-block;
+  }
+  .pool-readd {
+    font-size: 10px; margin-top: 5px; padding: 3px 6px; border-radius: 5px;
+    background: #fff; border: 1px solid #ddd; color: #555; cursor: pointer; width: 100%;
+  }
+
+  /* ---------- Team setup ---------- */
+  .team-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .team-col { border-radius: 12px; padding: 14px; }
+  .team-col.red { background: #fdeef0; border: 1px solid #f7c9d0; }
+  .team-col.blue { background: #eaf3fd; border: 1px solid #bfdcf7; }
+  .team-col input[type="text"] {
+    width: 100%; padding: 9px 10px; border-radius: 7px; border: 1px solid #ddd; font-size: 14px;
+    font-weight: 700; margin-bottom: 10px; text-align: center;
+  }
+  .member-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; min-height: 20px; }
+  .member-chip {
+    display: flex; align-items: center; gap: 8px; background: #fff;
+    border-radius: 8px; padding: 6px 8px; font-size: 12px; border: 1px solid #eee;
+  }
+  .member-chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #ddd; }
+  .member-chip .order-no {
+    width: 20px; height: 20px; border-radius: 50%; background: #d85a30; color: #fff;
+    font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .member-chip .mn { flex: 1; font-weight: 600; }
+  .member-chip button {
+    border: none; background: none; font-size: 12px; cursor: pointer; color: #999; padding: 2px 4px;
+  }
+  .btn-add-member {
+    width: 100%; padding: 8px; border-radius: 7px; border: 1px dashed #bbb;
+    background: #fff; font-size: 12px; color: #666; cursor: pointer;
+  }
+  .picker-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px; margin-top: 8px; max-height: 220px; overflow-y: auto;
+  }
+  .picker-card {
+    background: #fff; border-radius: 8px; padding: 6px; text-align: center;
+    border: 1px solid #eee; cursor: pointer; font-size: 10px;
+  }
+  .picker-card.disabled { opacity: 0.35; cursor: not-allowed; }
+  .picker-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-bottom: 3px; background: #ddd; }
+
+  .btn-start-team {
+    width: 100%; margin-top: 16px; background: #2454c2; color: #fff; border: none;
+    border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn-start-team:disabled { background: #bcd; cursor: not-allowed; }
+
+  .position-tag { text-align: center; font-size: 12px; color: #666; margin-bottom: 12px; font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top-links">
     <a href="admin-players.html">選手管理</a>
-    <a href="pk-admin.html" class="active">PK 控制台</a>
+    <a href="pk-admin.html" class="active" id="navHome">對戰控制台</a>
     <a href="battle.html" target="_blank">對戰大螢幕 ↗</a>
   </div>
 
-  <h1>PK 車輪戰控制台</h1>
-  <p class="sub">主賽手固定不動，其餘選手依序輪流上場挑戰。獲勝畫面會同步顯示在 battle.html。</p>
-
-  <div class="card" id="sessionArea"></div>
-
-  <div class="card" id="logCard" style="display:none;">
-    <p class="log-title">本場對戰紀錄</p>
-    <div id="logList"></div>
-  </div>
+  <div id="app"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-  onSnapshot, collection, getDocs, addDoc, increment, serverTimestamp
+  onSnapshot, collection, addDoc, increment, serverTimestamp, query, orderBy
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -120,12 +199,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const sessionRef = doc(db, 'pkSessions', 'current');
+const pkSessionRef = doc(db, 'pkSessions', 'current');
+const teamSessionRef = doc(db, 'teamSessions', 'current');
+const liveMatchRef = doc(db, 'liveMatch', 'current');
 
-const sessionArea = document.getElementById('sessionArea');
-const logCard = document.getElementById('logCard');
-const logList = document.getElementById('logList');
+const appEl = document.getElementById('app');
 
+function esc(v = "") {
+  return String(v).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -135,67 +217,124 @@ function shuffle(arr) {
   return a;
 }
 
-function renderDrawPanel(msg, isErr) {
-  sessionArea.innerHTML = `
-    <div class="draw-panel">
-      <p>隨機抽取一位選手作為本場主賽手，其餘所有已登錄選手將依序上場挑戰。</p>
-      <button class="btn-draw" id="drawBtn">🎲 隨機抽取主賽手</button>
-      <div id="drawStatus" class="${isErr ? 'err' : ''}">${msg || ''}</div>
+// ---------- global live state ----------
+let allPlayers = [];      // 即時選手快取（含 totalPoints, pkDrawn）
+let pkSession = null;     // pkSessions/current 快照
+let teamSession = null;   // teamSessions/current 快照
+
+// 團體戰建隊暫存（尚未寫入 Firestore 前的本地狀態）
+let teamDraft = {
+  red: { name: '紅隊', members: [] },   // members: [{id,name,battleName,photoUrl,cardStyle}]
+  blue: { name: '藍隊', members: [] },
+  tbRed: null,   // 加賽代表人選（暫存，尚未寫入 Firestore）
+  tbBlue: null
+};
+let activePicker = null; // 'red' | 'blue' | null
+
+function getMode() {
+  const h = location.hash.replace('#', '');
+  return (h === 'pk' || h === 'team') ? h : null;
+}
+
+window.addEventListener('hashchange', render);
+
+// ================= PLAYERS 即時監聽 =================
+onSnapshot(query(collection(db, 'players'), orderBy('createdAt', 'asc')), (snap) => {
+  allPlayers = [];
+  snap.forEach(d => allPlayers.push({ id: d.id, ...d.data() }));
+  render();
+});
+
+onSnapshot(pkSessionRef, (snap) => {
+  pkSession = snap.exists() ? snap.data() : null;
+  render();
+});
+
+onSnapshot(teamSessionRef, (snap) => {
+  teamSession = snap.exists() ? snap.data() : null;
+  render();
+});
+
+// ================= 主要渲染分流 =================
+function render() {
+  const mode = getMode();
+  if (mode === 'pk') renderPkMode();
+  else if (mode === 'team') renderTeamMode();
+  else renderModeSelect();
+}
+
+function renderModeSelect() {
+  appEl.innerHTML = `
+    <h1>對戰控制台</h1>
+    <p class="sub">請選擇本輪要進行的賽制</p>
+    <div class="mode-grid">
+      <a class="mode-btn pk" href="#pk"><span class="emoji">🥊</span>PK 車輪戰</a>
+      <a class="mode-btn team" href="#team"><span class="emoji">⚔️</span>團體戰</a>
     </div>
   `;
-  document.getElementById('drawBtn').addEventListener('click', drawChampion);
 }
 
-async function drawChampion() {
-  const btn = document.getElementById('drawBtn');
-  const statusEl = document.getElementById('drawStatus');
-  btn.disabled = true;
-  statusEl.textContent = '抽取中…';
-  statusEl.className = '';
-  try {
-    const snap = await getDocs(collection(db, 'players'));
-    const players = [];
-    snap.forEach(d => {
-      const p = d.data();
-      if (p.photoUrl) {
-        players.push({
-          id: d.id,
-          name: p.name,
-          battleName: p.battleName || p.name,
-          photoUrl: p.photoUrl,
-          cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
-        });
-      }
-    });
-    if (players.length < 2) {
-      statusEl.textContent = '至少需要 2 位已上傳照片的選手才能開始 PK';
-      statusEl.className = 'err';
-      btn.disabled = false;
-      return;
-    }
-    const shuffled = shuffle(players);
-    const champion = shuffled[0];
-    const challengers = shuffled.slice(1);
+// ========================================================
+// PK 車輪戰
+// ========================================================
+function renderPkMode() {
+  let html = `<h1>PK 車輪戰控制台</h1>
+    <p class="sub">主賽手固定不動，其餘選手依序輪流上場挑戰。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
 
-    await setDoc(sessionRef, {
-      champion,
-      challengers,
-      currentIndex: 0,
-      results: [],
-      status: 'active',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-  } catch (err) {
-    statusEl.textContent = '發生錯誤：' + err.message;
-    statusEl.className = 'err';
-    btn.disabled = false;
+  if (!pkSession) {
+    html += renderPkPool();
+  } else if (pkSession.status === 'completed') {
+    html += renderPkSummary(pkSession);
+    html += renderPkPool(true);
+  } else {
+    html += renderPkMatch(pkSession);
   }
+
+  appEl.innerHTML = html;
+  bindPkEvents();
 }
 
-function renderMatch(session) {
+function renderPkPool(collapsedTitle) {
+  const eligible = allPlayers.filter(p => p.photoUrl && !p.pkDrawn);
+  const used = allPlayers.filter(p => p.photoUrl && p.pkDrawn);
+
+  let html = `<div class="card">`;
+  if (!collapsedTitle) {
+    html += `
+      <p style="font-size:13px;color:#666;margin-bottom:14px;">從尚未抽過的選手中隨機抽出主賽手。已經當過主賽手的人不會再被抽到，但可以在下方手動重新加回。</p>
+      <div style="text-align:center;">
+        <button class="btn-draw" id="drawBtn" ${eligible.length < 2 ? 'disabled' : ''}>🎲 隨機抽取主賽手</button>
+        <div id="drawStatus" class="${eligible.length < 2 ? 'err' : ''}">${eligible.length < 2 ? '至少需要 2 位尚未抽過、且已上傳照片的選手' : ''}</div>
+      </div>
+    `;
+  }
+
+  html += `<p class="pool-section-title">🟢 可抽籤選手（${eligible.length} 位）</p>`;
+  html += `<div class="pool-grid">${eligible.map(p => poolCardHtml(p, false)).join('') || '<p class="sub">目前沒有可抽籤的選手</p>'}</div>`;
+
+  html += `<p class="pool-section-title">⚪ 已抽過的選手（${used.length} 位）</p>`;
+  html += `<div class="pool-grid">${used.map(p => poolCardHtml(p, true)).join('') || '<p class="sub">尚無</p>'}</div>`;
+  html += `</div>`;
+  return html;
+}
+
+function poolCardHtml(p, used) {
+  return `
+    <div class="pool-card ${used ? 'used' : ''}">
+      <img src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name)}">
+      <p class="pn">${esc(p.battleName || p.name)}</p>
+      <span class="pool-score">${p.totalPoints || 0} 分</span>
+      ${used ? `<button class="pool-readd" data-id="${p.id}">重新加回</button>` : ''}
+    </div>
+  `;
+}
+
+function renderPkMatch(session) {
   const { champion, challengers, currentIndex, results } = session;
   const currentChallenger = challengers[currentIndex];
+  const winsSoFar = results.filter(r => r.result === 'champion_win').length;
+  const champTotal = allPlayers.find(p => p.id === champion.id)?.totalPoints ?? '—';
+  const chalTotal = allPlayers.find(p => p.id === currentChallenger.id)?.totalPoints ?? '—';
 
   const dotsHtml = challengers.map((c, i) => {
     const r = results[i];
@@ -205,42 +344,118 @@ function renderMatch(session) {
     return `<div class="${cls}">${i + 1}</div>`;
   }).join('');
 
-  const winsSoFar = results.filter(r => r.result === 'champion_win').length;
-
-  sessionArea.innerHTML = `
-    <div class="match-progress">${dotsHtml}</div>
-    <div class="vs-row">
-      <div class="fighter-card style-${champion.cardStyle}">
-        <img class="fighter-photo" src="${champion.photoUrl}" alt="${champion.battleName}">
-        <p class="fighter-tag">👑 主賽手</p>
-        <p class="fighter-name">${champion.battleName}</p>
-        <p class="fighter-score">本場 ${winsSoFar} 勝</p>
+  return `
+    <div class="card">
+      <div class="match-progress">${dotsHtml}</div>
+      <div class="vs-row">
+        <div class="fighter-card style-${champion.cardStyle || 'red'}">
+          <img class="fighter-photo" src="${esc(champion.photoUrl)}" alt="${esc(champion.battleName)}">
+          <p class="fighter-tag">👑 主賽手</p>
+          <p class="fighter-name">${esc(champion.battleName)}</p>
+          <p class="fighter-score">本場 ${winsSoFar} 勝</p>
+          <p class="fighter-total">總積分 ${champTotal}</p>
+        </div>
+        <div class="vs-mid">VS</div>
+        <div class="fighter-card style-${currentChallenger.cardStyle || 'blue'}">
+          <img class="fighter-photo" src="${esc(currentChallenger.photoUrl)}" alt="${esc(currentChallenger.battleName)}">
+          <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
+          <p class="fighter-name">${esc(currentChallenger.battleName)}</p>
+          <p class="fighter-total">總積分 ${chalTotal}</p>
+        </div>
       </div>
-      <div class="vs-mid">VS</div>
-      <div class="fighter-card style-${currentChallenger.cardStyle}">
-        <img class="fighter-photo" src="${currentChallenger.photoUrl}" alt="${currentChallenger.battleName}">
-        <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
-        <p class="fighter-name">${currentChallenger.battleName}</p>
+      <div class="result-btns">
+        <button class="btn-champ-win" id="champWinBtn">👑 主賽手獲勝 +1分</button>
+        <button class="btn-chal-win" id="chalWinBtn">挑戰者獲勝</button>
       </div>
+      <button class="btn-reset" id="cancelBtn">取消本場，重新抽取</button>
+      <a class="link-live" href="battle.html" target="_blank">在新分頁打開對戰大螢幕 ↗</a>
     </div>
-    <div class="result-btns">
-      <button class="btn-champ-win" id="champWinBtn">👑 主賽手獲勝 +1分</button>
-      <button class="btn-chal-win" id="chalWinBtn">挑戰者獲勝</button>
+    <div class="card" id="logCard">
+      <p class="log-title">本場對戰紀錄</p>
+      <div id="logList">${renderPkLog(session)}</div>
     </div>
-    <button class="btn-reset" id="cancelBtn">取消本場，重新抽取</button>
-    <a class="link-live" href="battle.html" target="_blank">在新分頁打開對戰大螢幕 ↗</a>
   `;
-
-  document.getElementById('champWinBtn').addEventListener('click', () => recordResult('champion_win'));
-  document.getElementById('chalWinBtn').addEventListener('click', () => recordResult('challenger_win'));
-  document.getElementById('cancelBtn').addEventListener('click', cancelSession);
 }
 
-async function recordResult(result) {
+function renderPkLog(session) {
+  if (!session.results.length) return '<p class="sub">尚無紀錄</p>';
+  return session.results.map((r, i) => {
+    const c = session.challengers[i];
+    const win = r.result === 'champion_win';
+    return `<div class="log-row"><span>第 ${i + 1} 場：${esc(session.champion.battleName)} vs ${esc(c.battleName)}</span><span style="color:${win ? '#1d9e75' : '#e24b4a'}">${win ? '主賽手勝' : '挑戰者勝'}</span></div>`;
+  }).join('');
+}
+
+function renderPkSummary(session) {
+  const wins = session.results.filter(r => r.result === 'champion_win').length;
+  const total = session.challengers.length;
+  return `
+    <div class="card">
+      <div class="session-summary">
+        <p class="fighter-tag">👑 本場主賽手</p>
+        <h2>${esc(session.champion.battleName)}</h2>
+        <div class="score-big">${wins} / ${total} 勝</div>
+        <button class="btn-next" id="nextBtn">🎲 抽取下一位主賽手</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindPkEvents() {
+  document.getElementById('drawBtn')?.addEventListener('click', drawChampion);
+  document.getElementById('champWinBtn')?.addEventListener('click', () => recordPkResult('champion_win'));
+  document.getElementById('chalWinBtn')?.addEventListener('click', () => recordPkResult('challenger_win'));
+  document.getElementById('cancelBtn')?.addEventListener('click', cancelPkSession);
+  document.getElementById('nextBtn')?.addEventListener('click', async () => {
+    await deleteDoc(pkSessionRef);
+  });
+  document.querySelectorAll('.pool-readd').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await updateDoc(doc(db, 'players', btn.dataset.id), { pkDrawn: false });
+    });
+  });
+}
+
+async function drawChampion() {
+  const btn = document.getElementById('drawBtn');
+  const statusEl = document.getElementById('drawStatus');
+  btn.disabled = true;
+  statusEl.textContent = '抽取中…';
+  statusEl.className = '';
+
+  const eligible = allPlayers.filter(p => p.photoUrl && !p.pkDrawn).map(p => ({
+    id: p.id, name: p.name, battleName: p.battleName || p.name,
+    photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
+  }));
+  if (eligible.length < 2) {
+    statusEl.textContent = '至少需要 2 位尚未抽過的選手';
+    statusEl.className = 'err';
+    btn.disabled = false;
+    return;
+  }
+  const shuffled = shuffle(eligible);
+  const champion = shuffled[0];
+  const challengers = shuffled.slice(1);
+
+  try {
+    await updateDoc(doc(db, 'players', champion.id), { pkDrawn: true });
+    await setDoc(pkSessionRef, {
+      champion, challengers, currentIndex: 0, results: [], status: 'active',
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+    });
+    await setDoc(liveMatchRef, { mode: 'pk', updatedAt: serverTimestamp() });
+  } catch (err) {
+    statusEl.textContent = '發生錯誤：' + err.message;
+    statusEl.className = 'err';
+    btn.disabled = false;
+  }
+}
+
+async function recordPkResult(result) {
   document.getElementById('champWinBtn').disabled = true;
   document.getElementById('chalWinBtn').disabled = true;
 
-  const snap = await getDoc(sessionRef);
+  const snap = await getDoc(pkSessionRef);
   const session = snap.data();
   const { champion, challengers, currentIndex } = session;
   const currentChallenger = challengers[currentIndex];
@@ -250,76 +465,448 @@ async function recordResult(result) {
   }
 
   await addDoc(collection(db, 'pkMatches'), {
-    championId: champion.id,
-    championName: champion.battleName,
-    challengerId: currentChallenger.id,
-    challengerName: currentChallenger.battleName,
-    result,
-    matchNo: currentIndex + 1,
-    createdAt: serverTimestamp()
+    championId: champion.id, championName: champion.battleName,
+    challengerId: currentChallenger.id, challengerName: currentChallenger.battleName,
+    result, matchNo: currentIndex + 1, createdAt: serverTimestamp()
   });
 
   const newResults = [...session.results, { challengerId: currentChallenger.id, result }];
   const nextIndex = currentIndex + 1;
   const isDone = nextIndex >= challengers.length;
 
-  await updateDoc(sessionRef, {
-    results: newResults,
-    currentIndex: nextIndex,
-    status: isDone ? 'completed' : 'active',
-    updatedAt: serverTimestamp()
+  await updateDoc(pkSessionRef, {
+    results: newResults, currentIndex: nextIndex,
+    status: isDone ? 'completed' : 'active', updatedAt: serverTimestamp()
   });
+
+  if (isDone) {
+    const wins = newResults.filter(r => r.result === 'champion_win').length;
+    await addDoc(collection(db, 'pkSessionHistory'), {
+      championId: champion.id, championName: champion.battleName,
+      wins, totalChallengers: challengers.length, completedAt: serverTimestamp()
+    });
+  }
 }
 
-async function cancelSession() {
+async function cancelPkSession() {
   if (!confirm('確定要取消本場並重新抽取嗎？已記錄的分數不會被扣除。')) return;
-  await deleteDoc(sessionRef);
+  const snap = await getDoc(pkSessionRef);
+  const session = snap.data();
+  if (session?.champion?.id) {
+    await updateDoc(doc(db, 'players', session.champion.id), { pkDrawn: false });
+  }
+  await deleteDoc(pkSessionRef);
 }
 
-function renderSummary(session) {
-  const wins = session.results.filter(r => r.result === 'champion_win').length;
-  const total = session.challengers.length;
-  sessionArea.innerHTML = `
-    <div class="session-summary">
-      <p class="fighter-tag">👑 本場主賽手</p>
-      <h2>${session.champion.battleName}</h2>
-      <div class="score-big">${wins} / ${total} 勝</div>
-      <button class="btn-next" id="nextBtn">🎲 抽取下一位主賽手</button>
+// ========================================================
+// 團體戰
+// ========================================================
+function renderTeamMode() {
+  let html = `<h1>團體戰控制台</h1>
+    <p class="sub">兩隊各自選人排棒次，依序 1 對 1 對戰。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+
+  if (!teamSession) {
+    html += renderTeamSetup();
+  } else if (teamSession.status === 'completed') {
+    html += renderTeamSummary(teamSession);
+  } else {
+    html += renderTeamMatch(teamSession);
+  }
+
+  appEl.innerHTML = html;
+  bindTeamEvents();
+}
+
+function renderTeamSetup() {
+  const usedIds = new Set([...teamDraft.red.members, ...teamDraft.blue.members].map(m => m.id));
+
+  function teamColHtml(color, label) {
+    const d = teamDraft[color];
+    const membersHtml = d.members.map((m, i) => `
+      <div class="member-chip">
+        <span class="order-no">${i + 1}</span>
+        <img src="${esc(m.photoUrl)}" alt="">
+        <span class="mn">${esc(m.battleName)}</span>
+        <button data-color="${color}" data-act="up" data-idx="${i}" ${i === 0 ? 'disabled style="opacity:.3"' : ''}>↑</button>
+        <button data-color="${color}" data-act="down" data-idx="${i}" ${i === d.members.length - 1 ? 'disabled style="opacity:.3"' : ''}>↓</button>
+        <button data-color="${color}" data-act="remove" data-idx="${i}">✕</button>
+      </div>
+    `).join('');
+
+    const pickerHtml = activePicker === color ? `
+      <div class="picker-grid">
+        ${allPlayers.filter(p => p.photoUrl).map(p => {
+          const disabled = usedIds.has(p.id);
+          return `<div class="picker-card ${disabled ? 'disabled' : ''}" data-color="${color}" data-pick="${p.id}">
+            <img src="${esc(p.photoUrl)}"><div>${esc(p.battleName || p.name)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    ` : '';
+
+    return `
+      <div class="team-col ${color}">
+        <input type="text" data-color="${color}" class="team-name-input" value="${esc(d.name)}" maxlength="12">
+        <div class="member-list">${membersHtml || '<p class="sub" style="margin:0;">尚未選人</p>'}</div>
+        <button class="btn-add-member" data-color="${color}">＋ 選擇隊員</button>
+        ${pickerHtml}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card">
+      <div class="team-cols">
+        ${teamColHtml('red', '紅隊')}
+        ${teamColHtml('blue', '藍隊')}
+      </div>
+      <button class="btn-start-team" id="startTeamBtn" ${teamDraft.red.members.length < 1 || teamDraft.blue.members.length < 1 || teamDraft.red.members.length !== teamDraft.blue.members.length ? 'disabled' : ''}>
+        ⚔️ 開始團體戰
+      </button>
+      <div id="teamStatus" class="${teamDraft.red.members.length !== teamDraft.blue.members.length ? 'err' : ''}">
+        ${teamDraft.red.members.length !== teamDraft.blue.members.length ? '兩隊人數必須相同才能開始' : ''}
+      </div>
     </div>
   `;
-  document.getElementById('nextBtn').addEventListener('click', async () => {
-    await deleteDoc(sessionRef);
-    renderDrawPanel();
+}
+
+function renderTeamMatch(session) {
+  const { teamRed, teamBlue, matches, currentPosition, status, tiebreak } = session;
+
+  if (status === 'tiebreak_pick') return renderTiebreakPick(session);
+  if (status === 'tiebreak_active') return renderTiebreakMatch(session);
+
+  const cur = matches[currentPosition];
+  const redPlayer = teamRed.members.find(m => m.id === cur.redId);
+  const bluePlayer = teamBlue.members.find(m => m.id === cur.blueId);
+
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+
+  const dotsHtml = matches.map((m, i) => {
+    let cls = 'dot';
+    if (m.result === 'red') cls += ' lose';
+    if (m.result === 'blue') cls += ' win';
+    if (!m.result && i === currentPosition) cls += ' current';
+    return `<div class="${cls}" title="第${i + 1}棒">${i + 1}</div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <p class="position-tag">🔴 ${esc(teamRed.name)}　${redWins} 勝　 vs 　${blueWins} 勝　${esc(teamBlue.name)} 🔵</p>
+      <p class="sub" style="text-align:center;margin-top:-6px;">團體戰採整隊計分：4 棒打完哪隊勝場多，全隊一次獲得 +3 分</p>
+      <div class="match-progress">${dotsHtml}</div>
+      <p class="position-tag">第 ${currentPosition + 1} / ${matches.length} 棒</p>
+      <div class="vs-row">
+        <div class="fighter-card style-red">
+          <img class="fighter-photo" src="${esc(redPlayer.photoUrl)}" alt="">
+          <p class="fighter-tag">🔴 ${esc(teamRed.name)}</p>
+          <p class="fighter-name">${esc(redPlayer.battleName)}</p>
+        </div>
+        <div class="vs-mid">VS</div>
+        <div class="fighter-card style-blue">
+          <img class="fighter-photo" src="${esc(bluePlayer.photoUrl)}" alt="">
+          <p class="fighter-tag">🔵 ${esc(teamBlue.name)}</p>
+          <p class="fighter-name">${esc(bluePlayer.battleName)}</p>
+        </div>
+      </div>
+      <div class="result-btns">
+        <button class="btn-red-win" id="redWinBtn">🔴 紅方選手獲勝</button>
+        <button class="btn-blue-win" id="blueWinBtn">🔵 藍方選手獲勝</button>
+      </div>
+      <button class="btn-reset" id="cancelTeamBtn">取消本場團體戰</button>
+      <a class="link-live" href="battle.html" target="_blank">在新分頁打開對戰大螢幕 ↗</a>
+    </div>
+  `;
+}
+
+function renderTiebreakPick(session) {
+  const { teamRed, teamBlue } = session;
+  const pickedRed = teamDraft.tbRed;
+  const pickedBlue = teamDraft.tbBlue;
+
+  function pickerFor(color, teamObj, picked) {
+    return `
+      <div class="team-col ${color}">
+        <p style="font-weight:700; text-align:center; margin:0 0 8px;">${esc(teamObj.name)} 選代表</p>
+        <div class="picker-grid">
+          ${teamObj.members.map(m => `
+            <div class="picker-card ${picked === m.id ? '' : ''}" data-tbcolor="${color}" data-tbpick="${m.id}"
+              style="${picked === m.id ? 'border-color:#d85a30;border-width:2px;' : ''}">
+              <img src="${esc(m.photoUrl)}"><div>${esc(m.battleName)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card">
+      <div class="session-summary" style="margin-bottom:10px;">
+        <p class="fighter-tag">⚖️ 4 棒打完 2 : 2 平手</p>
+        <h2>加賽第五棒</h2>
+        <p class="sub">各隊選出一位代表出賽，決定最終勝負</p>
+      </div>
+      <div class="team-cols">
+        ${pickerFor('red', session.teamRed, pickedRed)}
+        ${pickerFor('blue', session.teamBlue, pickedBlue)}
+      </div>
+      <button class="btn-start-team" id="startTiebreakBtn" ${!pickedRed || !pickedBlue ? 'disabled' : ''}>
+        🔥 開始第五棒加賽
+      </button>
+    </div>
+  `;
+}
+
+function renderTiebreakMatch(session) {
+  const { teamRed, teamBlue, tiebreak } = session;
+  const redPlayer = teamRed.members.find(m => m.id === tiebreak.redId);
+  const bluePlayer = teamBlue.members.find(m => m.id === tiebreak.blueId);
+  return `
+    <div class="card">
+      <div class="session-summary" style="margin-bottom:10px;">
+        <p class="fighter-tag">⚖️ 加賽・決定勝負</p>
+        <h2>第五棒</h2>
+      </div>
+      <div class="vs-row">
+        <div class="fighter-card style-red">
+          <img class="fighter-photo" src="${esc(redPlayer.photoUrl)}" alt="">
+          <p class="fighter-tag">🔴 ${esc(teamRed.name)}</p>
+          <p class="fighter-name">${esc(redPlayer.battleName)}</p>
+        </div>
+        <div class="vs-mid">VS</div>
+        <div class="fighter-card style-blue">
+          <img class="fighter-photo" src="${esc(bluePlayer.photoUrl)}" alt="">
+          <p class="fighter-tag">🔵 ${esc(teamBlue.name)}</p>
+          <p class="fighter-name">${esc(bluePlayer.battleName)}</p>
+        </div>
+      </div>
+      <div class="result-btns">
+        <button class="btn-red-win" id="tbRedWinBtn">🔴 紅方獲勝（整隊 +3 分）</button>
+        <button class="btn-blue-win" id="tbBlueWinBtn">🔵 藍方獲勝（整隊 +3 分）</button>
+      </div>
+      <a class="link-live" href="battle.html" target="_blank">在新分頁打開對戰大螢幕 ↗</a>
+    </div>
+  `;
+}
+
+function renderTeamSummary(session) {
+  const { teamRed, teamBlue, matches, tiebreak } = session;
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+  let winnerName, scoreLine;
+  if (tiebreak) {
+    winnerName = tiebreak.result === 'red' ? teamRed.name : teamBlue.name;
+    scoreLine = `${redWins} : ${blueWins}（加賽決勝）`;
+  } else {
+    winnerName = redWins > blueWins ? teamRed.name : teamBlue.name;
+    scoreLine = `${redWins} : ${blueWins}`;
+  }
+  return `
+    <div class="card">
+      <div class="session-summary">
+        <p class="fighter-tag">🏆 本場結果</p>
+        <h2>${esc(winnerName)} 獲勝</h2>
+        <div class="score-big">${scoreLine}</div>
+        <p class="sub">${esc(teamRed.name)} vs ${esc(teamBlue.name)}　全隊 +3 分已入帳</p>
+        <button class="btn-next" id="nextTeamBtn">⚔️ 開始新的一場團體戰</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindTeamEvents() {
+  document.querySelectorAll('.team-name-input').forEach(input => {
+    input.addEventListener('input', () => {
+      teamDraft[input.dataset.color].name = input.value;
+    });
+  });
+
+  document.querySelectorAll('.btn-add-member').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activePicker = activePicker === btn.dataset.color ? null : btn.dataset.color;
+      renderTeamMode();
+    });
+  });
+
+  document.querySelectorAll('.picker-card:not(.disabled)').forEach(card => {
+    card.addEventListener('click', () => {
+      const color = card.dataset.color;
+      const id = card.dataset.pick;
+      const p = allPlayers.find(pl => pl.id === id);
+      if (!p) return;
+      teamDraft[color].members.push({
+        id: p.id, name: p.name, battleName: p.battleName || p.name,
+        photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
+      });
+      activePicker = null;
+      renderTeamMode();
+    });
+  });
+
+  document.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const color = btn.dataset.color;
+      const idx = Number(btn.dataset.idx);
+      const arr = teamDraft[color].members;
+      if (btn.dataset.act === 'remove') arr.splice(idx, 1);
+      if (btn.dataset.act === 'up' && idx > 0) [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+      if (btn.dataset.act === 'down' && idx < arr.length - 1) [arr[idx + 1], arr[idx]] = [arr[idx], arr[idx + 1]];
+      renderTeamMode();
+    });
+  });
+
+  document.getElementById('startTeamBtn')?.addEventListener('click', startTeamSession);
+  document.getElementById('redWinBtn')?.addEventListener('click', () => recordTeamResult('red'));
+  document.getElementById('blueWinBtn')?.addEventListener('click', () => recordTeamResult('blue'));
+  document.getElementById('cancelTeamBtn')?.addEventListener('click', cancelTeamSession);
+  document.getElementById('nextTeamBtn')?.addEventListener('click', async () => {
+    teamDraft = { red: { name: '紅隊', members: [] }, blue: { name: '藍隊', members: [] }, tbRed: null, tbBlue: null };
+    await deleteDoc(teamSessionRef);
+  });
+
+  // 加賽代表人選
+  document.querySelectorAll('[data-tbpick]').forEach(card => {
+    card.addEventListener('click', () => {
+      const color = card.dataset.tbcolor;
+      teamDraft[color === 'red' ? 'tbRed' : 'tbBlue'] = card.dataset.tbpick;
+      renderTeamMode();
+    });
+  });
+  document.getElementById('startTiebreakBtn')?.addEventListener('click', startTiebreak);
+  document.getElementById('tbRedWinBtn')?.addEventListener('click', () => recordTiebreakResult('red'));
+  document.getElementById('tbBlueWinBtn')?.addEventListener('click', () => recordTiebreakResult('blue'));
+}
+
+async function startTeamSession() {
+  const red = teamDraft.red;
+  const blue = teamDraft.blue;
+  if (red.members.length !== blue.members.length || red.members.length < 1) return;
+
+  const matches = red.members.map((m, i) => ({
+    position: i + 1, redId: m.id, blueId: blue.members[i].id, result: null
+  }));
+
+  await setDoc(teamSessionRef, {
+    teamRed: { name: red.name, members: red.members },
+    teamBlue: { name: blue.name, members: blue.members },
+    matches, currentPosition: 0, status: 'active', tiebreak: null,
+    createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+  });
+  await setDoc(liveMatchRef, { mode: 'team', updatedAt: serverTimestamp() });
+}
+
+const TEAM_WIN_BONUS = 3; // 團體戰整隊獲勝時，每位隊員一次獲得的分數
+
+async function recordTeamResult(winner) {
+  document.getElementById('redWinBtn').disabled = true;
+  document.getElementById('blueWinBtn').disabled = true;
+
+  const snap = await getDoc(teamSessionRef);
+  const session = snap.data();
+  const { matches, currentPosition, teamRed, teamBlue } = session;
+  const cur = matches[currentPosition];
+
+  const redPlayer = teamRed.members.find(m => m.id === cur.redId);
+  const bluePlayer = teamBlue.members.find(m => m.id === cur.blueId);
+  await addDoc(collection(db, 'teamMatchLog'), {
+    position: cur.position,
+    redId: cur.redId, redName: redPlayer.battleName,
+    blueId: cur.blueId, blueName: bluePlayer.battleName,
+    winner, createdAt: serverTimestamp()
+  });
+
+  const newMatches = [...matches];
+  newMatches[currentPosition] = { ...cur, result: winner };
+  const nextPosition = currentPosition + 1;
+  const allDone = nextPosition >= matches.length;
+
+  if (!allDone) {
+    await updateDoc(teamSessionRef, {
+      matches: newMatches, currentPosition: nextPosition, updatedAt: serverTimestamp()
+    });
+    return;
+  }
+
+  // 四棒打完，檢查是否平手
+  const redWins = newMatches.filter(m => m.result === 'red').length;
+  const blueWins = newMatches.filter(m => m.result === 'blue').length;
+
+  if (redWins === blueWins) {
+    await updateDoc(teamSessionRef, {
+      matches: newMatches, currentPosition: nextPosition,
+      status: 'tiebreak_pick', updatedAt: serverTimestamp()
+    });
+  } else {
+    const winningTeam = redWins > blueWins ? teamRed : teamBlue;
+    await awardTeamBonus(winningTeam);
+    await updateDoc(teamSessionRef, {
+      matches: newMatches, currentPosition: nextPosition,
+      status: 'completed', updatedAt: serverTimestamp()
+    });
+    await addDoc(collection(db, 'teamSessionHistory'), {
+      teamRedName: teamRed.name, teamBlueName: teamBlue.name,
+      redWins, blueWins, tiebreak: false, bonusEach: TEAM_WIN_BONUS,
+      completedAt: serverTimestamp()
+    });
+  }
+}
+
+async function awardTeamBonus(team) {
+  for (const m of team.members) {
+    await updateDoc(doc(db, 'players', m.id), { totalPoints: increment(TEAM_WIN_BONUS) });
+  }
+}
+
+async function startTiebreak() {
+  if (!teamDraft.tbRed || !teamDraft.tbBlue) return;
+  await updateDoc(teamSessionRef, {
+    tiebreak: { redId: teamDraft.tbRed, blueId: teamDraft.tbBlue, result: null },
+    status: 'tiebreak_active', updatedAt: serverTimestamp()
   });
 }
 
-function renderLog(session) {
-  if (!session || session.results.length === 0) {
-    logCard.style.display = 'none';
-    return;
-  }
-  logCard.style.display = 'block';
-  logList.innerHTML = session.results.map((r, i) => {
-    const c = session.challengers[i];
-    const win = r.result === 'champion_win';
-    return `<div class="log-row"><span>第 ${i + 1} 場：${session.champion.battleName} vs ${c.battleName}</span><span style="color:${win ? '#1d9e75' : '#e24b4a'}">${win ? '主賽手勝' : '挑戰者勝'}</span></div>`;
-  }).join('');
+async function recordTiebreakResult(winner) {
+  document.getElementById('tbRedWinBtn').disabled = true;
+  document.getElementById('tbBlueWinBtn').disabled = true;
+
+  const snap = await getDoc(teamSessionRef);
+  const session = snap.data();
+  const { teamRed, teamBlue, tiebreak, matches } = session;
+  const redPlayer = teamRed.members.find(m => m.id === tiebreak.redId);
+  const bluePlayer = teamBlue.members.find(m => m.id === tiebreak.blueId);
+
+  await addDoc(collection(db, 'teamMatchLog'), {
+    position: 'tiebreak',
+    redId: tiebreak.redId, redName: redPlayer.battleName,
+    blueId: tiebreak.blueId, blueName: bluePlayer.battleName,
+    winner, createdAt: serverTimestamp()
+  });
+
+  const winningTeam = winner === 'red' ? teamRed : teamBlue;
+  await awardTeamBonus(winningTeam);
+
+  await updateDoc(teamSessionRef, {
+    tiebreak: { ...tiebreak, result: winner },
+    status: 'completed', updatedAt: serverTimestamp()
+  });
+
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+  await addDoc(collection(db, 'teamSessionHistory'), {
+    teamRedName: teamRed.name, teamBlueName: teamBlue.name,
+    redWins, blueWins, tiebreak: true, tiebreakWinner: winner, bonusEach: TEAM_WIN_BONUS,
+    completedAt: serverTimestamp()
+  });
 }
 
-onSnapshot(sessionRef, (snap) => {
-  if (!snap.exists()) {
-    renderDrawPanel();
-    logCard.style.display = 'none';
-    return;
-  }
-  const session = snap.data();
-  if (session.status === 'completed') {
-    renderSummary(session);
-  } else {
-    renderMatch(session);
-  }
-  renderLog(session);
-});
+async function cancelTeamSession() {
+  if (!confirm('確定要取消本場團體戰嗎？已記錄的分數不會被扣除。')) return;
+  await deleteDoc(teamSessionRef);
+}
+
+render();
 </script>
 </body>
 </html>
