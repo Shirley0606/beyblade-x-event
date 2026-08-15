@@ -439,14 +439,6 @@ button{cursor:pointer}
           <div class="hero-placeholder">—</div>
         </div>
 
-        <div class="hero-copy">
-          <div class="label">戰鬥名號</div>
-          <div class="name-panel">
-            <div class="hero-name" id="heroName">等待選手登錄</div>
-          </div>
-
-        </div>
-
         <div class="slogan">全力以赴・旋出勝利！</div>
       </div>
     </section>
@@ -501,7 +493,6 @@ const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
 const photoZone=document.getElementById("photoZone");
-const heroName=document.getElementById("heroName");
 const roster=document.getElementById("roster");
 const empty=document.getElementById("empty");
 const flash=document.getElementById("flash");
@@ -534,7 +525,6 @@ function flashIt(){
 function show(index,manual=false){
   if(!players.length){
     photoZone.innerHTML='<div class="hero-placeholder">—</div>';
-    heroName.textContent="等待選手登錄";
     return;
   }
 
@@ -546,11 +536,6 @@ function show(index,manual=false){
   photoZone.innerHTML=p.photoUrl
     ? `<img class="hero-photo" src="${esc(p.photoUrl)}" alt="${esc(pName(p))}">`
     : `<div class="hero-placeholder">—</div>`;
-
-  heroName.style.animation="none";
-  void heroName.offsetWidth;
-  heroName.style.animation="";
-  heroName.textContent=pName(p);
 
   document.querySelectorAll(".thumb").forEach((el,i)=>{
     el.classList.toggle("active",i===currentIndex);
