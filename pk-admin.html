@@ -220,15 +220,10 @@ function shuffle(arr) {
 // ---------- global live state ----------
 let allPlayers = [];      // 即時選手快取（含 totalPoints, pkDrawn）
 let pkSession = null;     // pkSessions/current 快照
-let teamSession = null;   // teamSessions/current 快照
+let teamSession = null;   // teamSessions/current 快照（setup 階段也存在這裡，前台會即時同步）
 
-// 團體戰建隊暫存（尚未寫入 Firestore 前的本地狀態）
-let teamDraft = {
-  red: { name: '紅隊', members: [] },   // members: [{id,name,battleName,photoUrl,cardStyle}]
-  blue: { name: '藍隊', members: [] },
-  tbRed: null,   // 加賽代表人選（暫存，尚未寫入 Firestore）
-  tbBlue: null
-};
+let teamSetupInitPending = false;
+let tbLocalPick = { red: null, blue: null }; // 加賽代表人選（本地暫存，選完才寫入）
 let activePicker = null; // 'red' | 'blue' | null
 
 function getMode() {
@@ -503,10 +498,13 @@ async function cancelPkSession() {
 // ========================================================
 function renderTeamMode() {
   let html = `<h1>團體戰控制台</h1>
-    <p class="sub">兩隊各自選人排棒次，依序 1 對 1 對戰。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+    <p class="sub">兩隊各自選人排棒次，依序 1 對 1 對戰。選人過程前台會即時同步顯示。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
 
   if (!teamSession) {
-    html += renderTeamSetup();
+    if (!teamSetupInitPending) initTeamSetup();
+    html += `<div class="card"><p class="sub">初始化中…</p></div>`;
+  } else if (teamSession.status === 'setup') {
+    html += renderTeamSetup(teamSession);
   } else if (teamSession.status === 'completed') {
     html += renderTeamSummary(teamSession);
   } else {
@@ -517,11 +515,41 @@ function renderTeamMode() {
   bindTeamEvents();
 }
 
-function renderTeamSetup() {
-  const usedIds = new Set([...teamDraft.red.members, ...teamDraft.blue.members].map(m => m.id));
+async function initTeamSetup() {
+  teamSetupInitPending = true;
+  try {
+    await setDoc(teamSessionRef, {
+      teamRed: { name: '紅隊', members: [] },
+      teamBlue: { name: '藍隊', members: [] },
+      matches: [], currentPosition: 0, status: 'setup', tiebreak: null,
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+    });
+  } finally {
+    teamSetupInitPending = false;
+  }
+}
 
-  function teamColHtml(color, label) {
-    const d = teamDraft[color];
+// 讀取目前隊伍成員，套用更新函式後寫回 Firestore（前台會即時同步看到）
+async function updateTeam(color, updater) {
+  const key = color === 'red' ? 'teamRed' : 'teamBlue';
+  const current = teamSession[key];
+  const updated = updater(current);
+  await updateDoc(teamSessionRef, { [key]: updated, updatedAt: serverTimestamp() });
+}
+
+let teamNameDebounce = {};
+function debouncedNameUpdate(color, value) {
+  clearTimeout(teamNameDebounce[color]);
+  teamNameDebounce[color] = setTimeout(() => {
+    updateTeam(color, (t) => ({ ...t, name: value }));
+  }, 400);
+}
+
+function renderTeamSetup(session) {
+  const usedIds = new Set([...session.teamRed.members, ...session.teamBlue.members].map(m => m.id));
+
+  function teamColHtml(color) {
+    const d = color === 'red' ? session.teamRed : session.teamBlue;
     const membersHtml = d.members.map((m, i) => `
       <div class="member-chip">
         <span class="order-no">${i + 1}</span>
@@ -554,17 +582,20 @@ function renderTeamSetup() {
     `;
   }
 
+  const redCount = session.teamRed.members.length;
+  const blueCount = session.teamBlue.members.length;
+
   return `
     <div class="card">
       <div class="team-cols">
-        ${teamColHtml('red', '紅隊')}
-        ${teamColHtml('blue', '藍隊')}
+        ${teamColHtml('red')}
+        ${teamColHtml('blue')}
       </div>
-      <button class="btn-start-team" id="startTeamBtn" ${teamDraft.red.members.length < 1 || teamDraft.blue.members.length < 1 || teamDraft.red.members.length !== teamDraft.blue.members.length ? 'disabled' : ''}>
+      <button class="btn-start-team" id="startTeamBtn" ${redCount < 1 || blueCount < 1 || redCount !== blueCount ? 'disabled' : ''}>
         ⚔️ 開始團體戰
       </button>
-      <div id="teamStatus" class="${teamDraft.red.members.length !== teamDraft.blue.members.length ? 'err' : ''}">
-        ${teamDraft.red.members.length !== teamDraft.blue.members.length ? '兩隊人數必須相同才能開始' : ''}
+      <div id="teamStatus" class="${redCount !== blueCount ? 'err' : ''}">
+        ${redCount !== blueCount ? '兩隊人數必須相同才能開始（人數不限，例如 3 對 3、5 對 5 皆可）' : ''}
       </div>
     </div>
   `;
@@ -622,8 +653,8 @@ function renderTeamMatch(session) {
 
 function renderTiebreakPick(session) {
   const { teamRed, teamBlue } = session;
-  const pickedRed = teamDraft.tbRed;
-  const pickedBlue = teamDraft.tbBlue;
+  const pickedRed = tbLocalPick.red;
+  const pickedBlue = tbLocalPick.blue;
 
   function pickerFor(color, teamObj, picked) {
     return `
@@ -719,7 +750,7 @@ function renderTeamSummary(session) {
 function bindTeamEvents() {
   document.querySelectorAll('.team-name-input').forEach(input => {
     input.addEventListener('input', () => {
-      teamDraft[input.dataset.color].name = input.value;
+      debouncedNameUpdate(input.dataset.color, input.value);
     });
   });
 
@@ -731,29 +762,33 @@ function bindTeamEvents() {
   });
 
   document.querySelectorAll('.picker-card:not(.disabled)').forEach(card => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', async () => {
       const color = card.dataset.color;
       const id = card.dataset.pick;
       const p = allPlayers.find(pl => pl.id === id);
       if (!p) return;
-      teamDraft[color].members.push({
-        id: p.id, name: p.name, battleName: p.battleName || p.name,
-        photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
-      });
       activePicker = null;
-      renderTeamMode();
+      await updateTeam(color, (t) => ({
+        ...t,
+        members: [...t.members, {
+          id: p.id, name: p.name, battleName: p.battleName || p.name,
+          photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
+        }]
+      }));
     });
   });
 
   document.querySelectorAll('[data-act]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const color = btn.dataset.color;
       const idx = Number(btn.dataset.idx);
-      const arr = teamDraft[color].members;
-      if (btn.dataset.act === 'remove') arr.splice(idx, 1);
-      if (btn.dataset.act === 'up' && idx > 0) [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
-      if (btn.dataset.act === 'down' && idx < arr.length - 1) [arr[idx + 1], arr[idx]] = [arr[idx], arr[idx + 1]];
-      renderTeamMode();
+      await updateTeam(color, (t) => {
+        const arr = [...t.members];
+        if (btn.dataset.act === 'remove') arr.splice(idx, 1);
+        if (btn.dataset.act === 'up' && idx > 0) [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+        if (btn.dataset.act === 'down' && idx < arr.length - 1) [arr[idx + 1], arr[idx]] = [arr[idx], arr[idx + 1]];
+        return { ...t, members: arr };
+      });
     });
   });
 
@@ -762,15 +797,20 @@ function bindTeamEvents() {
   document.getElementById('blueWinBtn')?.addEventListener('click', () => recordTeamResult('blue'));
   document.getElementById('cancelTeamBtn')?.addEventListener('click', cancelTeamSession);
   document.getElementById('nextTeamBtn')?.addEventListener('click', async () => {
-    teamDraft = { red: { name: '紅隊', members: [] }, blue: { name: '藍隊', members: [] }, tbRed: null, tbBlue: null };
-    await deleteDoc(teamSessionRef);
+    tbLocalPick = { red: null, blue: null };
+    await updateDoc(teamSessionRef, {
+      teamRed: { name: '紅隊', members: [] },
+      teamBlue: { name: '藍隊', members: [] },
+      matches: [], currentPosition: 0, status: 'setup', tiebreak: null,
+      updatedAt: serverTimestamp()
+    });
   });
 
   // 加賽代表人選
   document.querySelectorAll('[data-tbpick]').forEach(card => {
     card.addEventListener('click', () => {
       const color = card.dataset.tbcolor;
-      teamDraft[color === 'red' ? 'tbRed' : 'tbBlue'] = card.dataset.tbpick;
+      tbLocalPick[color] = card.dataset.tbpick;
       renderTeamMode();
     });
   });
@@ -780,21 +820,35 @@ function bindTeamEvents() {
 }
 
 async function startTeamSession() {
-  const red = teamDraft.red;
-  const blue = teamDraft.blue;
+  const red = teamSession.teamRed;
+  const blue = teamSession.teamBlue;
   if (red.members.length !== blue.members.length || red.members.length < 1) return;
+
+  const btn = document.getElementById('startTeamBtn');
+  const statusEl = document.getElementById('teamStatus');
+  if (btn) btn.disabled = true;
+  if (statusEl) { statusEl.textContent = '建立對戰中…'; statusEl.className = ''; }
 
   const matches = red.members.map((m, i) => ({
     position: i + 1, redId: m.id, blueId: blue.members[i].id, result: null
   }));
 
-  await setDoc(teamSessionRef, {
-    teamRed: { name: red.name, members: red.members },
-    teamBlue: { name: blue.name, members: blue.members },
-    matches, currentPosition: 0, status: 'active', tiebreak: null,
-    createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-  });
-  await setDoc(liveMatchRef, { mode: 'team', updatedAt: serverTimestamp() });
+  try {
+    await updateDoc(teamSessionRef, {
+      teamRed: { name: red.name, members: red.members },
+      teamBlue: { name: blue.name, members: blue.members },
+      matches, currentPosition: 0, status: 'active', tiebreak: null,
+      updatedAt: serverTimestamp()
+    });
+    await setDoc(liveMatchRef, { mode: 'team', updatedAt: serverTimestamp() });
+  } catch (err) {
+    console.error(err);
+    if (statusEl) {
+      statusEl.textContent = '建立對戰失敗：' + err.message + '（請確認 Firestore 規則已開放 teamSessions / liveMatch 的讀寫權限）';
+      statusEl.className = 'err';
+    }
+    if (btn) btn.disabled = false;
+  }
 }
 
 const TEAM_WIN_BONUS = 3; // 團體戰整隊獲勝時，每位隊員一次獲得的分數
@@ -860,9 +914,9 @@ async function awardTeamBonus(team) {
 }
 
 async function startTiebreak() {
-  if (!teamDraft.tbRed || !teamDraft.tbBlue) return;
+  if (!tbLocalPick.red || !tbLocalPick.blue) return;
   await updateDoc(teamSessionRef, {
-    tiebreak: { redId: teamDraft.tbRed, blueId: teamDraft.tbBlue, result: null },
+    tiebreak: { redId: tbLocalPick.red, blueId: tbLocalPick.blue, result: null },
     status: 'tiebreak_active', updatedAt: serverTimestamp()
   });
 }
