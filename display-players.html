@@ -185,30 +185,39 @@ body{display:flex;align-items:center;justify-content:center}
   height:8.5% !important;
 }
 
-/* 新標示：改為「戰鬥陀螺手」 */
-.player-type-label{
-  position:absolute;
-  z-index:13;
-  top:3.1%;
-  right:3.2%;
-  padding:.48% 1.35%;
-  color:#fff;
-  font-size:clamp(13px,1.05vw,21px);
-  font-weight:800;
-  letter-spacing:.12em;
-  background:linear-gradient(90deg,rgba(7,10,16,.92),rgba(8,20,40,.84));
-  border:1px solid rgba(255,255,255,.30);
-  border-left:3px solid #168cff;
-  transform:skew(-8deg);
-  box-shadow:0 0 14px rgba(22,140,255,.18);
+
+.fullscreen-start{
+  position:absolute;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(8px);transition:.25s
 }
-.player-type-label span{display:block;transform:skew(8deg)}
+.fullscreen-start.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.fullscreen-box{
+  min-width:340px;padding:26px 34px;text-align:center;border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(135deg,rgba(55,5,13,.95),rgba(5,10,18,.96) 52%,rgba(5,31,70,.95));
+  box-shadow:0 0 34px rgba(0,0,0,.7),0 0 28px rgba(255,33,53,.18);
+  clip-path:polygon(5% 0,95% 0,100% 15%,100% 85%,95% 100%,5% 100%,0 85%,0 15%)
+}
+.fullscreen-box strong{display:block;font-size:26px;letter-spacing:.12em;color:#fff;margin-bottom:8px}
+.fullscreen-box small{display:block;font-size:13px;color:#b8c4d6;margin-bottom:18px}
+.fullscreen-go{
+  border:0;min-width:220px;padding:14px 24px;color:#fff;font-size:18px;font-weight:900;
+  letter-spacing:.12em;cursor:pointer;background:linear-gradient(180deg,#d51b2c,#8d0714);
+  box-shadow:0 0 20px rgba(255,34,53,.32);
+  clip-path:polygon(7% 0,93% 0,100% 20%,100% 80%,93% 100%,7% 100%,0 80%,0 20%)
+}
+.fullscreen-go:hover{filter:brightness(1.13)}
 
 </style>
 </head>
 <body>
 <div class="stage" id="stage">
-  <div class="player-type-label"><span>戰鬥陀螺手</span></div>
+  <div class="fullscreen-start" id="fullscreenStart">
+    <div class="fullscreen-box">
+      <strong>FINAL BATTLE 2026</strong>
+      <small>點一下即可進入投影全螢幕模式</small>
+      <button class="fullscreen-go" id="fullscreenGo">進入全螢幕</button>
+    </div>
+  </div>
   <div class="hero" id="hero">
     <div class="placeholder">等待選手資料</div>
   </div>
@@ -312,6 +321,34 @@ onSnapshot(q,snapshot=>{
   console.error(err);
   hero.innerHTML='<div class="placeholder">無法讀取選手資料</div>';
 });
+
+
+const fullscreenStart=document.getElementById("fullscreenStart");
+const fullscreenGo=document.getElementById("fullscreenGo");
+
+async function enterFullscreen(){
+  try{
+    if(!document.fullscreenElement){
+      await document.documentElement.requestFullscreen?.();
+    }
+  }catch(err){
+    console.warn("Fullscreen blocked:",err);
+  }
+  fullscreenStart?.classList.add("hidden");
+}
+fullscreenGo?.addEventListener("click",enterFullscreen);
+document.addEventListener("fullscreenchange",()=>{
+  if(document.fullscreenElement) fullscreenStart?.classList.add("hidden");
+});
+window.addEventListener("load",()=>{
+  setTimeout(async()=>{
+    try{
+      await document.documentElement.requestFullscreen?.();
+      if(document.fullscreenElement) fullscreenStart?.classList.add("hidden");
+    }catch(e){}
+  },250);
+});
+
 
 document.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight"){show(currentIndex+1);startAuto()}
