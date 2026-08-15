@@ -152,7 +152,7 @@ body{display:flex;align-items:center;justify-content:center}
 </head>
 <body>
 <div class="stage" id="stage">
-  <div class="mode-label"><span>PK 車輪戰</span></div>
+  <div class="mode-label"><span>對戰中</span></div>
   <a class="back-link" href="display-players.html">← 返回選手登場</a>
 
   <div id="content"></div>
@@ -175,16 +175,17 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const content = document.getElementById('content');
 const stage = document.getElementById('stage');
+const modeLabel = document.querySelector('.mode-label span');
 
 function esc(v = "") {
   return String(v).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 }
 
-function renderEmpty() {
-  content.innerHTML = `<div class="empty-stage">目前沒有進行中的 PK 場次<br>請至 pk-admin.html 抽取主賽手</div>`;
+function renderEmpty(msg) {
+  content.innerHTML = `<div class="empty-stage">${msg || '目前沒有進行中的對戰<br>請至 pk-admin.html 開始一場比賽'}</div>`;
 }
 
-function renderActive(session) {
+function renderPkActive(session) {
   const { champion, challengers, currentIndex, results } = session;
   const currentChallenger = challengers[currentIndex];
   const winsSoFar = results.filter(r => r.result === 'champion_win').length;
@@ -223,7 +224,7 @@ function renderActive(session) {
   `;
 }
 
-function renderCompleted(session) {
+function renderPkCompleted(session) {
   const wins = session.results.filter(r => r.result === 'champion_win').length;
   const total = session.challengers.length;
   content.innerHTML = `
@@ -235,14 +236,110 @@ function renderCompleted(session) {
   `;
 }
 
-onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
-  if (!snap.exists()) { renderEmpty(); return; }
-  const session = snap.data();
-  if (session.status === 'completed') renderCompleted(session);
-  else renderActive(session);
-}, err => {
-  console.error(err);
-  content.innerHTML = `<div class="empty-stage">無法讀取對戰資料</div>`;
+function renderTeamActive(session) {
+  const { teamRed, teamBlue, matches, currentPosition, status, tiebreak } = session;
+
+  if (status === 'tiebreak_pick') {
+    content.innerHTML = `
+      <div class="winner-banner">
+        <p class="winner-label">2 : 2 平手</p>
+        <p class="winner-name" style="font-size:clamp(22px,3.4vw,52px);">準備加賽第五棒</p>
+        <p class="winner-score">各隊選出代表出賽，決定最終勝負</p>
+      </div>
+    `;
+    return;
+  }
+
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+
+  let redPlayer, bluePlayer, tagText;
+  if (status === 'tiebreak_active') {
+    redPlayer = teamRed.members.find(m => m.id === tiebreak.redId);
+    bluePlayer = teamBlue.members.find(m => m.id === tiebreak.blueId);
+    tagText = '加賽・第五棒';
+  } else {
+    const cur = matches[currentPosition];
+    redPlayer = teamRed.members.find(m => m.id === cur.redId);
+    bluePlayer = teamBlue.members.find(m => m.id === cur.blueId);
+    tagText = `第 ${currentPosition + 1} 棒`;
+  }
+
+  const dotsHtml = matches.map((m, i) => {
+    let cls = 'dot';
+    if (m.result === 'red') cls += ' lose';
+    if (m.result === 'blue') cls += ' win';
+    if (!m.result && i === currentPosition && status === 'active') cls += ' current';
+    return `<div class="${cls}">${i + 1}</div>`;
+  }).join('') + (status === 'tiebreak_active' ? `<div class="dot current">TB</div>` : '');
+
+  content.innerHTML = `
+    <div class="duel">
+      <div class="fighter-half left red-glow">
+        <img class="show" src="${esc(redPlayer.photoUrl)}" alt="${esc(redPlayer.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">🔴 ${esc(teamRed.name)}　${redWins} 勝</p>
+          <p class="fighter-name">${esc(redPlayer.battleName)}</p>
+          <p class="fighter-score">${tagText}</p>
+        </div>
+      </div>
+      <div class="fighter-half right blue-glow">
+        <img class="show" src="${esc(bluePlayer.photoUrl)}" alt="${esc(bluePlayer.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">🔵 ${esc(teamBlue.name)}　${blueWins} 勝</p>
+          <p class="fighter-name">${esc(bluePlayer.battleName)}</p>
+          <p class="fighter-score">${tagText}</p>
+        </div>
+      </div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="progress-row">${dotsHtml}</div>
+  `;
+}
+
+function renderTeamCompleted(session) {
+  const { teamRed, teamBlue, matches, tiebreak } = session;
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+  const winnerName = tiebreak ? (tiebreak.result === 'red' ? teamRed.name : teamBlue.name)
+                               : (redWins > blueWins ? teamRed.name : teamBlue.name);
+  const scoreLine = tiebreak ? `${redWins} : ${blueWins}（加賽決勝）` : `${redWins} : ${blueWins}`;
+  content.innerHTML = `
+    <div class="winner-banner">
+      <p class="winner-label">WINNER</p>
+      <p class="winner-name">🏆 ${esc(winnerName)}</p>
+      <p class="winner-score">${esc(teamRed.name)} ${scoreLine} ${esc(teamBlue.name)}</p>
+    </div>
+  `;
+}
+
+let unsubSession = null;
+
+onSnapshot(doc(db, 'liveMatch', 'current'), (liveSnap) => {
+  if (unsubSession) { unsubSession(); unsubSession = null; }
+
+  if (!liveSnap.exists()) { renderEmpty(); return; }
+  const mode = liveSnap.data().mode;
+
+  if (mode === 'pk') {
+    modeLabel.textContent = 'PK 車輪戰';
+    unsubSession = onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
+      if (!snap.exists()) { renderEmpty(); return; }
+      const session = snap.data();
+      if (session.status === 'completed') renderPkCompleted(session);
+      else renderPkActive(session);
+    }, () => renderEmpty('無法讀取對戰資料'));
+  } else if (mode === 'team') {
+    modeLabel.textContent = '團體戰';
+    unsubSession = onSnapshot(doc(db, 'teamSessions', 'current'), (snap) => {
+      if (!snap.exists()) { renderEmpty(); return; }
+      const session = snap.data();
+      if (session.status === 'completed') renderTeamCompleted(session);
+      else renderTeamActive(session);
+    }, () => renderEmpty('無法讀取對戰資料'));
+  } else {
+    renderEmpty();
+  }
 });
 
 document.addEventListener('keydown', e => {
