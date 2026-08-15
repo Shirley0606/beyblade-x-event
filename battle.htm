@@ -2,171 +2,165 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>比賽控制台｜FINAL BATTLE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PK 車輪戰｜FINAL BATTLE 2026</title>
+<meta name="theme-color" content="#02040a">
 <style>
-:root{--red:#ff304b;--red2:#8f1427;--blue:#278cff;--blue2:#123f8b;--bg:#05070b;--panel:#0a0f17;--line:#26334a;--text:#f6f8fc;--muted:#7f8ca3;--gold:#ffc94c}
+:root{--red:#ff263d;--blue:#168cff}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif;background:#04060a;color:#fff}
-body{
-  min-height:100vh;background:
-  radial-gradient(circle at 10% 30%,rgba(255,48,75,.13),transparent 28%),
-  radial-gradient(circle at 90% 30%,rgba(39,140,255,.15),transparent 30%),
-  linear-gradient(120deg,#040509,#090d15 48%,#04060a)
+html,body{
+  margin:0;width:100%;height:100%;overflow:hidden;background:#000;
+  font-family:"PingFang TC","Microsoft JhengHei",Arial,sans-serif
 }
-button,input,select{font:inherit}
-button{cursor:pointer}
-.shell{width:min(1500px,calc(100% - 24px));margin:auto;padding:18px 0 40px}
-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
-.brand small{display:block;color:#738097;letter-spacing:.24em;font-size:10px}.brand h1{margin:3px 0 0;font-size:30px;letter-spacing:.09em}
-.back{color:#dfe7f4;text-decoration:none;border:1px solid #344159;padding:10px 14px;border-radius:10px;background:#0a0f17}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.tab{border:1px solid #2d3a50;background:#090e16;color:#7f8ca3;border-radius:13px;padding:14px;font-weight:900;letter-spacing:.08em}
-.tab.active.pk{color:#fff;border-color:#a72d40;background:linear-gradient(90deg,#6f1222,#16111a)}
-.tab.active.team{color:#fff;border-color:#286dcc;background:linear-gradient(90deg,#102241,#123a79)}
-.mode{display:none}.mode.active{display:block}
-.board{display:grid;grid-template-columns:320px minmax(0,1fr) 320px;gap:14px}
-.panel{border:1px solid var(--line);background:linear-gradient(180deg,rgba(12,17,26,.96),rgba(7,10,16,.98));border-radius:17px;overflow:hidden}
-.panel h2{margin:0;padding:15px 16px;border-bottom:1px solid #212c3e;font-size:14px;letter-spacing:.08em}
-.pad{padding:15px}
-label{display:block;color:#9aa7bb;font-size:12px;font-weight:700;margin-bottom:7px}
-select,input[type=text]{width:100%;color:#fff;background:#070b12;border:1px solid #344157;border-radius:10px;padding:12px;outline:none}
-select:focus,input:focus{border-color:#5d77a0}
-.field{margin-bottom:14px}
-.player-preview{border:1px solid #29364b;border-radius:14px;overflow:hidden;background:#070a10;text-align:center}
-.player-preview img,.player-preview .ph{width:100%;height:245px;object-fit:cover;display:block}.player-preview .ph{display:grid;place-items:center;color:#516078;font-size:46px;background:linear-gradient(145deg,#221016,#0b1626)}
-.player-preview .name{padding:14px;font-size:21px;font-weight:900}
-.score-box{padding:18px;text-align:center}.score-label{font-size:11px;color:#74839a;letter-spacing:.15em}.score{font-size:66px;font-weight:900;line-height:1;margin:8px 0;color:#fff}.score.red{color:#ff5266;text-shadow:0 0 26px rgba(255,48,75,.2)}.score.blue{color:#63adff;text-shadow:0 0 26px rgba(39,140,255,.2)}
-.arena{min-height:580px;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:22px;overflow:hidden;background:
- radial-gradient(circle at center,rgba(255,255,255,.04),transparent 28%),
- linear-gradient(135deg,rgba(255,48,75,.05),transparent 40%),
- linear-gradient(315deg,rgba(39,140,255,.05),transparent 40%)}
-.arena:before,.arena:after{content:"";position:absolute;width:70%;height:70%;border-radius:50%;top:14%;border:1px solid transparent}
-.arena:before{left:-30%;border-right-color:rgba(255,48,75,.55);box-shadow:35px 0 55px rgba(255,48,75,.08)}
-.arena:after{right:-30%;border-left-color:rgba(39,140,255,.58);box-shadow:-35px 0 55px rgba(39,140,255,.08)}
-.versus{display:grid;grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr);gap:16px;align-items:center;width:100%;position:relative;z-index:1}
-.fighter{text-align:center}.fighter img,.fighter .ph{width:min(230px,100%);aspect-ratio:4/5;object-fit:cover;border-radius:16px;border:1px solid #36445c;background:#0c111a}.fighter .ph{display:grid;place-items:center;margin:auto;color:#526079;font-size:42px}.fighter.red img{box-shadow:0 0 32px rgba(255,48,75,.14);border-color:#78303b}.fighter.blue img{box-shadow:0 0 32px rgba(39,140,255,.15);border-color:#285687}.fighter-name{font-size:24px;font-weight:900;margin-top:12px;word-break:break-word}.vs{font-size:50px;font-weight:900;font-style:italic;text-align:center;color:#dfe7f6}
-.status{font-size:13px;color:#91a0b6;margin:20px 0 12px;position:relative;z-index:1;text-align:center}
-.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
-.btn{border:1px solid #344159;background:#0c121c;color:#e5edf8;padding:12px 18px;border-radius:10px;font-weight:800}
-.btn.red{background:linear-gradient(180deg,#b51c33,#721222);border-color:#d43a50}.btn.blue{background:linear-gradient(180deg,#1f64ba,#123f82);border-color:#3181dc}.btn.gray{color:#aeb9c9}
-.history{display:flex;flex-direction:column;gap:8px;max-height:460px;overflow:auto}
-.history-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border:1px solid #29364a;border-radius:9px;padding:10px;font-size:12px}.win{color:#54d49c;font-weight:800}.lose{color:#ff7180;font-weight:800}
-.team-setup{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team-card{border:1px solid #2b384d;border-radius:15px;background:#090e16;padding:16px}.team-card.red{border-top:3px solid var(--red)}.team-card.blue{border-top:3px solid var(--blue)}
-.member-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.team-center{margin-top:14px}
-.leg-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}.leg{border:1px solid #334158;background:#0a1019;color:#8390a5;border-radius:9px;padding:9px 14px}.leg.active{color:white;border-color:#a5b6cc}
-.team-score{display:flex;align-items:center;justify-content:center;gap:18px;font-size:18px;font-weight:900;margin-top:16px}.team-score .num{font-size:48px}.team-score .red{color:#ff5b6e}.team-score .blue{color:#68b1ff}
-.team-history{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.leg-result{border:1px solid #29364a;border-radius:10px;padding:11px;text-align:center;font-size:12px;color:#7d8ca4}.leg-result strong{display:block;color:white;margin-top:5px}
-.notice{text-align:center;color:#65748b;font-size:11px;margin-top:12px}
-@media(max-width:1080px){.board{grid-template-columns:1fr}.player-preview img,.player-preview .ph{height:280px}.side-flex{display:grid;grid-template-columns:200px 1fr;gap:14px}.team-setup{grid-template-columns:1fr}.arena{min-height:520px}}
-@media(max-width:680px){.shell{width:calc(100% - 14px)}header{align-items:flex-start}.versus{grid-template-columns:1fr 58px 1fr}.vs{font-size:34px}.fighter-name{font-size:17px}.arena{min-height:430px;padding:14px}.member-grid{grid-template-columns:1fr}.team-history{grid-template-columns:repeat(2,1fr)}.side-flex{grid-template-columns:1fr}}
+body{display:flex;align-items:center;justify-content:center}
+.stage{
+  position:relative;
+  width:min(100vw,177.7777778vh);
+  height:min(100vh,56.25vw);
+  aspect-ratio:16/9;
+  overflow:hidden;
+  background:#02040a;
+}
+.stage::before,.stage::after{
+  content:"";position:absolute;width:105%;height:190%;top:-45%;
+  border-radius:50%;z-index:0;pointer-events:none
+}
+.stage::before{
+  left:-56%;
+  background:
+    repeating-conic-gradient(from 0deg,transparent 0deg 7deg,rgba(255,35,55,.24) 8deg 12deg,transparent 13deg 24deg),
+    radial-gradient(circle at center,rgba(255,32,50,.28) 0 11%,transparent 12% 27%,rgba(255,32,50,.13) 28% 29%,transparent 30%);
+  filter:drop-shadow(0 0 22px rgba(255,30,48,.48));
+  animation:redSpin 18s linear infinite
+}
+.stage::after{
+  right:-56%;
+  background:
+    repeating-conic-gradient(from 0deg,transparent 0deg 7deg,rgba(22,140,255,.24) 8deg 12deg,transparent 13deg 24deg),
+    radial-gradient(circle at center,rgba(22,140,255,.28) 0 11%,transparent 12% 27%,rgba(22,140,255,.13) 28% 29%,transparent 30%);
+  filter:drop-shadow(0 0 22px rgba(22,140,255,.48));
+  animation:blueSpin 21s linear infinite
+}
+@keyframes redSpin{to{transform:rotate(360deg)}}
+@keyframes blueSpin{to{transform:rotate(-360deg)}}
+@media (max-aspect-ratio:16/9){ .stage{width:100vw;height:56.25vw} }
+@media (min-aspect-ratio:16/9){ .stage{width:177.7777778vh;height:100vh} }
+
+/* ---------- top label ---------- */
+.mode-label{
+  position:absolute; z-index:13; top:3.1%; left:3.2%;
+  padding:.48% 1.35%; color:#fff;
+  font-size:clamp(13px,1.05vw,21px); font-weight:800; letter-spacing:.12em;
+  background:linear-gradient(90deg,rgba(7,10,16,.92),rgba(8,20,40,.84));
+  border:1px solid rgba(255,255,255,.30); border-left:3px solid var(--red);
+  transform:skew(-8deg);
+  box-shadow:0 0 14px rgba(255,38,61,.18);
+}
+.mode-label span{display:block;transform:skew(8deg)}
+
+.back-link{
+  position:absolute; z-index:13; top:3.1%; right:3.2%;
+  color:#cfd6ee; font-size:clamp(11px,.85vw,16px); text-decoration:none;
+  padding:.48% 1.1%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(7,10,16,.7); letter-spacing:.06em;
+}
+
+/* ---------- duel stage ---------- */
+.duel{ position:absolute; inset:0; top:9%; bottom:13%; z-index:2; display:flex; }
+.fighter-half{
+  flex:1; position:relative; overflow:hidden; background:#080d15;
+}
+.fighter-half.left{ clip-path:polygon(0 0, 94% 0, 100% 100%, 0 100%); margin-right:-3%; }
+.fighter-half.right{ clip-path:polygon(6% 0, 100% 0, 100% 100%, 0 100%); margin-left:-3%; }
+.fighter-half img{
+  width:100%; height:100%; object-fit:cover; object-position:center top; display:block;
+  filter:drop-shadow(0 18px 35px rgba(0,0,0,.7));
+  opacity:0; transition:opacity .5s ease;
+}
+.fighter-half img.show{ opacity:1; }
+.fighter-half .placeholder{
+  width:100%; height:100%; display:grid; place-items:center; color:#7c8799; font-size:2.4vw;
+}
+.fighter-half.red-glow{ box-shadow: inset 0 0 60px rgba(255,38,61,.35); }
+.fighter-half.blue-glow{ box-shadow: inset 0 0 60px rgba(22,140,255,.35); }
+
+.fighter-info{
+  position:absolute; z-index:5; bottom:0; padding:1.4% 2.2%;
+  background:linear-gradient(to top, rgba(2,4,9,.92), transparent);
+  width:100%;
+}
+.fighter-half.right .fighter-info{ text-align:right; }
+.fighter-tag{
+  font-size:clamp(11px,.95vw,18px); letter-spacing:.14em; color:#cfd6ee; margin-bottom:.3em;
+}
+.fighter-name{
+  font-size:clamp(20px,2.6vw,44px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 4px 14px rgba(0,0,0,.7);
+}
+.fighter-score{
+  font-size:clamp(13px,1.15vw,22px); font-weight:800; color:#ffce54; margin-top:.35em;
+}
+
+.vs-badge{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:8;
+  display:flex; align-items:center; justify-content:center;
+  width:11%; aspect-ratio:1/1; min-width:56px;
+  color:#fff; font-size:clamp(18px,2.1vw,36px); font-weight:900; font-style:italic;
+  background:linear-gradient(180deg,#2a2f3c,#0c0f16);
+  border:2px solid rgba(255,255,255,.55);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  box-shadow:0 0 30px rgba(255,255,255,.25);
+}
+
+/* ---------- progress dots ---------- */
+.progress-row{
+  position:absolute; left:0; right:0; bottom:2%; z-index:10;
+  display:flex; justify-content:center; gap:.6%;
+}
+.dot{
+  width:clamp(22px,2.6vw,40px); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(10px,.95vw,16px); font-weight:800; color:#8a94b8;
+  background:#0c0f16; border:1px solid rgba(255,255,255,.22);
+  clip-path:polygon(20% 0,80% 0,100% 50%,80% 100%,20% 100%,0 50%);
+}
+.dot.win{ background:rgba(79,217,149,.18); border-color:#4fd995; color:#4fd995; }
+.dot.lose{ background:rgba(255,107,107,.14); border-color:#ff6b6b; color:#ff6b6b; }
+.dot.current{ border-color:#ffce54; color:#ffce54; box-shadow:0 0 10px rgba(255,206,84,.5); }
+
+/* ---------- winner banner ---------- */
+.winner-banner{
+  position:absolute; inset:0; z-index:20; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  background:radial-gradient(ellipse at center, rgba(10,14,24,.86), rgba(2,4,9,.97));
+}
+.winner-label{
+  font-size:clamp(13px,1.3vw,22px); letter-spacing:.5em; color:#8ab4ff; margin-bottom:.6em;
+}
+.winner-name{
+  font-size:clamp(30px,5vw,84px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 0 40px rgba(90,160,255,.55);
+}
+.winner-score{
+  font-size:clamp(16px,1.6vw,28px); color:#ffce54; margin-top:.6em; font-weight:800;
+}
+
+.empty-stage{
+  position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
+  color:#7c8799; font-size:clamp(14px,1.4vw,24px); text-align:center; padding:0 8%;
+}
 </style>
 </head>
 <body>
-<div class="shell">
-  <header>
-    <div class="brand"><small>FINAL BATTLE · MATCH CONTROL</small><h1>比賽畫面</h1></div>
-    <a class="back" href="admin-players.html">返回選手登錄</a>
-  </header>
+<div class="stage" id="stage">
+  <div class="mode-label"><span>PK 車輪戰</span></div>
+  <a class="back-link" href="display-players.html">← 返回選手登場</a>
 
-  <div class="tabs">
-    <button class="tab active pk" data-mode="pk">PK 戰</button>
-    <button class="tab team" data-mode="team">團體戰</button>
-  </div>
-
-  <section class="mode active" id="pkMode">
-    <div class="board">
-      <aside class="panel">
-        <h2>PK 設定</h2>
-        <div class="pad">
-          <div class="field"><label>主選手</label><select id="pkMain"></select></div>
-          <div class="field"><label>目前對手</label><select id="pkOpponent"></select></div>
-          <div class="player-preview" id="pkMainPreview"></div>
-          <div class="score-box"><div class="score-label">PK 累積勝場／積分</div><div class="score red" id="pkScore">0</div></div>
-          <button class="btn gray" style="width:100%" id="resetPk">重設本輪 PK</button>
-        </div>
-      </aside>
-
-      <main class="panel arena">
-        <div class="versus">
-          <div class="fighter red" id="pkFighterA"></div>
-          <div class="vs">VS</div>
-          <div class="fighter blue" id="pkFighterB"></div>
-        </div>
-        <div class="status" id="pkStatus">選擇主選手與對手後即可開始記錄。</div>
-        <div class="controls">
-          <button class="btn red" id="mainWin">主選手獲勝 ＋1</button>
-          <button class="btn blue" id="oppWin">對手獲勝</button>
-          <button class="btn gray" id="nextOpponent">下一位對手</button>
-        </div>
-      </main>
-
-      <aside class="panel">
-        <h2>對戰紀錄</h2>
-        <div class="pad">
-          <div class="history" id="pkHistory"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <section class="mode" id="teamMode">
-    <div class="team-setup">
-      <div class="team-card red">
-        <div class="field"><label>A 隊隊名</label><input id="teamAName" type="text" value="A隊"></div>
-        <div class="member-grid" id="teamAPlayers"></div>
-      </div>
-      <div class="team-card blue">
-        <div class="field"><label>B 隊隊名</label><input id="teamBName" type="text" value="B隊"></div>
-        <div class="member-grid" id="teamBPlayers"></div>
-      </div>
-    </div>
-
-    <div class="panel team-center">
-      <div class="pad">
-        <div class="leg-tabs" id="legTabs">
-          <button class="leg active" data-leg="0">第 1 棒</button>
-          <button class="leg" data-leg="1">第 2 棒</button>
-          <button class="leg" data-leg="2">第 3 棒</button>
-          <button class="leg" data-leg="3">第 4 棒</button>
-        </div>
-        <div class="arena" style="min-height:440px;border:1px solid #202b3d;border-radius:14px">
-          <div class="versus">
-            <div class="fighter red" id="teamFighterA"></div>
-            <div class="vs">VS</div>
-            <div class="fighter blue" id="teamFighterB"></div>
-          </div>
-          <div class="status" id="teamStatus">設定兩隊四棒選手後即可比賽。</div>
-          <div class="controls">
-            <button class="btn red" id="teamAWin">A 隊獲勝</button>
-            <button class="btn blue" id="teamBWin">B 隊獲勝</button>
-            <button class="btn gray" id="teamClearLeg">清除此棒</button>
-          </div>
-        </div>
-
-        <div class="team-score">
-          <span id="teamANameScore">A隊</span><span class="num red" id="teamAScore">0</span>
-          <span>：</span>
-          <span class="num blue" id="teamBScore">0</span><span id="teamBNameScore">B隊</span>
-        </div>
-
-        <div class="team-history" id="teamHistory"></div>
-        <div class="controls" style="margin-top:14px">
-          <button class="btn gray" id="resetTeam">重設整場團體戰</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="notice">PK 戰：主選手依序對戰其他選手，每獲勝 1 場就累積 1 分。團體戰：四棒逐棒記錄勝隊。</div>
+  <div id="content"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import {
-  getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, increment
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
@@ -179,185 +173,86 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const content = document.getElementById('content');
+const stage = document.getElementById('stage');
 
-let players = [];
-const STORAGE_KEY = "beyblade-final-battle-state-v1";
-let restoredState = {};
-try { restoredState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { restoredState = {}; }
-
-let pkRecords = Array.isArray(restoredState.pkRecords) ? restoredState.pkRecords : [];
-let currentLeg = Number.isInteger(restoredState.currentLeg) ? restoredState.currentLeg : 0;
-let teamResults = Array.isArray(restoredState.teamResults) && restoredState.teamResults.length === 4
-  ? restoredState.teamResults : [null,null,null,null];
-
-const $ = id => document.getElementById(id);
-
-function saveBattleState(){
-  const teamASelections = Array.from(document.querySelectorAll("#teamAPlayers select")).map(s=>s.value);
-  const teamBSelections = Array.from(document.querySelectorAll("#teamBPlayers select")).map(s=>s.value);
-  const state = {
-    pkMain: $("pkMain")?.value || "",
-    pkOpponent: $("pkOpponent")?.value || "",
-    pkRecords,
-    currentLeg,
-    teamResults,
-    teamAName: $("teamAName")?.value || "A隊",
-    teamBName: $("teamBName")?.value || "B隊",
-    teamASelections,
-    teamBSelections
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function esc(v = "") {
+  return String(v).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 }
-const esc = (v="") => String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const playerName = p => p?.battleName || p?.name || "未選擇";
 
-function fighterHtml(p){
-  if(!p) return `<div class="ph">—</div><div class="fighter-name">等待選手</div>`;
-  const photo = p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="${esc(playerName(p))}">` : `<div class="ph">—</div>`;
-  return `${photo}<div class="fighter-name">${esc(playerName(p))}</div>`;
+function renderEmpty() {
+  content.innerHTML = `<div class="empty-stage">目前沒有進行中的 PK 場次<br>請至 pk-admin.html 抽取主賽手</div>`;
 }
-function previewHtml(p){
-  if(!p) return `<div class="ph">—</div><div class="name">等待選手</div>`;
-  return `${p.photoUrl?`<img src="${esc(p.photoUrl)}" alt="${esc(playerName(p))}">`:`<div class="ph">—</div>`}<div class="name">${esc(playerName(p))}</div>`;
-}
-function options(selectedId="",excludeId=""){
-  const arr = [`<option value="">請選擇</option>`];
-  players.forEach(p=>{
-    if(p.id===excludeId) return;
-    arr.push(`<option value="${p.id}" ${p.id===selectedId?"selected":""}>${esc(playerName(p))}</option>`);
-  });
-  return arr.join("");
-}
-function getPlayer(id){ return players.find(p=>p.id===id); }
 
-function refreshPkOptions(){
-  const mainValue = $("pkMain").value || restoredState.pkMain || "";
-  $("pkMain").innerHTML = options(mainValue);
-  if(mainValue) $("pkMain").value = mainValue;
+function renderActive(session) {
+  const { champion, challengers, currentIndex, results } = session;
+  const currentChallenger = challengers[currentIndex];
+  const winsSoFar = results.filter(r => r.result === 'champion_win').length;
 
-  const oppValue = $("pkOpponent").value || restoredState.pkOpponent || "";
-  $("pkOpponent").innerHTML = options(oppValue,$("pkMain").value);
-  if(oppValue) $("pkOpponent").value = oppValue;
+  const dotsHtml = challengers.map((c, i) => {
+    const r = results[i];
+    let cls = 'dot';
+    if (r) cls += r.result === 'champion_win' ? ' win' : ' lose';
+    else if (i === currentIndex) cls += ' current';
+    return `<div class="${cls}">${i + 1}</div>`;
+  }).join('');
 
-  refreshPkUI();
-  saveBattleState();
+  const champGlow = champion.cardStyle === 'blue' ? 'blue-glow' : 'red-glow';
+  const chalGlow = currentChallenger.cardStyle === 'blue' ? 'blue-glow' : 'red-glow';
+
+  content.innerHTML = `
+    <div class="duel">
+      <div class="fighter-half left ${champGlow}">
+        <img class="show" src="${esc(champion.photoUrl)}" alt="${esc(champion.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">👑 主賽手</p>
+          <p class="fighter-name">${esc(champion.battleName)}</p>
+          <p class="fighter-score">本場 ${winsSoFar} 勝</p>
+        </div>
+      </div>
+      <div class="fighter-half right ${chalGlow}">
+        <img class="show" src="${esc(currentChallenger.photoUrl)}" alt="${esc(currentChallenger.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
+          <p class="fighter-name">${esc(currentChallenger.battleName)}</p>
+        </div>
+      </div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="progress-row">${dotsHtml}</div>
+  `;
 }
-function refreshPkUI(){
-  const main = getPlayer($("pkMain").value);
-  const opp = getPlayer($("pkOpponent").value);
-  $("pkMainPreview").innerHTML = previewHtml(main);
-  $("pkFighterA").innerHTML = fighterHtml(main);
-  $("pkFighterB").innerHTML = fighterHtml(opp);
-  const wins = pkRecords.filter(r=>r.winner==="main").length;
-  $("pkScore").textContent = wins;
-  $("pkStatus").textContent = main && opp ? `${playerName(main)} VS ${playerName(opp)}` : "選擇主選手與對手後即可開始記錄。";
-  $("pkHistory").innerHTML = pkRecords.length ? pkRecords.map((r,i)=>`
-    <div class="history-row">
-      <span>${String(i+1).padStart(2,"0")}</span>
-      <span>${esc(r.main)} VS ${esc(r.opp)}</span>
-      <span class="${r.winner==="main"?"win":"lose"}">${r.winner==="main"?"WIN +1":"LOSE"}</span>
-    </div>`).join("") : `<div class="notice">尚無對戰紀錄</div>`;
+
+function renderCompleted(session) {
+  const wins = session.results.filter(r => r.result === 'champion_win').length;
+  const total = session.challengers.length;
+  content.innerHTML = `
+    <div class="winner-banner">
+      <p class="winner-label">WINNER</p>
+      <p class="winner-name">👑 ${esc(session.champion.battleName)}</p>
+      <p class="winner-score">本場戰績　${wins} / ${total} 勝</p>
+    </div>
+  `;
 }
-$("pkMain").addEventListener("change",()=>{
-  pkRecords=[];
-  $("pkOpponent").innerHTML = options("",$("pkMain").value);
-  refreshPkUI();
-  saveBattleState();
+
+onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
+  if (!snap.exists()) { renderEmpty(); return; }
+  const session = snap.data();
+  if (session.status === 'completed') renderCompleted(session);
+  else renderActive(session);
+}, err => {
+  console.error(err);
+  content.innerHTML = `<div class="empty-stage">無法讀取對戰資料</div>`;
 });
-$("pkOpponent").addEventListener("change",()=>{ refreshPkUI(); saveBattleState(); });
 
-async function recordPk(winner){
-  const main = getPlayer($("pkMain").value);
-  const opp = getPlayer($("pkOpponent").value);
-  if(!main || !opp){ alert("請先選擇主選手與對手"); return; }
-  pkRecords.push({main:playerName(main),opp:playerName(opp),oppId:opp.id,winner});
-  if(winner==="main"){
-    try{ await updateDoc(doc(db,"players",main.id),{totalPoints:increment(1)}); }catch(err){ console.warn(err); }
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'f') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
   }
-  refreshPkUI();
-}
-$("mainWin").addEventListener("click",()=>recordPk("main"));
-$("oppWin").addEventListener("click",()=>recordPk("opp"));
-$("nextOpponent").addEventListener("click",()=>{
-  const mainId = $("pkMain").value;
-  if(!mainId) return;
-  const used = new Set(pkRecords.map(r=>r.oppId));
-  const remaining = players.filter(p=>p.id!==mainId && !used.has(p.id));
-  if(!remaining.length){ $("pkStatus").textContent = "這位主選手已完成目前所有對手。"; return; }
-  $("pkOpponent").value = remaining[0].id;
-  refreshPkUI();
-  saveBattleState();
-});
-$("resetPk").addEventListener("click",()=>{
-  if(!confirm("確定清除這一輪畫面上的 PK 紀錄？已寫入選手總積分的分數不會自動扣回。")) return;
-  pkRecords=[];refreshPkUI();saveBattleState();
-});
-
-function buildTeamSelectors(){
-  ["A","B"].forEach(side=>{
-    const wrap = $(`team${side}Players`);
-    const old = Array.from(wrap.querySelectorAll("select")).map(s=>s.value);
-    const restored = side === "A" ? (restoredState.teamASelections || []) : (restoredState.teamBSelections || []);
-    wrap.innerHTML = "";
-    for(let i=0;i<4;i++){
-      const selected = old[i] || restored[i] || "";
-      const div=document.createElement("div");
-      div.className="field";
-      div.innerHTML=`<label>第 ${i+1} 棒</label><select data-side="${side}" data-index="${i}">${options(selected)}</select>`;
-      wrap.appendChild(div);
-    }
-  });
-  document.querySelectorAll("#teamAPlayers select,#teamBPlayers select").forEach(s=>s.addEventListener("change",()=>{refreshTeamUI();saveBattleState();}));
-  refreshTeamUI();
-}
-function selectedTeamPlayer(side,index){
-  const s=document.querySelector(`#team${side}Players select[data-index="${index}"]`);
-  return getPlayer(s?.value);
-}
-function refreshTeamUI(){
-  const aName=$("teamAName").value.trim()||"A隊";
-  const bName=$("teamBName").value.trim()||"B隊";
-  $("teamANameScore").textContent=aName;$("teamBNameScore").textContent=bName;
-  const a=selectedTeamPlayer("A",currentLeg),b=selectedTeamPlayer("B",currentLeg);
-  $("teamFighterA").innerHTML=fighterHtml(a);$("teamFighterB").innerHTML=fighterHtml(b);
-  $("teamStatus").textContent=a&&b?`第 ${currentLeg+1} 棒｜${playerName(a)} VS ${playerName(b)}`:`請先設定第 ${currentLeg+1} 棒雙方選手。`;
-  const aScore=teamResults.filter(x=>x==="A").length,bScore=teamResults.filter(x=>x==="B").length;
-  $("teamAScore").textContent=aScore;$("teamBScore").textContent=bScore;
-  $("teamHistory").innerHTML=teamResults.map((r,i)=>`
-    <div class="leg-result">第 ${i+1} 棒<strong>${r?`${r==="A"?esc(aName):esc(bName)}獲勝`:"尚未比賽"}</strong></div>`).join("");
-  document.querySelectorAll(".leg").forEach(btn=>btn.classList.toggle("active",Number(btn.dataset.leg)===currentLeg));
-}
-$("teamAName").value = restoredState.teamAName || $("teamAName").value;
-$("teamBName").value = restoredState.teamBName || $("teamBName").value;
-$("teamAName").addEventListener("input",()=>{refreshTeamUI();saveBattleState();});
-$("teamBName").addEventListener("input",()=>{refreshTeamUI();saveBattleState();});
-document.querySelectorAll(".leg").forEach(btn=>btn.addEventListener("click",()=>{currentLeg=Number(btn.dataset.leg);refreshTeamUI();saveBattleState()}));
-function setLegWinner(side){
-  const a=selectedTeamPlayer("A",currentLeg),b=selectedTeamPlayer("B",currentLeg);
-  if(!a||!b){alert("請先設定這一棒的雙方選手");return}
-  teamResults[currentLeg]=side;
-  refreshTeamUI();
-  if(currentLeg<3){currentLeg++;refreshTeamUI();}
-  saveBattleState();
-}
-$("teamAWin").addEventListener("click",()=>setLegWinner("A"));
-$("teamBWin").addEventListener("click",()=>setLegWinner("B"));
-$("teamClearLeg").addEventListener("click",()=>{teamResults[currentLeg]=null;refreshTeamUI();saveBattleState()});
-$("resetTeam").addEventListener("click",()=>{if(confirm("確定清除整場團體戰紀錄？")){teamResults=[null,null,null,null];currentLeg=0;refreshTeamUI();saveBattleState()}});
-
-document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  tab.classList.add("active");
-  document.querySelectorAll(".mode").forEach(m=>m.classList.remove("active"));
-  $(`${tab.dataset.mode}Mode`).classList.add("active");
-}));
-
-const q=query(collection(db,"players"),orderBy("createdAt","asc"));
-onSnapshot(q,snapshot=>{
-  players=[];
-  snapshot.forEach(d=>players.push({id:d.id,...d.data()}));
-  refreshPkOptions();
-  buildTeamSelectors();
+  if (e.key.toLowerCase() === 'h') {
+    stage.classList.toggle('hide-ui');
+  }
 });
 </script>
 </body>
