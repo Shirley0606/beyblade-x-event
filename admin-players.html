@@ -73,13 +73,17 @@
   }
   .p-name { font-size: 13px; font-weight: 600; margin: 0; }
   .p-battle { font-size: 11px; color: #d85a30; margin: 2px 0 8px; }
-  .row-btns { display: flex; gap: 6px; justify-content: center; }
+  .row-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .row-btns button {
     font-size: 11px; padding: 5px 8px; border-radius: 6px;
     background: #fff; border: 1px solid #ddd; color: #555; font-weight: 400;
   }
   .row-btns .del { color: #e24b4a; border-color: #f0c0c0; }
   .row-btns .upload-highlight { color: #d85a30; border-color: #f0c0a8; font-weight: 600; }
+  .row-btns .edit-btn {
+    color: #1769aa; border-color: #b8d5eb; font-weight: 600;
+    grid-column: 1 / -1;
+  }
   .empty { color: #999; font-size: 13px; padding: 20px 0; text-align: center; }
   .reg-list { max-height: 280px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-top: 10px; }
   .reg-row {
@@ -116,6 +120,25 @@
   .style-badge.blue { color:#0758ad; background:#e8f3ff; }
   .style-switch { width:100%; margin-top:7px; font-size:11px; padding:6px 8px; border-radius:6px;
     background:#fff; border:1px solid #d8dce3; color:#555; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000; padding: 20px;
+    background: rgba(15, 20, 30, .58); display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal-backdrop.show { display: flex; }
+  .edit-modal {
+    width: min(420px, 100%); background: #fff; border-radius: 14px;
+    padding: 22px; box-shadow: 0 18px 50px rgba(0,0,0,.25);
+  }
+  .edit-modal h2 { font-size: 18px; margin: 0 0 4px; }
+  .edit-modal .desc { font-size: 12px; color: #888; margin: 0 0 14px; }
+  .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .modal-actions button { width: 100%; }
+  .btn-cancel { background: #f1f2f4; color: #555; }
+  .btn-save { background: #1769aa; color: #fff; }
+  .btn-save:disabled { background: #aeb9c2; cursor: not-allowed; }
+  #editStatus { font-size: 13px; margin-top: 10px; min-height: 18px; }
 
 </style>
 </head>
@@ -174,6 +197,25 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="editModal" aria-hidden="true">
+  <div class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <h2 id="editModalTitle">編輯選手資料</h2>
+    <p class="desc">修改後會立即同步到前台選手畫面。</p>
+
+    <label for="editPlayerName">姓名</label>
+    <input type="text" id="editPlayerName" placeholder="例如：陳小明">
+
+    <label for="editBattleName">參賽名稱（戰鬥名號）</label>
+    <input type="text" id="editBattleName" placeholder="例如：旋風熙熙、爆裂戰神">
+
+    <div id="editStatus"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelEditBtn" type="button">取消</button>
+      <button class="btn-save" id="saveEditBtn" type="button">儲存修改</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
@@ -211,9 +253,16 @@ const loadRegBtn = document.getElementById('loadRegBtn');
 const regList = document.getElementById('regList');
 const importBtn = document.getElementById('importBtn');
 const importStatus = document.getElementById('importStatus');
+const editModal = document.getElementById('editModal');
+const editPlayerName = document.getElementById('editPlayerName');
+const editBattleName = document.getElementById('editBattleName');
+const editStatus = document.getElementById('editStatus');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const saveEditBtn = document.getElementById('saveEditBtn');
 
 let selectedFile = null;
 let currentPlayerNames = new Set();
+let editingPlayerId = null;
 
 photoFile.addEventListener('change', () => {
   const file = photoFile.files[0];
@@ -228,6 +277,67 @@ function setStatus(el, msg, type) {
   el.textContent = msg;
   el.className = type || '';
 }
+
+function openEditModal(id, player) {
+  editingPlayerId = id;
+  editPlayerName.value = player.name || '';
+  editBattleName.value = player.battleName || player.name || '';
+  setStatus(editStatus, '', '');
+  editModal.classList.add('show');
+  editModal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => editBattleName.focus(), 0);
+}
+
+function closeEditModal() {
+  if (saveEditBtn.disabled) return;
+  editingPlayerId = null;
+  editModal.classList.remove('show');
+  editModal.setAttribute('aria-hidden', 'true');
+}
+
+cancelEditBtn.addEventListener('click', closeEditModal);
+editModal.addEventListener('click', (event) => {
+  if (event.target === editModal) closeEditModal();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && editModal.classList.contains('show')) closeEditModal();
+});
+
+saveEditBtn.addEventListener('click', async () => {
+  const name = editPlayerName.value.trim();
+  const newBattleName = editBattleName.value.trim();
+
+  if (!name) { setStatus(editStatus, '請輸入姓名', 'err'); return; }
+  if (!newBattleName) { setStatus(editStatus, '請輸入參賽名稱', 'err'); return; }
+  if (!editingPlayerId) { setStatus(editStatus, '找不到選手資料，請重新開啟編輯視窗', 'err'); return; }
+
+  saveEditBtn.disabled = true;
+  cancelEditBtn.disabled = true;
+  setStatus(editStatus, '儲存中…', '');
+
+  try {
+    await updateDoc(doc(db, 'players', editingPlayerId), {
+      name,
+      battleName: newBattleName,
+      updatedAt: serverTimestamp()
+    });
+    setStatus(editStatus, '修改成功', 'ok');
+    setTimeout(() => {
+      saveEditBtn.disabled = false;
+      cancelEditBtn.disabled = false;
+      closeEditModal();
+    }, 450);
+  } catch (err) {
+    console.error(err);
+    setStatus(editStatus, '儲存失敗：' + err.message, 'err');
+    saveEditBtn.disabled = false;
+    cancelEditBtn.disabled = false;
+  }
+});
+
+editBattleName.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') saveEditBtn.click();
+});
 
 // ---------- 手動新增 ----------
 submitBtn.addEventListener('click', async () => {
@@ -372,6 +482,7 @@ onSnapshot(q, (snapshot) => {
       <span class="style-badge ${p.cardStyle === 'blue' ? 'blue' : 'red'}">${p.cardStyle === 'blue' ? '藍色旋風' : '紅色旋風'}</span>
       <button class="style-switch">切換成${p.cardStyle === 'blue' ? '紅色' : '藍色'}風格</button>
       <div class="row-btns">
+        <button class="edit-btn">編輯名稱</button>
         <button class="replace-btn ${!p.photoUrl ? 'upload-highlight' : ''}">${p.photoUrl ? '換照片' : '上傳照片'}</button>
         <button class="del">刪除</button>
       </div>
@@ -384,6 +495,7 @@ onSnapshot(q, (snapshot) => {
     card.appendChild(replaceInput);
 
     card.querySelector('.replace-btn').addEventListener('click', () => replaceInput.click());
+    card.querySelector('.edit-btn').addEventListener('click', () => openEditModal(docSnap.id, p));
     replaceInput.addEventListener('change', async () => {
       const file = replaceInput.files[0];
       if (!file) return;
