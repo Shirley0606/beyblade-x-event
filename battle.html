@@ -48,7 +48,7 @@ body{display:flex;align-items:center;justify-content:center}
 
 /* ---------- top label ---------- */
 .mode-label{
-  position:absolute; z-index:13; top:3.1%; left:3.2%;
+  position:absolute; z-index:13; top:3.1%; left:3.2%; cursor:pointer;
   padding:.48% 1.35%; color:#fff;
   font-size:clamp(13px,1.05vw,21px); font-weight:800; letter-spacing:.12em;
   background:linear-gradient(90deg,rgba(7,10,16,.92),rgba(8,20,40,.84));
@@ -57,6 +57,67 @@ body{display:flex;align-items:center;justify-content:center}
   box-shadow:0 0 14px rgba(255,38,61,.18);
 }
 .mode-label span{display:block;transform:skew(8deg)}
+
+/* ---------- mode select screen ---------- */
+.select-screen{
+  position:absolute; inset:0; z-index:15; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:5%;
+}
+.select-title{
+  font-size:clamp(18px,2.2vw,36px); font-weight:900; font-style:italic; color:#fff;
+  letter-spacing:.1em; text-shadow:0 4px 14px rgba(0,0,0,.7);
+}
+.select-btns{ display:flex; gap:6%; }
+.select-btn{
+  width:26vw; max-width:320px; min-width:170px; aspect-ratio:4/3;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5em;
+  color:#fff; font-size:clamp(15px,1.7vw,28px); font-weight:900; font-style:italic; letter-spacing:.05em;
+  border:2px solid rgba(255,255,255,.5); cursor:pointer;
+  clip-path:polygon(6% 0,94% 0,100% 14%,100% 100%,0 100%,0 14%);
+  transition:.18s;
+}
+.select-btn:hover{ transform:translateY(-4px); filter:brightness(1.12); }
+.select-btn.pk{ background:linear-gradient(160deg,#8e0713,#3a0308); box-shadow:0 0 30px rgba(255,38,61,.3); }
+.select-btn.team{ background:linear-gradient(160deg,#0b3a8e,#031a3a); box-shadow:0 0 30px rgba(22,140,255,.3); }
+.select-btn .emoji{ font-size:1.7em; font-style:normal; }
+
+/* ---------- pk idle marquee ---------- */
+.marquee-wrap{
+  position:absolute; inset:0; z-index:5; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+.marquee-heading{ font-size:clamp(13px,1.2vw,22px); letter-spacing:.35em; color:#8ab4ff; margin-bottom:3%; }
+.marquee-viewport{ width:88%; overflow:hidden; }
+.marquee-track{ display:flex; gap:1.2%; width:max-content; animation:marqueeScroll 24s linear infinite; }
+@keyframes marqueeScroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.marquee-card{
+  flex:0 0 clamp(90px,9vw,150px); aspect-ratio:3/4; position:relative;
+  border-radius:10px; overflow:hidden; background:#0d1526; border:1px solid #2a3550;
+}
+.marquee-card img{ width:100%; height:100%; object-fit:contain; display:block; }
+.marquee-empty{ color:#7c8799; font-size:clamp(13px,1.2vw,20px); text-align:center; padding:0 8%; }
+
+/* ---------- team live setup ---------- */
+.team-setup-live{ position:absolute; inset:0; z-index:5; display:flex; }
+.tsl-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2% 3%; }
+.tsl-col.red{ background:linear-gradient(115deg,rgba(255,38,61,.14),transparent 60%); }
+.tsl-col.blue{ background:linear-gradient(245deg,rgba(22,140,255,.14),transparent 60%); }
+.tsl-name{
+  font-size:clamp(18px,2.2vw,38px); font-weight:900; font-style:italic; color:#fff;
+  margin-bottom:5%; text-shadow:0 4px 14px rgba(0,0,0,.6);
+}
+.tsl-members{ display:flex; flex-wrap:wrap; gap:3%; justify-content:center; }
+.tsl-member{ width:clamp(56px,6vw,100px); text-align:center; }
+.tsl-member img{
+  width:100%; aspect-ratio:1/1; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(255,255,255,.4); background:#14182a; display:block;
+}
+.tsl-member span{ display:block; font-size:clamp(10px,.8vw,14px); color:#dfe6f2; margin-top:6px; }
+.tsl-vs{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:6;
+  font-size:clamp(20px,2.4vw,40px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 0 20px rgba(255,255,255,.4);
+}
 
 .back-link{
   position:absolute; z-index:13; top:3.1%; right:3.2%;
@@ -152,7 +213,7 @@ body{display:flex;align-items:center;justify-content:center}
 </head>
 <body>
 <div class="stage" id="stage">
-  <div class="mode-label"><span>對戰中</span></div>
+  <div class="mode-label"><span>選擇賽制</span></div>
   <a class="back-link" href="display-players.html">← 返回選手登場</a>
 
   <div id="content"></div>
@@ -160,7 +221,7 @@ body{display:flex;align-items:center;justify-content:center}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
@@ -313,34 +374,124 @@ function renderTeamCompleted(session) {
   `;
 }
 
-let unsubSession = null;
+let unsubA = null, unsubB = null;
+let livePlayers = [];
+let pkSessionCache = undefined;   // undefined=尚未載入, null=無場次, object=場次資料
+let teamSessionCache = undefined;
+let viewMode = null; // 'pk' | 'team'
 
-onSnapshot(doc(db, 'liveMatch', 'current'), (liveSnap) => {
-  if (unsubSession) { unsubSession(); unsubSession = null; }
+function cleanupWatchers() {
+  if (unsubA) { unsubA(); unsubA = null; }
+  if (unsubB) { unsubB(); unsubB = null; }
+  pkSessionCache = undefined;
+  teamSessionCache = undefined;
+  livePlayers = [];
+}
 
-  if (!liveSnap.exists()) { renderEmpty(); return; }
-  const mode = liveSnap.data().mode;
+function showModeSelect() {
+  viewMode = null;
+  cleanupWatchers();
+  modeLabel.textContent = '選擇賽制';
+  content.innerHTML = `
+    <div class="select-screen">
+      <p class="select-title">請選擇本場賽制</p>
+      <div class="select-btns">
+        <div class="select-btn pk" id="selPk"><span class="emoji">🥊</span>PK 車輪戰</div>
+        <div class="select-btn team" id="selTeam"><span class="emoji">⚔️</span>團體戰</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('selPk').addEventListener('click', enterPkMode);
+  document.getElementById('selTeam').addEventListener('click', enterTeamMode);
+}
 
-  if (mode === 'pk') {
-    modeLabel.textContent = 'PK 車輪戰';
-    unsubSession = onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
-      if (!snap.exists()) { renderEmpty(); return; }
-      const session = snap.data();
-      if (session.status === 'completed') renderPkCompleted(session);
-      else renderPkActive(session);
-    }, () => renderEmpty('無法讀取對戰資料'));
-  } else if (mode === 'team') {
-    modeLabel.textContent = '團體戰';
-    unsubSession = onSnapshot(doc(db, 'teamSessions', 'current'), (snap) => {
-      if (!snap.exists()) { renderEmpty(); return; }
-      const session = snap.data();
-      if (session.status === 'completed') renderTeamCompleted(session);
-      else renderTeamActive(session);
-    }, () => renderEmpty('無法讀取對戰資料'));
-  } else {
-    renderEmpty();
+function enterPkMode() {
+  viewMode = 'pk';
+  modeLabel.textContent = 'PK 車輪戰';
+  watchPk();
+}
+
+function enterTeamMode() {
+  viewMode = 'team';
+  modeLabel.textContent = '團體戰';
+  watchTeam();
+}
+
+function watchPk() {
+  cleanupWatchers();
+  unsubA = onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
+    pkSessionCache = snap.exists() ? snap.data() : null;
+    renderPkView();
+  }, () => renderEmpty('無法讀取對戰資料'));
+  unsubB = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id: d.id, ...d.data() }));
+    renderPkView();
+  });
+}
+
+function renderPkView() {
+  if (viewMode !== 'pk' || pkSessionCache === undefined) return;
+  if (pkSessionCache === null) { renderPkPoolMarquee(); return; }
+  if (pkSessionCache.status === 'completed') renderPkCompleted(pkSessionCache);
+  else renderPkActive(pkSessionCache);
+}
+
+function renderPkPoolMarquee() {
+  const eligible = livePlayers.filter(p => p.photoUrl && !p.pkDrawn);
+  if (!eligible.length) {
+    content.innerHTML = `<div class="marquee-wrap"><p class="marquee-empty">尚無候選選手<br>請至後台新增選手或抽取主賽手</p></div>`;
+    return;
   }
-});
+  const cardsHtml = eligible.map(p => `
+    <div class="marquee-card"><img src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name)}"></div>
+  `).join('');
+  content.innerHTML = `
+    <div class="marquee-wrap">
+      <p class="marquee-heading">候選選手・準備抽取主賽手</p>
+      <div class="marquee-viewport"><div class="marquee-track">${cardsHtml}${cardsHtml}</div></div>
+    </div>
+  `;
+}
+
+function watchTeam() {
+  cleanupWatchers();
+  unsubA = onSnapshot(doc(db, 'teamSessions', 'current'), (snap) => {
+    teamSessionCache = snap.exists() ? snap.data() : null;
+    renderTeamViewLive();
+  }, () => renderEmpty('無法讀取對戰資料'));
+}
+
+function renderTeamViewLive() {
+  if (viewMode !== 'team' || teamSessionCache === undefined) return;
+  if (teamSessionCache === null) {
+    content.innerHTML = `<div class="marquee-wrap"><p class="marquee-empty">尚未開始建隊<br>請至後台選擇隊員</p></div>`;
+    return;
+  }
+  if (teamSessionCache.status === 'setup') { renderTeamSetupLive(teamSessionCache); return; }
+  if (teamSessionCache.status === 'completed') { renderTeamCompleted(teamSessionCache); return; }
+  renderTeamActive(teamSessionCache);
+}
+
+function renderTeamSetupLive(session) {
+  const { teamRed, teamBlue } = session;
+  function colHtml(color, team) {
+    const membersHtml = team.members.map(m => `
+      <div class="tsl-member"><img src="${esc(m.photoUrl)}" alt=""><span>${esc(m.battleName)}</span></div>
+    `).join('') || `<p class="marquee-empty" style="font-size:.7em;padding:0;">尚未選人</p>`;
+    return `<div class="tsl-col ${color}"><p class="tsl-name">${esc(team.name)}</p><div class="tsl-members">${membersHtml}</div></div>`;
+  }
+  content.innerHTML = `
+    <div class="team-setup-live">
+      ${colHtml('red', teamRed)}
+      ${colHtml('blue', teamBlue)}
+    </div>
+    <div class="tsl-vs">VS</div>
+  `;
+}
+
+modeLabel.parentElement.addEventListener('click', showModeSelect);
+showModeSelect();
 
 document.addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'f') {
