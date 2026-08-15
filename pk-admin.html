@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PK 車輪戰控制台 - 戰鬥陀螺比賽系統</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: #f4f5f7; margin: 0; padding: 20px; color: #1a1a1a;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  .top-links { display: flex; gap: 14px; margin-bottom: 14px; font-size: 12px; }
+  .top-links a { color: #888; text-decoration: none; }
+  .top-links a.active { color: #d85a30; font-weight: 700; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .draw-panel { text-align: center; padding: 24px 4px; }
+  .draw-panel p { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .btn-draw {
+    background: #d85a30; color: #fff; border: none; border-radius: 999px;
+    font-size: 16px; font-weight: 700; padding: 16px 40px; cursor: pointer;
+  }
+  .btn-draw:disabled { background: #ccc; cursor: not-allowed; }
+  #drawStatus { font-size: 13px; margin-top: 14px; min-height: 18px; }
+  #drawStatus.err { color: #e24b4a; }
+
+  .match-progress { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .dot {
+    width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; background: #f1f2f4; border: 1px solid #e0e0e0; color: #999;
+  }
+  .dot.win { background: #e5f6ef; border-color: #1d9e75; color: #1d9e75; }
+  .dot.lose { background: #fdeaea; border-color: #e24b4a; color: #e24b4a; }
+  .dot.current { border-color: #d85a30; color: #d85a30; }
+
+  .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .fighter-card { text-align: center; }
+  .fighter-photo {
+    width: 100%; aspect-ratio: 1/1; border-radius: 14px; object-fit: cover;
+    border: 3px solid #e0e0e0; background: #f1f2f4;
+  }
+  .fighter-card.style-red .fighter-photo { border-color: #ff334d; box-shadow: 0 0 0 3px rgba(255,51,77,0.1); }
+  .fighter-card.style-blue .fighter-photo { border-color: #298dff; box-shadow: 0 0 0 3px rgba(41,141,255,0.1); }
+  .fighter-tag { font-size: 10px; letter-spacing: 1px; color: #999; margin-top: 8px; }
+  .fighter-name { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .fighter-score { font-size: 12px; color: #d85a30; margin-top: 4px; font-weight: 700; }
+  .vs-mid { font-size: 20px; font-weight: 800; color: #333; text-align: center; }
+
+  .result-btns { display: flex; gap: 10px; margin-bottom: 10px; }
+  .btn-champ-win, .btn-chal-win {
+    flex: 1; padding: 16px 8px; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+  }
+  .btn-champ-win { background: #d81f3a; }
+  .btn-chal-win { background: #298dff; }
+  .btn-champ-win:disabled, .btn-chal-win:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .session-summary { text-align: center; padding: 10px 4px; }
+  .session-summary h2 { font-size: 18px; margin-bottom: 10px; }
+  .session-summary .score-big { font-size: 40px; font-weight: 800; color: #d85a30; margin: 14px 0; }
+  .btn-next {
+    background: #d85a30; color: #fff; border: none; border-radius: 999px;
+    font-size: 15px; font-weight: 700; padding: 14px 32px; cursor: pointer; margin-top: 10px;
+  }
+  .btn-reset {
+    display: block; margin: 20px auto 0; background: none; border: none;
+    color: #999; font-size: 12px; text-decoration: underline; cursor: pointer;
+  }
+
+  .log-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
+  .log-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #f0f0f0; color: #444; }
+
+  .link-live {
+    display: block; text-align: center; font-size: 12px; color: #298dff;
+    margin-top: 16px; text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-links">
+    <a href="admin-players.html">選手管理</a>
+    <a href="pk-admin.html" class="active">PK 控制台</a>
+    <a href="battle.html" target="_blank">對戰大螢幕 ↗</a>
+  </div>
+
+  <h1>PK 車輪戰控制台</h1>
+  <p class="sub">主賽手固定不動，其餘選手依序輪流上場挑戰。獲勝畫面會同步顯示在 battle.html。</p>
+
+  <div class="card" id="sessionArea"></div>
+
+  <div class="card" id="logCard" style="display:none;">
+    <p class="log-title">本場對戰紀錄</p>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  onSnapshot, collection, getDocs, addDoc, increment, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain: "beyblade-x-event.firebaseapp.com",
+  projectId: "beyblade-x-event",
+  storageBucket: "beyblade-x-event.firebasestorage.app",
+  messagingSenderId: "866394169939",
+  appId: "1:866394169939:web:a73222040a99a433425ca6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const sessionRef = doc(db, 'pkSessions', 'current');
+
+const sessionArea = document.getElementById('sessionArea');
+const logCard = document.getElementById('logCard');
+const logList = document.getElementById('logList');
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderDrawPanel(msg, isErr) {
+  sessionArea.innerHTML = `
+    <div class="draw-panel">
+      <p>隨機抽取一位選手作為本場主賽手，其餘所有已登錄選手將依序上場挑戰。</p>
+      <button class="btn-draw" id="drawBtn">🎲 隨機抽取主賽手</button>
+      <div id="drawStatus" class="${isErr ? 'err' : ''}">${msg || ''}</div>
+    </div>
+  `;
+  document.getElementById('drawBtn').addEventListener('click', drawChampion);
+}
+
+async function drawChampion() {
+  const btn = document.getElementById('drawBtn');
+  const statusEl = document.getElementById('drawStatus');
+  btn.disabled = true;
+  statusEl.textContent = '抽取中…';
+  statusEl.className = '';
+  try {
+    const snap = await getDocs(collection(db, 'players'));
+    const players = [];
+    snap.forEach(d => {
+      const p = d.data();
+      if (p.photoUrl) {
+        players.push({
+          id: d.id,
+          name: p.name,
+          battleName: p.battleName || p.name,
+          photoUrl: p.photoUrl,
+          cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
+        });
+      }
+    });
+    if (players.length < 2) {
+      statusEl.textContent = '至少需要 2 位已上傳照片的選手才能開始 PK';
+      statusEl.className = 'err';
+      btn.disabled = false;
+      return;
+    }
+    const shuffled = shuffle(players);
+    const champion = shuffled[0];
+    const challengers = shuffled.slice(1);
+
+    await setDoc(sessionRef, {
+      champion,
+      challengers,
+      currentIndex: 0,
+      results: [],
+      status: 'active',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (err) {
+    statusEl.textContent = '發生錯誤：' + err.message;
+    statusEl.className = 'err';
+    btn.disabled = false;
+  }
+}
+
+function renderMatch(session) {
+  const { champion, challengers, currentIndex, results } = session;
+  const currentChallenger = challengers[currentIndex];
+
+  const dotsHtml = challengers.map((c, i) => {
+    const r = results[i];
+    let cls = 'dot';
+    if (r) cls += r.result === 'champion_win' ? ' win' : ' lose';
+    else if (i === currentIndex) cls += ' current';
+    return `<div class="${cls}">${i + 1}</div>`;
+  }).join('');
+
+  const winsSoFar = results.filter(r => r.result === 'champion_win').length;
+
+  sessionArea.innerHTML = `
+    <div class="match-progress">${dotsHtml}</div>
+    <div class="vs-row">
+      <div class="fighter-card style-${champion.cardStyle}">
+        <img class="fighter-photo" src="${champion.photoUrl}" alt="${champion.battleName}">
+        <p class="fighter-tag">👑 主賽手</p>
+        <p class="fighter-name">${champion.battleName}</p>
+        <p class="fighter-score">本場 ${winsSoFar} 勝</p>
+      </div>
+      <div class="vs-mid">VS</div>
+      <div class="fighter-card style-${currentChallenger.cardStyle}">
+        <img class="fighter-photo" src="${currentChallenger.photoUrl}" alt="${currentChallenger.battleName}">
+        <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
+        <p class="fighter-name">${currentChallenger.battleName}</p>
+      </div>
+    </div>
+    <div class="result-btns">
+      <button class="btn-champ-win" id="champWinBtn">👑 主賽手獲勝 +1分</button>
+      <button class="btn-chal-win" id="chalWinBtn">挑戰者獲勝</button>
+    </div>
+    <button class="btn-reset" id="cancelBtn">取消本場，重新抽取</button>
+    <a class="link-live" href="battle.html" target="_blank">在新分頁打開對戰大螢幕 ↗</a>
+  `;
+
+  document.getElementById('champWinBtn').addEventListener('click', () => recordResult('champion_win'));
+  document.getElementById('chalWinBtn').addEventListener('click', () => recordResult('challenger_win'));
+  document.getElementById('cancelBtn').addEventListener('click', cancelSession);
+}
+
+async function recordResult(result) {
+  document.getElementById('champWinBtn').disabled = true;
+  document.getElementById('chalWinBtn').disabled = true;
+
+  const snap = await getDoc(sessionRef);
+  const session = snap.data();
+  const { champion, challengers, currentIndex } = session;
+  const currentChallenger = challengers[currentIndex];
+
+  if (result === 'champion_win') {
+    await updateDoc(doc(db, 'players', champion.id), { totalPoints: increment(1) });
+  }
+
+  await addDoc(collection(db, 'pkMatches'), {
+    championId: champion.id,
+    championName: champion.battleName,
+    challengerId: currentChallenger.id,
+    challengerName: currentChallenger.battleName,
+    result,
+    matchNo: currentIndex + 1,
+    createdAt: serverTimestamp()
+  });
+
+  const newResults = [...session.results, { challengerId: currentChallenger.id, result }];
+  const nextIndex = currentIndex + 1;
+  const isDone = nextIndex >= challengers.length;
+
+  await updateDoc(sessionRef, {
+    results: newResults,
+    currentIndex: nextIndex,
+    status: isDone ? 'completed' : 'active',
+    updatedAt: serverTimestamp()
+  });
+}
+
+async function cancelSession() {
+  if (!confirm('確定要取消本場並重新抽取嗎？已記錄的分數不會被扣除。')) return;
+  await deleteDoc(sessionRef);
+}
+
+function renderSummary(session) {
+  const wins = session.results.filter(r => r.result === 'champion_win').length;
+  const total = session.challengers.length;
+  sessionArea.innerHTML = `
+    <div class="session-summary">
+      <p class="fighter-tag">👑 本場主賽手</p>
+      <h2>${session.champion.battleName}</h2>
+      <div class="score-big">${wins} / ${total} 勝</div>
+      <button class="btn-next" id="nextBtn">🎲 抽取下一位主賽手</button>
+    </div>
+  `;
+  document.getElementById('nextBtn').addEventListener('click', async () => {
+    await deleteDoc(sessionRef);
+    renderDrawPanel();
+  });
+}
+
+function renderLog(session) {
+  if (!session || session.results.length === 0) {
+    logCard.style.display = 'none';
+    return;
+  }
+  logCard.style.display = 'block';
+  logList.innerHTML = session.results.map((r, i) => {
+    const c = session.challengers[i];
+    const win = r.result === 'champion_win';
+    return `<div class="log-row"><span>第 ${i + 1} 場：${session.champion.battleName} vs ${c.battleName}</span><span style="color:${win ? '#1d9e75' : '#e24b4a'}">${win ? '主賽手勝' : '挑戰者勝'}</span></div>`;
+  }).join('');
+}
+
+onSnapshot(sessionRef, (snap) => {
+  if (!snap.exists()) {
+    renderDrawPanel();
+    logCard.style.display = 'none';
+    return;
+  }
+  const session = snap.data();
+  if (session.status === 'completed') {
+    renderSummary(session);
+  } else {
+    renderMatch(session);
+  }
+  renderLog(session);
+});
+</script>
+</body>
+</html>
