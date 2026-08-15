@@ -92,6 +92,31 @@
   .reg-name { flex: 1; }
   .reg-tag { font-size: 11px; color: #888; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; }
   .reg-tag.player { color: #1d9e75; background: #e5f6ef; }
+
+  .style-picker { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+  .style-option { position:relative; }
+  .style-option input { position:absolute; opacity:0; pointer-events:none; }
+  .style-option label {
+    margin:0; padding:12px 10px; border-radius:9px; text-align:center; cursor:pointer;
+    border:2px solid #d9dde4; background:#fff; color:#333; transition:.18s;
+  }
+  .style-option.red input:checked + label {
+    border-color:#ff334d; color:#a80016; background:#fff1f3;
+    box-shadow:0 0 0 3px rgba(255,51,77,.08);
+  }
+  .style-option.blue input:checked + label {
+    border-color:#298dff; color:#0758ad; background:#eef6ff;
+    box-shadow:0 0 0 3px rgba(41,141,255,.08);
+  }
+  .style-badge {
+    display:inline-block; font-size:10px; padding:2px 7px; border-radius:999px;
+    margin:3px 0 7px; font-weight:700;
+  }
+  .style-badge.red { color:#b00018; background:#ffe9ed; }
+  .style-badge.blue { color:#0758ad; background:#e8f3ff; }
+  .style-switch { width:100%; margin-top:7px; font-size:11px; padding:6px 8px; border-radius:6px;
+    background:#fff; border:1px solid #d8dce3; color:#555; }
+
 </style>
 </head>
 <body>
@@ -109,15 +134,27 @@
   </div>
 
   <div class="card">
-    <h2>手動新增參賽者</h2>
-    <p class="desc">如果報名名單裡沒有這個人，也可以直接手動新增。</p>
+    <h2>新增選手卡</h2>
+    <p class="desc">上傳照片、輸入戰鬥名號並選擇紅／藍風格，前台會自動生成選手卡並加入輪播。</p>
     <label>姓名</label>
     <input type="text" id="playerName" placeholder="例如：陳小明">
 
-    <label>Battle Name（比賽稱號，可留空）</label>
-    <input type="text" id="battleName" placeholder="例如：烈焰龍王">
+    <label>戰鬥名號</label>
+    <input type="text" id="battleName" placeholder="例如：旋風熙熙、爆裂戰神">
 
-    <label>照片（可留空，之後再補）</label>
+    <label>選手卡風格</label>
+    <div class="style-picker">
+      <div class="style-option red">
+        <input type="radio" name="cardStyle" id="styleRed" value="red" checked>
+        <label for="styleRed">🔥 紅色旋風</label>
+      </div>
+      <div class="style-option blue">
+        <input type="radio" name="cardStyle" id="styleBlue" value="blue">
+        <label for="styleBlue">⚡ 藍色旋風</label>
+      </div>
+    </div>
+
+    <label>照片</label>
     <div class="photo-input-row">
       <img id="previewImg" class="preview" alt="預覽">
       <input type="file" id="photoFile" accept="image/*">
@@ -215,6 +252,7 @@ submitBtn.addEventListener('click', async () => {
       battleName: battleName.value.trim() || name,
       photoUrl,
       photoPath,
+      cardStyle: document.querySelector('input[name="cardStyle"]:checked')?.value || 'red',
       totalPoints: 0,
       createdAt: serverTimestamp()
     });
@@ -225,6 +263,7 @@ submitBtn.addEventListener('click', async () => {
     photoFile.value = '';
     previewImg.src = '';
     selectedFile = null;
+    document.getElementById('styleRed').checked = true;
   } catch (err) {
     console.error(err);
     setStatus(statusEl, '發生錯誤：' + err.message, 'err');
@@ -293,6 +332,7 @@ importBtn.addEventListener('click', async () => {
         battleName: name,
         photoUrl: '',
         photoPath: '',
+        cardStyle: 'red',
         totalPoints: 0,
         importedFromRegistration: true,
         createdAt: serverTimestamp()
@@ -329,6 +369,8 @@ onSnapshot(q, (snapshot) => {
       ${photoHtml}
       <p class="p-name">${p.name}</p>
       <p class="p-battle">${p.battleName || ''}</p>
+      <span class="style-badge ${p.cardStyle === 'blue' ? 'blue' : 'red'}">${p.cardStyle === 'blue' ? '藍色旋風' : '紅色旋風'}</span>
+      <button class="style-switch">切換成${p.cardStyle === 'blue' ? '紅色' : '藍色'}風格</button>
       <div class="row-btns">
         <button class="replace-btn ${!p.photoUrl ? 'upload-highlight' : ''}">${p.photoUrl ? '換照片' : '上傳照片'}</button>
         <button class="del">刪除</button>
@@ -356,6 +398,15 @@ onSnapshot(q, (snapshot) => {
         }
       } catch (err) {
         alert('上傳失敗：' + err.message);
+      }
+    });
+
+    card.querySelector('.style-switch').addEventListener('click', async () => {
+      const nextStyle = p.cardStyle === 'blue' ? 'red' : 'blue';
+      try {
+        await updateDoc(doc(db, 'players', docSnap.id), { cardStyle: nextStyle });
+      } catch (err) {
+        alert('切換風格失敗：' + err.message);
       }
     });
 
