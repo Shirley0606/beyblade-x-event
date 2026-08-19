@@ -505,7 +505,7 @@ async function resetAllScores() {
   const firstConfirm = confirm(`確定要將全部 ${allPlayers.length} 位選手的總積分歸零嗎？\n\n這通常只建議在正式比賽開始前使用。`);
   if (!firstConfirm) return;
 
-  const secondConfirm = confirm('再次確認：全部積分會立即變成 0，前台記分板也會同步更新。確定執行？');
+  const secondConfirm = confirm('再次確認：全部積分會立即變成 0，前台記分板也會同步更新；目前正在進行的 PK 場次不會被刪除。確定執行？');
   if (!secondConfirm) return;
 
   const status = document.getElementById('scoreStatus');
@@ -648,21 +648,36 @@ function renderPkMaintenance() {
 }
 
 function renderPkMode() {
-  let html = `<h1>PK 車輪戰控制台</h1>
-    <p class="sub">每位主賽手都會與其他所有選手各對戰 1 次；已當過主賽手的人，後續抽籤會自動排除。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>
-  html += renderPkMaintenance();
+  try {
+    let html = `<h1>PK 車輪戰控制台</h1>
+      <p class="sub">每位主賽手都會與其他所有選手各對戰 1 次；已當過主賽手的人，後續抽籤會自動排除。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+    html += renderPkMaintenance();
 
-  if (!pkSession) {
-    html += renderPkPool();
-  } else if (pkSession.status === 'completed') {
-    html += renderPkSummary(pkSession);
-    html += renderPkPool(true);
-  } else {
-    html += renderPkMatch(pkSession);
+    if (!pkSession) {
+      html += renderPkPool();
+    } else if (pkSession.status === 'completed') {
+      html += renderPkSummary(pkSession);
+      html += renderPkPool(true);
+    } else {
+      html += renderPkMatch(pkSession);
+    }
+
+    appEl.innerHTML = html;
+    bindPkEvents();
+  } catch (err) {
+    console.error('renderPkMode error:', err);
+    appEl.innerHTML = `
+      <h1>PK 車輪戰控制台</h1>
+      <div class="card">
+        <p class="err" style="font-weight:700;">偵測到上一場 PK 資料狀態異常</p>
+        <p class="sub">畫面不會再白屏。可以清除目前 PK 場次後重新開始，選手積分不會被更動。</p>
+        <button class="btn-draw" id="repairPkBtn">清除目前 PK 場次並重新開始</button>
+      </div>`;
+    document.getElementById('repairPkBtn')?.addEventListener('click', async () => {
+      const snap = await getDoc(pkSessionRef);
+      if (snap.exists()) await deleteDoc(pkSessionRef);
+    });
   }
-
-  appEl.innerHTML = html;
-  bindPkEvents();
 }
 
 function renderPkPool(collapsedTitle) {
@@ -701,8 +716,25 @@ function poolCardHtml(p, used) {
 }
 
 function renderPkMatch(session) {
-  const { champion, challengers, currentIndex, results } = session;
+  const champion = session?.champion;
+  const challengers = Array.isArray(session?.challengers) ? session.challengers : [];
+  const currentIndex = Number.isInteger(session?.currentIndex) ? session.currentIndex : 0;
+  const results = Array.isArray(session?.results) ? session.results : [];
   const currentChallenger = challengers[currentIndex];
+
+  // 舊測試資料或重置過程若留下不完整 session，不再讓整個控制台白屏
+  if (!champion || !challengers.length || !currentChallenger) {
+    return `
+      <div class="card">
+        <div class="session-summary">
+          <p class="fighter-tag">PK 場次需要重新整理</p>
+          <h2>目前場次資料已失效</h2>
+          <p class="sub">可能是測試積分歸零或舊場次尚未清除造成。清除目前 PK 場次後即可重新抽主賽手；現有總積分不會再被修改。</p>
+          <button class="btn-next" id="repairCurrentPkBtn">清除目前場次</button>
+        </div>
+      </div>`;
+  }
+
   const winsSoFar = results.filter(r => r.result === 'champion_win').length;
   const champTotal = allPlayers.find(p => p.id === champion.id)?.totalPoints ?? '—';
   const chalTotal = allPlayers.find(p => p.id === currentChallenger.id)?.totalPoints ?? '—';
@@ -778,6 +810,10 @@ function bindPkEvents() {
   document.getElementById('champWinBtn')?.addEventListener('click', () => recordPkResult('champion_win'));
   document.getElementById('chalWinBtn')?.addEventListener('click', () => recordPkResult('challenger_win'));
   document.getElementById('cancelBtn')?.addEventListener('click', cancelPkSession);
+  document.getElementById('repairCurrentPkBtn')?.addEventListener('click', async () => {
+    const snap = await getDoc(pkSessionRef);
+    if (snap.exists()) await deleteDoc(pkSessionRef);
+  });
   document.getElementById('nextBtn')?.addEventListener('click', async () => {
     await deleteDoc(pkSessionRef);
   });
