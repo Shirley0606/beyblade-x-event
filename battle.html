@@ -230,6 +230,89 @@ body{display:flex;align-items:center;justify-content:center}
 .score-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#7c8799;font-size:clamp(14px,1.4vw,24px)}
 .fighter-total{display:inline-block;margin-top:.42em;padding:.28em .65em;border:1px solid rgba(255,206,84,.45);color:#ffce54;background:rgba(9,12,18,.62);font-size:clamp(11px,.9vw,17px);font-weight:900}
 
+
+/* ===== V5：PK 對戰畫面左右分離，VS 不遮擋資訊 ===== */
+.duel{
+  position:absolute !important;
+  left:3.2% !important;
+  right:3.2% !important;
+  top:10% !important;
+  bottom:13% !important;
+  z-index:2 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 8.5% minmax(0,1fr) !important;
+  gap:1.8% !important;
+  align-items:stretch !important;
+}
+
+.fighter-half{
+  min-width:0 !important;
+  width:100% !important;
+  height:100% !important;
+  margin:0 !important;
+  clip-path:none !important;
+  position:relative !important;
+  overflow:hidden !important;
+  background:#080d15 !important;
+  border:1px solid rgba(255,255,255,.18);
+}
+
+.fighter-half.left{
+  grid-column:1 !important;
+  clip-path:polygon(3% 0,97% 0,100% 5%,100% 95%,97% 100%,3% 100%,0 95%,0 5%) !important;
+}
+.fighter-half.right{
+  grid-column:3 !important;
+  clip-path:polygon(3% 0,97% 0,100% 5%,100% 95%,97% 100%,3% 100%,0 95%,0 5%) !important;
+}
+
+.fighter-half img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+}
+
+.fighter-info{
+  bottom:0 !important;
+  padding:1.2% 2.3% 1.7% !important;
+  background:linear-gradient(to top,rgba(2,4,9,.96) 0%,rgba(2,4,9,.80) 50%,transparent 100%) !important;
+}
+
+.fighter-half.right .fighter-info{
+  text-align:right !important;
+}
+
+.fighter-name{
+  font-size:clamp(18px,2.25vw,40px) !important;
+  line-height:1.05 !important;
+  max-width:82% !important;
+}
+.fighter-half.right .fighter-name{margin-left:auto !important}
+
+.vs-badge{
+  position:absolute !important;
+  top:48% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+  width:6.2% !important;
+  max-width:82px !important;
+  min-width:52px !important;
+  z-index:9 !important;
+  font-size:clamp(17px,1.8vw,30px) !important;
+  box-shadow:0 0 24px rgba(255,255,255,.20) !important;
+}
+
+/* 團體戰也沿用同樣間距，避免 VS 蓋住隊員名稱 */
+@media(max-width:900px){
+  .duel{
+    left:2% !important;
+    right:2% !important;
+    grid-template-columns:minmax(0,1fr) 7% minmax(0,1fr) !important;
+    gap:1.1% !important;
+  }
+}
+
 </style>
 </head>
 <body>
