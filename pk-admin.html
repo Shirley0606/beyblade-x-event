@@ -262,6 +262,143 @@
     .pk-maintenance-grid{grid-template-columns:1fr}
   }
 
+
+  /* ===== V7.4：後台版面與前台風格統一 ===== */
+  body{
+    background:
+      radial-gradient(circle at 12% 18%, rgba(216,31,58,.10), transparent 28%),
+      radial-gradient(circle at 88% 18%, rgba(41,141,255,.10), transparent 30%),
+      linear-gradient(180deg,#eef1f6 0%,#f5f6f8 40%,#eef1f5 100%) !important;
+  }
+  .wrap{max-width:920px !important}
+  .top-links{
+    position:sticky; top:0; z-index:50;
+    padding:12px 14px; margin:-20px -20px 18px !important;
+    background:rgba(247,249,252,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(30,45,70,.08);
+  }
+  .top-links a.active{
+    color:#d85a30 !important;
+    text-shadow:0 0 12px rgba(216,90,48,.12);
+  }
+  .card,.pk-maintenance{
+    border:1px solid rgba(26,45,76,.08);
+    box-shadow:0 8px 24px rgba(25,39,66,.06) !important;
+  }
+
+  /* 主 PK 對戰卡改成較有賽事感 */
+  .vs-row{
+    grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr) !important;
+    gap:18px !important;
+    align-items:start !important;
+  }
+  .fighter-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-width:0;
+  }
+  .fighter-photo{
+    width:min(100%,280px) !important;
+    aspect-ratio:1/1 !important;
+    margin:0 auto !important;
+    object-fit:cover !important;
+  }
+  .fighter-card.style-red .fighter-photo{
+    border-color:#ff334d !important;
+    box-shadow:0 0 0 4px rgba(255,51,77,.12),0 0 24px rgba(255,51,77,.10) !important;
+  }
+  .fighter-card.style-blue .fighter-photo{
+    border-color:#298dff !important;
+    box-shadow:0 0 0 4px rgba(41,141,255,.12),0 0 24px rgba(41,141,255,.10) !important;
+  }
+  .fighter-tag,.fighter-name,.fighter-score,.fighter-total{
+    width:100%;
+    text-align:center;
+  }
+  .fighter-name{font-size:18px !important;margin-top:4px !important}
+  .fighter-score{font-size:13px !important}
+  .fighter-total{font-size:12px !important}
+  .vs-mid{
+    align-self:center !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:58px;
+    height:58px;
+    margin-top:92px;
+    border-radius:50%;
+    color:#fff !important;
+    background:linear-gradient(135deg,#202938,#0d1320);
+    box-shadow:0 0 18px rgba(25,39,66,.14);
+  }
+
+  /* 對戰進度固定置中，避免欄位歪掉 */
+  .match-progress{
+    justify-content:center !important;
+    margin:14px 0 22px !important;
+  }
+
+  /* 按鈕同高、同寬 */
+  .result-btns{align-items:stretch !important}
+  .btn-champ-win,.btn-chal-win,.btn-red-win,.btn-blue-win{
+    min-height:56px;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* PK 即時工具移到底部後，視覺改成維護區 */
+  .pk-maintenance{
+    margin-top:20px !important;
+    margin-bottom:0 !important;
+    border-left:4px solid #d85a30 !important;
+    background:
+      linear-gradient(135deg,rgba(216,31,58,.035),rgba(41,141,255,.025)),
+      #fff !important;
+  }
+  .pk-maintenance-grid{
+    grid-template-columns:1fr 1fr !important;
+    align-items:start !important;
+  }
+  .pk-toolbox{
+    min-height:100%;
+    background:#fbfcfe !important;
+  }
+  .pk-reopen-list{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .pk-reopen-btn{
+    min-height:38px;
+    width:100%;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  /* 抽籤卡最優先呈現 */
+  .pk-draw-card{
+    border-top:4px solid #d85a30 !important;
+    background:
+      radial-gradient(circle at 10% 0%,rgba(216,31,58,.06),transparent 36%),
+      radial-gradient(circle at 90% 0%,rgba(41,141,255,.06),transparent 36%),
+      #fff !important;
+  }
+
+  @media(max-width:650px){
+    .wrap{max-width:100% !important}
+    .vs-row{
+      grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) !important;
+      gap:8px !important;
+    }
+    .vs-mid{
+      width:42px;height:42px;margin-top:72px;font-size:16px !important;
+    }
+    .fighter-photo{width:100% !important}
+    .pk-maintenance-grid{grid-template-columns:1fr !important}
+    .pk-reopen-list{grid-template-columns:1fr !important}
+  }
+
 </style>
 </head>
 <body>
@@ -609,7 +746,7 @@ function renderPkMaintenance() {
       <div class="pk-maintenance-head">
         <div>
           <p class="pk-maintenance-title">PK 即時修正工具</p>
-          <p class="pk-maintenance-note">比賽進行中也可以操作，不需要先取消目前場次。</p>
+          <p class="pk-maintenance-note">此區放在頁面最下方；只有需要臨時修正主賽手資格或整輪重置時再使用。</p>
         </div>
       </div>
 
@@ -658,6 +795,7 @@ function renderPkMode() {
       html += renderPkMatch(pkSession);
     }
 
+    html += renderPkMaintenance();
     appEl.innerHTML = html;
     bindPkEvents();
   } catch (err) {
@@ -680,7 +818,7 @@ function renderPkPool(collapsedTitle) {
   const eligible = allPlayers.filter(p => !p.pkDrawn);
   const used = allPlayers.filter(p => p.pkDrawn);
 
-  let html = `<div class="card">`;
+  let html = `<div class="card pk-draw-card">`;
   if (!collapsedTitle) {
     html += `
       <p style="font-size:13px;color:#666;margin-bottom:14px;">從尚未當過主賽手的選手中隨機抽出 1 位主賽手。主賽手會和目前所有其他選手各比 1 場；已當過主賽手的人後續不再進入主賽手抽籤。</p>
@@ -752,7 +890,7 @@ function renderPkMatch(session) {
         <div class="fighter-card style-${champion.cardStyle || 'red'}">
           ${champion.photoUrl
       ? `<img class="fighter-photo" src="${esc(champion.photoUrl)}" alt="${esc(champion.battleName)}">`
-      : `<div class="fighter-photo" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa;font-size:42px;font-weight:800;">${esc((champion.battleName || champion.name || '?').slice(0,1))}</div>`}
+      : `<div class="fighter-photo" style="display:flex;align-items:center;justify-content:center;background:#eef1f5;color:#a2a8b3;font-size:42px;font-weight:800;">${esc((champion.battleName || champion.name || '?').slice(0,1))}</div>`}
           <p class="fighter-tag">👑 主賽手</p>
           <p class="fighter-name">${esc(champion.battleName)}</p>
           <p class="fighter-score">本場 ${winsSoFar} 勝</p>
@@ -762,7 +900,7 @@ function renderPkMatch(session) {
         <div class="fighter-card style-${currentChallenger.cardStyle || 'blue'}">
           ${currentChallenger.photoUrl
       ? `<img class="fighter-photo" src="${esc(currentChallenger.photoUrl)}" alt="${esc(currentChallenger.battleName)}">`
-      : `<div class="fighter-photo" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa;font-size:42px;font-weight:800;">${esc((currentChallenger.battleName || currentChallenger.name || '?').slice(0,1))}</div>`}
+      : `<div class="fighter-photo" style="display:flex;align-items:center;justify-content:center;background:#eef1f5;color:#a2a8b3;font-size:42px;font-weight:800;">${esc((currentChallenger.battleName || currentChallenger.name || '?').slice(0,1))}</div>`}
           <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
           <p class="fighter-name">${esc(currentChallenger.battleName)}</p>
           <p class="fighter-total">總積分 ${chalTotal}</p>
