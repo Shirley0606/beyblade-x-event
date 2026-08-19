@@ -324,6 +324,18 @@ body{display:flex;align-items:center;justify-content:center}
   box-shadow:none !important;
 }
 
+
+/* ===== 修正：選擇賽制畫面時右上角記分板可點擊 ===== */
+.mode-label,
+.scoreboard-link,
+.back-link{
+  z-index:30 !important;
+  pointer-events:auto !important;
+}
+.select-screen{
+  z-index:15 !important;
+}
+
 </style>
 </head>
 <body>
