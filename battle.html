@@ -336,6 +336,97 @@ body{display:flex;align-items:center;justify-content:center}
   z-index:15 !important;
 }
 
+
+/* ===== V8：Battle 投影全螢幕版 ===== */
+html,body{
+  margin:0 !important;
+  width:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+  background:#000 !important;
+}
+body{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* 和 DISPLAY 相同：固定 16:9 投影舞台 */
+.stage{
+  position:relative !important;
+  width:min(100vw,177.7777778vh) !important;
+  height:min(100vh,56.25vw) !important;
+  aspect-ratio:16/9 !important;
+  overflow:hidden !important;
+  background:#02040a !important;
+}
+
+/* 選擇賽制、PK、團體戰、記分板全部限制在同一個 16:9 舞台 */
+#content,
+.select-screen,
+.marquee-wrap,
+.team-setup-live,
+.winner-banner{
+  max-width:100% !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+}
+
+/* 頂部按鈕在投影畫面內固定 */
+.mode-label{
+  top:2.4% !important;
+  left:2.4% !important;
+}
+.scoreboard-link{
+  top:2.4% !important;
+  right:13.5% !important;
+}
+.back-link{
+  top:2.4% !important;
+  right:2.4% !important;
+}
+
+/* 選擇賽制畫面填滿 16:9，不產生上下空白頁 */
+.select-screen{
+  inset:0 !important;
+  padding:7% 4% 4% !important;
+}
+.select-title{
+  margin:0 0 3% !important;
+}
+.select-btns{
+  width:68% !important;
+  max-width:900px !important;
+  justify-content:center !important;
+}
+.select-btn{
+  width:42% !important;
+  max-width:none !important;
+  min-width:0 !important;
+}
+
+/* 即時記分板也強制在單一 16:9 內完整顯示 */
+.scoreboard{
+  inset:8.2% 3% 3.8% !important;
+}
+.scoreboard-grid{
+  overflow:hidden !important;
+}
+
+/* 不顯示任何進入全螢幕詢問層 */
+.fullscreen-start,
+.fullscreen-box,
+.fullscreen-go{
+  display:none !important;
+}
+
+@media (max-aspect-ratio:16/9){
+  .stage{width:100vw !important;height:56.25vw !important}
+}
+@media (min-aspect-ratio:16/9){
+  .stage{width:177.7777778vh !important;height:100vh !important}
+}
+
 </style>
 </head>
 <body>
@@ -705,6 +796,21 @@ scoreboardBtn.addEventListener('click', () => {
 
 modeLabel.parentElement.addEventListener('click', showModeSelect);
 showModeSelect();
+
+
+/* Battle 不顯示全螢幕詢問。
+   若瀏覽器 / kiosk 模式允許自動 fullscreen 就直接進入；
+   一般瀏覽器若阻擋，仍維持完整 16:9 投影版面。 */
+window.addEventListener('load', async () => {
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch (e) {
+    // 瀏覽器安全限制時靜默，不顯示任何詢問或遮罩
+  }
+});
+
 
 document.addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'f') {
