@@ -209,11 +209,33 @@ body{display:flex;align-items:center;justify-content:center}
   position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
   color:#7c8799; font-size:clamp(14px,1.4vw,24px); text-align:center; padding:0 8%;
 }
+
+/* ---------- scoreboard tab ---------- */
+.scoreboard-link{position:absolute;z-index:13;top:3.1%;right:15.2%;color:#fff;font-size:clamp(11px,.9vw,16px);font-weight:800;padding:.48% 1.1%;border:1px solid rgba(255,255,255,.28);background:linear-gradient(90deg,rgba(86,8,18,.82),rgba(5,18,42,.82));letter-spacing:.08em;cursor:pointer}
+.scoreboard-link:hover{filter:brightness(1.12)}
+.scoreboard{position:absolute;inset:8.5% 3.2% 4.5%;z-index:6;display:flex;flex-direction:column}
+.scoreboard-head{display:flex;align-items:end;justify-content:space-between;padding:0 1% 1.1%}
+.scoreboard-title{margin:0;font-size:clamp(22px,2.7vw,46px);font-weight:900;font-style:italic;letter-spacing:.08em;color:#fff}
+.scoreboard-sub{margin:0;font-size:clamp(10px,.85vw,15px);color:#9fb0c9;letter-spacing:.12em}
+.scoreboard-grid{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1%}
+.score-row{position:relative;min-height:0;display:grid;grid-template-columns:11% 14% 1fr 20%;align-items:center;gap:2%;padding:1.15% 1.6%;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,rgba(45,7,14,.62),rgba(5,10,18,.9) 46%,rgba(5,25,57,.62));overflow:hidden}
+.score-row:nth-child(1){border-color:#ffce54;box-shadow:inset 0 0 28px rgba(255,206,84,.08),0 0 16px rgba(255,206,84,.10)}
+.rank-no{font-size:clamp(18px,2.1vw,36px);font-weight:900;font-style:italic;color:#fff;text-align:center}
+.score-avatar{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.32);background:#111827}
+.score-player{min-width:0}
+.score-name{margin:0;font-size:clamp(14px,1.5vw,25px);font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-realname{margin:.25em 0 0;font-size:clamp(9px,.72vw,13px);color:#8fa0bb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-points{text-align:right;color:#ffce54;font-size:clamp(25px,3vw,50px);font-weight:900;font-style:italic}
+.score-points small{display:block;font-size:clamp(9px,.66vw,12px);color:#aebad0;letter-spacing:.12em;font-style:normal;font-weight:700;margin-bottom:.1em}
+.score-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#7c8799;font-size:clamp(14px,1.4vw,24px)}
+.fighter-total{display:inline-block;margin-top:.42em;padding:.28em .65em;border:1px solid rgba(255,206,84,.45);color:#ffce54;background:rgba(9,12,18,.62);font-size:clamp(11px,.9vw,17px);font-weight:900}
+
 </style>
 </head>
 <body>
 <div class="stage" id="stage">
   <div class="mode-label"><span>選擇賽制</span></div>
+  <button class="scoreboard-link" id="scoreboardBtn" type="button">記分板</button>
   <a class="back-link" href="display-players.html">← 返回選手登場</a>
 
   <div id="content"></div>
@@ -237,9 +259,54 @@ const db = getFirestore(app);
 const content = document.getElementById('content');
 const stage = document.getElementById('stage');
 const modeLabel = document.querySelector('.mode-label span');
+const scoreboardBtn = document.getElementById('scoreboardBtn');
 
 function esc(v = "") {
   return String(v).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+
+
+function livePlayerFor(p) {
+  if (!p) return null;
+  return livePlayers.find(x =>
+    (p.id && x.id === p.id) ||
+    (p.playerId && x.id === p.playerId) ||
+    (p.battleName && x.battleName === p.battleName) ||
+    (p.name && x.name === p.name)
+  ) || null;
+}
+function totalPointsOf(p) {
+  const live = livePlayerFor(p);
+  const val = live?.totalPoints ?? p?.totalPoints ?? 0;
+  return Number(val) || 0;
+}
+function renderScoreboard() {
+  const sorted = [...livePlayers].sort((a,b) => {
+    const d = (Number(b.totalPoints)||0) - (Number(a.totalPoints)||0);
+    return d !== 0 ? d : String(a.battleName||a.name||'').localeCompare(String(b.battleName||b.name||''),'zh-Hant');
+  });
+  const rows = sorted.map((p,i) => `
+    <div class="score-row">
+      <div class="rank-no">${i+1}</div>
+      ${p.photoUrl ? `<img class="score-avatar" src="${esc(p.photoUrl)}" alt="${esc(p.battleName||p.name||'')}">` : `<div class="score-avatar"></div>`}
+      <div class="score-player">
+        <p class="score-name">${esc(p.battleName||p.name||'未命名選手')}</p>
+        <p class="score-realname">${esc(p.name||'')}</p>
+      </div>
+      <div class="score-points"><small>總積分</small>${Number(p.totalPoints)||0}</div>
+    </div>
+  `).join('');
+  content.innerHTML = `
+    <div class="scoreboard">
+      <div class="scoreboard-head">
+        <div>
+          <p class="scoreboard-title">即時記分板</p>
+          <p class="scoreboard-sub">LIVE SCOREBOARD · 依總積分即時排序</p>
+        </div>
+        <p class="scoreboard-sub">${sorted.length} 位選手</p>
+      </div>
+      <div class="scoreboard-grid">${rows || '<div class="score-empty">目前尚無選手積分資料</div>'}</div>
+    </div>`;
 }
 
 function renderEmpty(msg) {
@@ -269,14 +336,14 @@ function renderPkActive(session) {
         <div class="fighter-info">
           <p class="fighter-tag">👑 主賽手</p>
           <p class="fighter-name">${esc(champion.battleName)}</p>
-          <p class="fighter-score">本場 ${winsSoFar} 勝</p>
+          <p class="fighter-score">本場 ${winsSoFar} 勝</p><span class="fighter-total">總積分 ${totalPointsOf(champion)}</span>
         </div>
       </div>
       <div class="fighter-half right ${chalGlow}">
         <img class="show" src="${esc(currentChallenger.photoUrl)}" alt="${esc(currentChallenger.battleName)}">
         <div class="fighter-info">
           <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
-          <p class="fighter-name">${esc(currentChallenger.battleName)}</p>
+          <p class="fighter-name">${esc(currentChallenger.battleName)}</p><span class="fighter-total">總積分 ${totalPointsOf(currentChallenger)}</span>
         </div>
       </div>
     </div>
@@ -341,7 +408,7 @@ function renderTeamActive(session) {
         <div class="fighter-info">
           <p class="fighter-tag">🔴 ${esc(teamRed.name)}　${redWins} 勝</p>
           <p class="fighter-name">${esc(redPlayer.battleName)}</p>
-          <p class="fighter-score">${tagText}</p>
+          <p class="fighter-score">${tagText}</p><span class="fighter-total">總積分 ${totalPointsOf(redPlayer)}</span>
         </div>
       </div>
       <div class="fighter-half right blue-glow">
@@ -349,7 +416,7 @@ function renderTeamActive(session) {
         <div class="fighter-info">
           <p class="fighter-tag">🔵 ${esc(teamBlue.name)}　${blueWins} 勝</p>
           <p class="fighter-name">${esc(bluePlayer.battleName)}</p>
-          <p class="fighter-score">${tagText}</p>
+          <p class="fighter-score">${tagText}</p><span class="fighter-total">總積分 ${totalPointsOf(bluePlayer)}</span>
         </div>
       </div>
     </div>
@@ -378,7 +445,7 @@ let unsubA = null, unsubB = null;
 let livePlayers = [];
 let pkSessionCache = undefined;   // undefined=尚未載入, null=無場次, object=場次資料
 let teamSessionCache = undefined;
-let viewMode = null; // 'pk' | 'team'
+let viewMode = null; // 'pk' | 'team' | 'scoreboard'
 
 function cleanupWatchers() {
   if (unsubA) { unsubA(); unsubA = null; }
@@ -392,6 +459,7 @@ function showModeSelect() {
   viewMode = null;
   cleanupWatchers();
   modeLabel.textContent = '選擇賽制';
+  scoreboardBtn.textContent = '記分板';
   content.innerHTML = `
     <div class="select-screen">
       <p class="select-title">請選擇本場賽制</p>
@@ -408,12 +476,14 @@ function showModeSelect() {
 function enterPkMode() {
   viewMode = 'pk';
   modeLabel.textContent = 'PK 車輪戰';
+  scoreboardBtn.textContent = '記分板';
   watchPk();
 }
 
 function enterTeamMode() {
   viewMode = 'team';
   modeLabel.textContent = '團體戰';
+  scoreboardBtn.textContent = '記分板';
   watchTeam();
 }
 
@@ -460,6 +530,11 @@ function watchTeam() {
     teamSessionCache = snap.exists() ? snap.data() : null;
     renderTeamViewLive();
   }, () => renderEmpty('無法讀取對戰資料'));
+  unsubB = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id:d.id, ...d.data() }));
+    renderTeamViewLive();
+  });
 }
 
 function renderTeamViewLive() {
@@ -489,6 +564,23 @@ function renderTeamSetupLive(session) {
     <div class="tsl-vs">VS</div>
   `;
 }
+
+
+function enterScoreboardMode() {
+  viewMode = 'scoreboard';
+  cleanupWatchers();
+  modeLabel.textContent = '即時記分板';
+  scoreboardBtn.textContent = '返回比賽';
+  unsubA = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id:d.id, ...d.data() }));
+    renderScoreboard();
+  }, () => renderEmpty('無法讀取積分資料'));
+}
+scoreboardBtn.addEventListener('click', () => {
+  if (viewMode === 'scoreboard') showModeSelect();
+  else enterScoreboardMode();
+});
 
 modeLabel.parentElement.addEventListener('click', showModeSelect);
 showModeSelect();
