@@ -218,9 +218,8 @@ body{display:flex;align-items:center;justify-content:center}
 .scoreboard-title{margin:0;font-size:clamp(22px,2.7vw,46px);font-weight:900;font-style:italic;letter-spacing:.08em;color:#fff}
 .scoreboard-sub{margin:0;font-size:clamp(10px,.85vw,15px);color:#9fb0c9;letter-spacing:.12em}
 .scoreboard-grid{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1%}
-.score-row{position:relative;min-height:0;display:grid;grid-template-columns:11% 14% 1fr 20%;align-items:center;gap:2%;padding:1.15% 1.6%;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,rgba(45,7,14,.62),rgba(5,10,18,.9) 46%,rgba(5,25,57,.62));overflow:hidden}
+.score-row{position:relative;min-height:0;display:grid;grid-template-columns:14% 1fr 20%;align-items:center;gap:2%;padding:1.15% 1.6%;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,rgba(45,7,14,.62),rgba(5,10,18,.9) 46%,rgba(5,25,57,.62));overflow:hidden}
 .score-row:nth-child(1){border-color:#ffce54;box-shadow:inset 0 0 28px rgba(255,206,84,.08),0 0 16px rgba(255,206,84,.10)}
-.rank-no{font-size:clamp(18px,2.1vw,36px);font-weight:900;font-style:italic;color:#fff;text-align:center}
 .score-avatar{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.32);background:#111827}
 .score-player{min-width:0}
 .score-name{margin:0;font-size:clamp(14px,1.5vw,25px);font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -313,6 +312,18 @@ body{display:flex;align-items:center;justify-content:center}
   }
 }
 
+
+/* ===== 記分板：只讓第一名置頂，其餘不做名次排序 ===== */
+.score-row.leader{
+  border-color:#ffce54 !important;
+  box-shadow:inset 0 0 30px rgba(255,206,84,.10),0 0 18px rgba(255,206,84,.13) !important;
+}
+
+.score-row:not(.leader){
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:none !important;
+}
+
 </style>
 </head>
 <body>
@@ -364,32 +375,47 @@ function totalPointsOf(p) {
   return Number(val) || 0;
 }
 function renderScoreboard() {
-  const sorted = [...livePlayers].sort((a,b) => {
-    const d = (Number(b.totalPoints)||0) - (Number(a.totalPoints)||0);
-    return d !== 0 ? d : String(a.battleName||a.name||'').localeCompare(String(b.battleName||b.name||''),'zh-Hant');
-  });
-  const rows = sorted.map((p,i) => `
-    <div class="score-row">
-      <div class="rank-no">${i+1}</div>
-      ${p.photoUrl ? `<img class="score-avatar" src="${esc(p.photoUrl)}" alt="${esc(p.battleName||p.name||'')}">` : `<div class="score-avatar"></div>`}
+  const original = [...livePlayers];
+
+  // 只找出目前最高分者。其餘選手維持 Firebase 原本讀取順序，不依分數重新排序。
+  let leader = null;
+  if (original.length) {
+    const maxPoints = Math.max(...original.map(p => Number(p.totalPoints) || 0));
+    // 若同分，只取原始順序最前面的那位作為目前領先者，避免整個版面一直跳動。
+    leader = original.find(p => (Number(p.totalPoints) || 0) === maxPoints) || null;
+  }
+
+  const displayPlayers = leader
+    ? [leader, ...original.filter(p => p.id !== leader.id)]
+    : original;
+
+  const rows = displayPlayers.map((p,i) => `
+    <div class="score-row ${i === 0 && leader ? 'leader' : ''}">
+      ${p.photoUrl
+        ? `<img class="score-avatar" src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name || '')}">`
+        : `<div class="score-avatar"></div>`}
       <div class="score-player">
-        <p class="score-name">${esc(p.battleName||p.name||'未命名選手')}</p>
-        <p class="score-realname">${esc(p.name||'')}</p>
+        <p class="score-name">${esc(p.battleName || p.name || '未命名選手')}</p>
+        <p class="score-realname">${esc(p.name || '')}</p>
       </div>
       <div class="score-points"><small>總積分</small>${Number(p.totalPoints)||0}</div>
     </div>
   `).join('');
+
   content.innerHTML = `
     <div class="scoreboard">
       <div class="scoreboard-head">
         <div>
           <p class="scoreboard-title">即時記分板</p>
-          <p class="scoreboard-sub">LIVE SCOREBOARD · 依總積分即時排序</p>
+          <p class="scoreboard-sub">LIVE SCOREBOARD</p>
         </div>
-        <p class="scoreboard-sub">${sorted.length} 位選手</p>
+        <p class="scoreboard-sub">${displayPlayers.length} 位選手</p>
       </div>
-      <div class="scoreboard-grid">${rows || '<div class="score-empty">目前尚無選手積分資料</div>'}</div>
-    </div>`;
+      <div class="scoreboard-grid">
+        ${rows || '<div class="score-empty">目前尚無選手積分資料</div>'}
+      </div>
+    </div>
+  `;
 }
 
 function renderEmpty(msg) {
