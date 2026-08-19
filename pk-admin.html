@@ -225,6 +225,43 @@
     .score-controls { grid-column:1 / -1; justify-content:flex-start; }
   }
 
+
+  /* ---------- PK 即時修正工具 ---------- */
+  .pk-maintenance {
+    background:#fff; border-radius:12px; padding:16px; margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+    border-left:4px solid #d85a30;
+  }
+  .pk-maintenance-head {
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .pk-maintenance-title { font-size:14px; font-weight:800; margin:0; }
+  .pk-maintenance-note { font-size:11px; color:#888; margin:3px 0 0; }
+  .pk-maintenance-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  }
+  .pk-toolbox {
+    border:1px solid #eee; border-radius:10px; padding:12px; background:#fafafa;
+  }
+  .pk-toolbox h3 { font-size:12px; margin:0 0 9px; color:#555; }
+  .pk-reopen-list { display:flex; flex-wrap:wrap; gap:7px; }
+  .pk-reopen-btn {
+    border:1px solid #ddd; background:#fff; color:#444; border-radius:8px;
+    padding:7px 9px; font-size:11px; cursor:pointer;
+  }
+  .pk-reopen-btn:hover { border-color:#d85a30; color:#d85a30; }
+  .pk-reopen-btn.currently-eligible { opacity:.45; cursor:default; }
+  .pk-reset-all-now {
+    width:100%; border:1px solid #d92f43; background:#fff; color:#d92f43;
+    border-radius:8px; padding:10px 12px; font-size:12px; font-weight:800; cursor:pointer;
+  }
+  .pk-reset-all-now:hover { background:#fff1f3; }
+  .pk-maintenance-status { min-height:17px; margin-top:8px; font-size:11px; }
+  @media(max-width:650px){
+    .pk-maintenance-grid{grid-template-columns:1fr}
+  }
+
 </style>
 </head>
 <body>
@@ -566,9 +603,54 @@ function watchManualScoreLog() {
 // ========================================================
 // PK 車輪戰
 // ========================================================
+
+function renderPkMaintenance() {
+  const used = allPlayers.filter(p => p.photoUrl && p.pkDrawn);
+  const all = allPlayers.filter(p => p.photoUrl);
+
+  return `
+    <div class="pk-maintenance">
+      <div class="pk-maintenance-head">
+        <div>
+          <p class="pk-maintenance-title">PK 即時修正工具</p>
+          <p class="pk-maintenance-note">比賽進行中也可以操作，不需要先取消目前場次。</p>
+        </div>
+      </div>
+
+      <div class="pk-maintenance-grid">
+        <div class="pk-toolbox">
+          <h3>指定選手可再次當主賽手</h3>
+          <div class="pk-reopen-list">
+            ${all.map(p => `
+              <button
+                class="pk-reopen-btn ${p.pkDrawn ? '' : 'currently-eligible'}"
+                data-reopen-champion="${p.id}"
+                ${p.pkDrawn ? '' : 'disabled'}
+              >
+                ${esc(p.battleName || p.name)}${p.pkDrawn ? '・重新開放' : '・目前可抽'}
+              </button>
+            `).join('') || '<span class="sub">尚無選手</span>'}
+          </div>
+        </div>
+
+        <div class="pk-toolbox">
+          <h3>整輪重置</h3>
+          <button class="pk-reset-all-now" id="pkResetEverythingBtn">
+            ⚠️ 全部重新來過＋所有積分歸零
+          </button>
+          <p class="pk-maintenance-note">會清除目前 PK 場次、所有主賽手紀錄，並把所有選手總積分改成 0。</p>
+        </div>
+      </div>
+
+      <div class="pk-maintenance-status" id="pkMaintenanceStatus"></div>
+    </div>
+  `;
+}
+
 function renderPkMode() {
   let html = `<h1>PK 車輪戰控制台</h1>
-    <p class="sub">每位主賽手都會與其他所有選手各對戰 1 次；已當過主賽手的人，後續抽籤會自動排除。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+    <p class="sub">每位主賽手都會與其他所有選手各對戰 1 次；已當過主賽手的人，後續抽籤會自動排除。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>
+  html += renderPkMaintenance();
 
   if (!pkSession) {
     html += renderPkPool();
@@ -691,6 +773,7 @@ function renderPkSummary(session) {
 }
 
 function bindPkEvents() {
+  bindPkMaintenanceEvents();
   document.getElementById('drawBtn')?.addEventListener('click', drawChampion);
   document.getElementById('champWinBtn')?.addEventListener('click', () => recordPkResult('champion_win'));
   document.getElementById('chalWinBtn')?.addEventListener('click', () => recordPkResult('challenger_win'));
@@ -703,6 +786,98 @@ function bindPkEvents() {
       await updateDoc(doc(db, 'players', btn.dataset.id), { pkDrawn: false });
     });
   });
+}
+
+
+function bindPkMaintenanceEvents() {
+  document.querySelectorAll('[data-reopen-champion]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const p = allPlayers.find(x => x.id === btn.dataset.reopenChampion);
+      if (!p || !p.pkDrawn) return;
+
+      if (!confirm(`確定要讓「${p.battleName || p.name}」重新開放成主賽手嗎？\n\n目前積分與正在進行中的比賽都不會改變。`)) return;
+
+      const status = document.getElementById('pkMaintenanceStatus');
+      try {
+        await updateDoc(doc(db, 'players', p.id), {
+          pkDrawn: false,
+          updatedAt: serverTimestamp()
+        });
+        if (status) {
+          status.textContent = `✓ ${p.battleName || p.name} 已重新開放，可再次被抽為主賽手。`;
+          status.className = 'pk-maintenance-status ok';
+        }
+      } catch (err) {
+        if (status) {
+          status.textContent = '修改失敗：' + err.message;
+          status.className = 'pk-maintenance-status err';
+        }
+      }
+    });
+  });
+
+  document.getElementById('pkResetEverythingBtn')?.addEventListener('click', resetPkEverythingNow);
+}
+
+async function resetPkEverythingNow() {
+  const first = confirm(
+    '確定要「PK 全部重新來過」嗎？\n\n將會：\n1. 所有選手都重新可以當主賽手\n2. 所有選手積分歸零\n3. 清除目前正在進行中的 PK 場次\n\n建議只在測試結束或正式比賽重新開始時使用。'
+  );
+  if (!first) return;
+
+  const second = confirm('再次確認：所有積分都會立即變成 0。確定執行？');
+  if (!second) return;
+
+  const btn = document.getElementById('pkResetEverythingBtn');
+  const status = document.getElementById('pkMaintenanceStatus');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '重置中…';
+  }
+  if (status) {
+    status.textContent = '正在重置 PK 賽事資料…';
+    status.className = 'pk-maintenance-status';
+  }
+
+  try {
+    const batch = writeBatch(db);
+
+    allPlayers.forEach(p => {
+      batch.update(doc(db, 'players', p.id), {
+        totalPoints: 0,
+        pkDrawn: false,
+        updatedAt: serverTimestamp()
+      });
+    });
+
+    await batch.commit();
+
+    const sessionSnap = await getDoc(pkSessionRef);
+    if (sessionSnap.exists()) await deleteDoc(pkSessionRef);
+
+    await addDoc(collection(db, 'scoreAdjustments'), {
+      action: 'pk_full_reset',
+      affectedCount: allPlayers.length,
+      createdAt: serverTimestamp()
+    });
+
+    if (status) {
+      status.textContent = '✓ PK 已全部重置：積分 0、主賽手資格全部恢復、目前場次已清除。';
+      status.className = 'pk-maintenance-status ok';
+    }
+  } catch (err) {
+    console.error(err);
+    if (status) {
+      status.textContent = '重置失敗：' + err.message;
+      status.className = 'pk-maintenance-status err';
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '⚠️ 全部重新來過＋所有積分歸零';
+    }
+  }
 }
 
 async function drawChampion() {
