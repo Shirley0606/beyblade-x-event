@@ -168,6 +168,63 @@
   .btn-start-team:disabled { background: #bcd; cursor: not-allowed; }
 
   .position-tag { text-align: center; font-size: 12px; color: #666; margin-bottom: 12px; font-weight: 600; }
+
+  /* ---------- Score management ---------- */
+  .mode-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .mode-btn.score { background: linear-gradient(135deg, #7a4acb, #4c2b91); }
+
+  .score-toolbar {
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-bottom:14px; flex-wrap:wrap;
+  }
+  .btn-danger {
+    background:#fff; color:#d92f43; border:1px solid #d92f43; border-radius:8px;
+    padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .btn-danger:hover { background:#fff1f3; }
+  .score-manage-list { display:flex; flex-direction:column; gap:9px; }
+  .score-manage-row {
+    display:grid; grid-template-columns:46px minmax(110px,1fr) auto;
+    gap:10px; align-items:center; padding:10px;
+    border:1px solid #eee; border-radius:10px; background:#fafafa;
+  }
+  .score-manage-row img {
+    width:46px; height:46px; border-radius:50%; object-fit:cover; background:#ddd;
+  }
+  .score-manage-name { min-width:0; }
+  .score-manage-name strong {
+    display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .score-manage-name span { display:block; font-size:11px; color:#999; margin-top:2px; }
+  .score-controls { display:flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  .score-controls button {
+    min-width:34px; height:34px; border-radius:7px; border:1px solid #ddd;
+    background:#fff; cursor:pointer; font-weight:800; color:#444;
+  }
+  .score-controls button:hover { border-color:#d85a30; color:#d85a30; }
+  .score-controls .zero-one { color:#999; font-size:11px; min-width:48px; font-weight:600; }
+  .score-input {
+    width:64px; height:34px; border:1px solid #ccc; border-radius:7px;
+    text-align:center; font-size:14px; font-weight:800;
+  }
+  .score-save {
+    background:#d85a30 !important; color:#fff !important; border-color:#d85a30 !important;
+    min-width:48px !important; font-size:12px;
+  }
+  .score-status { font-size:12px; min-height:18px; margin:8px 0 0; }
+  .score-log-list { max-height:260px; overflow-y:auto; }
+  .score-log-row {
+    display:grid; grid-template-columns:72px 1fr auto; gap:8px; align-items:center;
+    padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:12px;
+  }
+  .score-log-time { color:#999; }
+  .score-log-change { font-weight:800; color:#d85a30; }
+  @media (max-width:650px) {
+    .mode-grid.three { grid-template-columns:1fr; }
+    .score-manage-row { grid-template-columns:42px 1fr; }
+    .score-controls { grid-column:1 / -1; justify-content:flex-start; }
+  }
+
 </style>
 </head>
 <body>
@@ -185,7 +242,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-  onSnapshot, collection, addDoc, increment, serverTimestamp, query, orderBy
+  onSnapshot, collection, addDoc, increment, serverTimestamp, query, orderBy, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -228,7 +285,7 @@ let activePicker = null; // 'red' | 'blue' | null
 
 function getMode() {
   const h = location.hash.replace('#', '');
-  return (h === 'pk' || h === 'team') ? h : null;
+  return (h === 'pk' || h === 'team' || h === 'score') ? h : null;
 }
 
 window.addEventListener('hashchange', render);
@@ -255,6 +312,7 @@ function render() {
   const mode = getMode();
   if (mode === 'pk') renderPkMode();
   else if (mode === 'team') renderTeamMode();
+  else if (mode === 'score') renderScoreMode();
   else renderModeSelect();
 }
 
@@ -262,11 +320,247 @@ function renderModeSelect() {
   appEl.innerHTML = `
     <h1>對戰控制台</h1>
     <p class="sub">請選擇本輪要進行的賽制</p>
-    <div class="mode-grid">
+    <div class="mode-grid three">
       <a class="mode-btn pk" href="#pk"><span class="emoji">🥊</span>PK 車輪戰</a>
       <a class="mode-btn team" href="#team"><span class="emoji">⚔️</span>團體戰</a>
+      <a class="mode-btn score" href="#score"><span class="emoji">🏆</span>積分管理</a>
     </div>
   `;
+}
+
+
+// ========================================================
+// 積分管理
+// ========================================================
+function renderScoreMode() {
+  const sorted = [...allPlayers].sort((a,b) => {
+    const diff = (Number(b.totalPoints) || 0) - (Number(a.totalPoints) || 0);
+    if (diff !== 0) return diff;
+    return String(a.battleName || a.name || '').localeCompare(String(b.battleName || b.name || ''), 'zh-Hant');
+  });
+
+  appEl.innerHTML = `
+    <h1>積分管理</h1>
+    <p class="sub">可隨時修正選手總積分。修改後會直接同步到 Firebase 與前台即時記分板。
+      <a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 返回賽制選擇</a>
+    </p>
+
+    <div class="card">
+      <div class="score-toolbar">
+        <div>
+          <strong style="font-size:14px;">目前 ${sorted.length} 位選手</strong>
+          <div style="font-size:11px;color:#999;margin-top:3px;">＋1 / −1 可快速修正，也可以直接輸入正確分數</div>
+        </div>
+        <button class="btn-danger" id="resetAllScoresBtn">⚠️ 全部積分歸零</button>
+      </div>
+
+      <div class="score-manage-list">
+        ${sorted.map(p => `
+          <div class="score-manage-row" data-player-row="${p.id}">
+            ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="">` : `<div style="width:46px;height:46px;border-radius:50%;background:#ddd;"></div>`}
+            <div class="score-manage-name">
+              <strong>${esc(p.battleName || p.name || '未命名選手')}</strong>
+              <span>${esc(p.name || '')}　目前 ${Number(p.totalPoints) || 0} 分</span>
+            </div>
+            <div class="score-controls">
+              <button data-score-act="minus" data-id="${p.id}" title="減 1 分">−1</button>
+              <button data-score-act="plus" data-id="${p.id}" title="加 1 分">＋1</button>
+              <input class="score-input" type="number" min="0" step="1"
+                     value="${Number(p.totalPoints) || 0}" data-score-input="${p.id}">
+              <button class="score-save" data-score-act="save" data-id="${p.id}">儲存</button>
+              <button class="zero-one" data-score-act="zero" data-id="${p.id}">歸零</button>
+            </div>
+          </div>
+        `).join('') || '<p class="sub">目前沒有選手資料</p>'}
+      </div>
+      <div id="scoreStatus" class="score-status"></div>
+    </div>
+
+    <div class="card">
+      <p class="log-title">最近人工積分修改紀錄</p>
+      <div class="score-log-list" id="manualScoreLog"><p class="sub">讀取中…</p></div>
+    </div>
+  `;
+
+  bindScoreEvents();
+  watchManualScoreLog();
+}
+
+let unsubManualScoreLog = null;
+
+function bindScoreEvents() {
+  document.querySelectorAll('[data-score-act]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const act = btn.dataset.scoreAct;
+      const player = allPlayers.find(p => p.id === id);
+      if (!player) return;
+
+      const oldScore = Number(player.totalPoints) || 0;
+      let newScore = oldScore;
+
+      if (act === 'plus') newScore = oldScore + 1;
+      if (act === 'minus') newScore = Math.max(0, oldScore - 1);
+      if (act === 'zero') {
+        if (oldScore === 0) return;
+        if (!confirm(`確定要把「${player.battleName || player.name}」的積分歸零嗎？`)) return;
+        newScore = 0;
+      }
+      if (act === 'save') {
+        const input = document.querySelector(`[data-score-input="${id}"]`);
+        newScore = Math.max(0, Math.floor(Number(input?.value) || 0));
+      }
+
+      await setPlayerScore(player, oldScore, newScore, act);
+    });
+  });
+
+  document.getElementById('resetAllScoresBtn')?.addEventListener('click', resetAllScores);
+}
+
+async function setPlayerScore(player, oldScore, newScore, action) {
+  const status = document.getElementById('scoreStatus');
+  if (newScore === oldScore) {
+    if (status) {
+      status.textContent = '分數沒有變更';
+      status.className = 'score-status';
+    }
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, 'players', player.id), {
+      totalPoints: newScore,
+      updatedAt: serverTimestamp()
+    });
+
+    await addDoc(collection(db, 'scoreAdjustments'), {
+      playerId: player.id,
+      playerName: player.name || '',
+      battleName: player.battleName || player.name || '',
+      oldScore,
+      newScore,
+      delta: newScore - oldScore,
+      action,
+      createdAt: serverTimestamp()
+    });
+
+    if (status) {
+      status.textContent = `✓ ${player.battleName || player.name}：${oldScore} → ${newScore} 分`;
+      status.className = 'score-status ok';
+    }
+  } catch (err) {
+    console.error(err);
+    if (status) {
+      status.textContent = '修改失敗：' + err.message;
+      status.className = 'score-status err';
+    }
+  }
+}
+
+async function resetAllScores() {
+  const activeCount = allPlayers.filter(p => (Number(p.totalPoints) || 0) !== 0).length;
+  if (!activeCount) {
+    alert('目前所有選手積分都已經是 0。');
+    return;
+  }
+
+  const firstConfirm = confirm(`確定要將全部 ${allPlayers.length} 位選手的總積分歸零嗎？\n\n這通常只建議在正式比賽開始前使用。`);
+  if (!firstConfirm) return;
+
+  const secondConfirm = confirm('再次確認：全部積分會立即變成 0，前台記分板也會同步更新。確定執行？');
+  if (!secondConfirm) return;
+
+  const status = document.getElementById('scoreStatus');
+  const btn = document.getElementById('resetAllScoresBtn');
+  if (btn) btn.disabled = true;
+  if (status) {
+    status.textContent = '全部歸零中…';
+    status.className = 'score-status';
+  }
+
+  try {
+    const batch = writeBatch(db);
+    const changed = allPlayers.filter(p => (Number(p.totalPoints) || 0) !== 0);
+
+    changed.forEach(p => {
+      batch.update(doc(db, 'players', p.id), {
+        totalPoints: 0,
+        updatedAt: serverTimestamp()
+      });
+    });
+    await batch.commit();
+
+    await addDoc(collection(db, 'scoreAdjustments'), {
+      action: 'reset_all',
+      affectedCount: changed.length,
+      oldScores: changed.map(p => ({
+        playerId: p.id,
+        battleName: p.battleName || p.name || '',
+        oldScore: Number(p.totalPoints) || 0
+      })),
+      createdAt: serverTimestamp()
+    });
+
+    if (status) {
+      status.textContent = `✓ 已將 ${changed.length} 位選手積分全部歸零`;
+      status.className = 'score-status ok';
+    }
+  } catch (err) {
+    console.error(err);
+    if (status) {
+      status.textContent = '全部歸零失敗：' + err.message;
+      status.className = 'score-status err';
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function watchManualScoreLog() {
+  if (unsubManualScoreLog) unsubManualScoreLog();
+
+  const q = query(collection(db, 'scoreAdjustments'), orderBy('createdAt', 'desc'));
+  unsubManualScoreLog = onSnapshot(q, (snap) => {
+    const rows = [];
+    let count = 0;
+
+    snap.forEach(d => {
+      if (count >= 30) return;
+      const x = d.data();
+      count++;
+
+      let timeText = '剛剛';
+      if (x.createdAt?.toDate) {
+        timeText = x.createdAt.toDate().toLocaleTimeString('zh-TW', {
+          hour:'2-digit', minute:'2-digit'
+        });
+      }
+
+      if (x.action === 'reset_all') {
+        rows.push(`
+          <div class="score-log-row">
+            <span class="score-log-time">${timeText}</span>
+            <span>全部積分歸零（${x.affectedCount || 0} 位）</span>
+            <span class="score-log-change">RESET</span>
+          </div>`);
+      } else {
+        rows.push(`
+          <div class="score-log-row">
+            <span class="score-log-time">${timeText}</span>
+            <span>${esc(x.battleName || x.playerName || '選手')}</span>
+            <span class="score-log-change">${Number(x.oldScore)||0} → ${Number(x.newScore)||0}</span>
+          </div>`);
+      }
+    });
+
+    const el = document.getElementById('manualScoreLog');
+    if (el) el.innerHTML = rows.join('') || '<p class="sub">尚無人工修改紀錄</p>';
+  }, (err) => {
+    console.error(err);
+    const el = document.getElementById('manualScoreLog');
+    if (el) el.innerHTML = '<p class="sub err">無法讀取修改紀錄</p>';
+  });
 }
 
 // ========================================================
