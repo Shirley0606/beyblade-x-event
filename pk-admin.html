@@ -399,6 +399,16 @@
     .pk-reopen-list{grid-template-columns:1fr !important}
   }
 
+
+  .score-source-detail{
+    display:block !important;
+    margin-top:4px !important;
+    color:#a1a6af !important;
+    font-size:10px !important;
+    line-height:1.45 !important;
+    white-space:normal !important;
+  }
+
 </style>
 </head>
 <body>
@@ -519,7 +529,7 @@ appEl.innerHTML = `
       <div class="score-toolbar">
         <div>
           <strong style="font-size:14px;">目前 ${sorted.length} 位選手</strong>
-          <div style="font-size:11px;color:#999;margin-top:3px;">＋1 / −1 可快速修正，也可以直接輸入正確分數</div>
+          <div style="font-size:11px;color:#999;margin-top:3px;">＋1 / −1 可快速修正，也可以直接輸入正確分數；灰字會分開顯示個人戰與團體戰累積</div>
         </div>
         <button class="btn-danger" id="resetAllScoresBtn">⚠️ 全部積分歸零</button>
       </div>
@@ -531,6 +541,12 @@ appEl.innerHTML = `
             <div class="score-manage-name">
               <strong>${esc(p.battleName || p.name || '未命名選手')}</strong>
               <span>${esc(p.name || '')}　目前 ${Number(p.totalPoints) || 0} 分</span>
+              <span class="score-source-detail">
+                個人戰 ${Number(p.pkPoints) || 0} 分　｜　團體戰 ${Number(p.teamPoints) || 0} 分
+                ${((Number(p.totalPoints)||0) - (Number(p.pkPoints)||0) - (Number(p.teamPoints)||0)) !== 0
+                  ? `　｜　人工調整 ${((Number(p.totalPoints)||0) - (Number(p.pkPoints)||0) - (Number(p.teamPoints)||0)) > 0 ? '+' : ''}${(Number(p.totalPoints)||0) - (Number(p.pkPoints)||0) - (Number(p.teamPoints)||0)} 分`
+                  : ''}
+              </span>
             </div>
             <div class="score-controls">
               <button data-score-act="minus" data-id="${p.id}" title="減 1 分">−1</button>
@@ -611,6 +627,8 @@ async function setPlayerScore(player, oldScore, newScore, action) {
       oldScore,
       newScore,
       delta: newScore - oldScore,
+      pkPoints: Number(player.pkPoints) || 0,
+      teamPoints: Number(player.teamPoints) || 0,
       action,
       createdAt: serverTimestamp()
     });
@@ -656,6 +674,8 @@ async function resetAllScores() {
     changed.forEach(p => {
       batch.update(doc(db, 'players', p.id), {
         totalPoints: 0,
+        pkPoints: 0,
+        teamPoints: 0,
         updatedAt: serverTimestamp()
       });
     });
@@ -821,11 +841,11 @@ function renderPkPool(collapsedTitle) {
   let html = `<div class="card pk-draw-card">`;
   if (!collapsedTitle) {
     html += `
-      <p style="font-size:13px;color:#666;margin-bottom:14px;">從尚未當過主賽手的選手中隨機抽出 1 位主賽手。主賽手會和目前所有其他選手各比 1 場；已當過主賽手的人後續不再進入主賽手抽籤。</p>
-      <div style="text-align:center;">
+      <div style="text-align:center;margin-bottom:16px;">
         <button class="btn-draw" id="drawBtn" ${eligible.length < 1 || allPlayers.length < 2 ? 'disabled' : ''}>🎲 隨機抽取主賽手</button>
         <div id="drawStatus" class="${eligible.length < 1 || allPlayers.length < 2 ? 'err' : ''}">${allPlayers.length < 2 ? '至少需要 2 位選手' : (eligible.length < 1 ? '目前所有選手都已當過主賽手' : '')}</div>
       </div>
+      <p style="font-size:13px;color:#666;margin:0 0 14px;">從尚未當過主賽手的選手中隨機抽出 1 位主賽手。主賽手會和目前所有其他選手各比 1 場；已當過主賽手的人後續不再進入主賽手抽籤。</p>
     `;
   }
 
@@ -846,6 +866,7 @@ function poolCardHtml(p, used) {
         : `<div style="width:54px;height:54px;border-radius:50%;margin:0 auto 4px;background:#e4e4e4;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">${esc((p.battleName || p.name || '?').slice(0,1))}</div>`}
       <p class="pn">${esc(p.battleName || p.name)}</p>
       <span class="pool-score">${p.totalPoints || 0} 分</span>
+      <div style="font-size:9px;color:#aaa;margin-top:3px;">個 ${Number(p.pkPoints)||0}｜團 ${Number(p.teamPoints)||0}</div>
       ${used ? `<button class="pool-readd" data-id="${p.id}">重新加入主賽手抽籤</button>` : ''}
     </div>
   `;
@@ -1022,6 +1043,8 @@ async function resetPkEverythingNow() {
     allPlayers.forEach(p => {
       batch.update(doc(db, 'players', p.id), {
         totalPoints: 0,
+        pkPoints: 0,
+        teamPoints: 0,
         pkDrawn: false,
         updatedAt: serverTimestamp()
       });
@@ -1109,7 +1132,10 @@ async function recordPkResult(result) {
   const currentChallenger = challengers[currentIndex];
 
   if (result === 'champion_win') {
-    await updateDoc(doc(db, 'players', champion.id), { totalPoints: increment(1) });
+    await updateDoc(doc(db, 'players', champion.id), {
+      totalPoints: increment(1),
+      pkPoints: increment(1)
+    });
   }
 
   await addDoc(collection(db, 'pkMatches'), {
@@ -1151,7 +1177,7 @@ async function cancelPkSession() {
 // ========================================================
 function renderTeamMode() {
   let html = `<h1>團體戰控制台</h1>
-    <p class="sub">兩隊各自選人排棒次，依序 1 對 1 對戰。選人過程前台會即時同步顯示。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+    <p class="sub">兩隊可從所有參賽選手中選人排棒次，依序 1 對 1 對戰；沒有照片的選手也可以加入。選人過程前台會即時同步顯示。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
 
   if (!teamSession) {
     if (!teamSetupInitPending) initTeamSetup();
@@ -1206,7 +1232,9 @@ function renderTeamSetup(session) {
     const membersHtml = d.members.map((m, i) => `
       <div class="member-chip">
         <span class="order-no">${i + 1}</span>
-        <img src="${esc(m.photoUrl)}" alt="">
+        ${m.photoUrl
+          ? `<img src="${esc(m.photoUrl)}" alt="">`
+          : `<div style="width:28px;height:28px;border-radius:50%;background:#e4e4e4;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${esc((m.battleName || m.name || '?').slice(0,1))}</div>`}
         <span class="mn">${esc(m.battleName)}</span>
         <button data-color="${color}" data-act="up" data-idx="${i}" ${i === 0 ? 'disabled style="opacity:.3"' : ''}>↑</button>
         <button data-color="${color}" data-act="down" data-idx="${i}" ${i === d.members.length - 1 ? 'disabled style="opacity:.3"' : ''}>↓</button>
@@ -1216,10 +1244,13 @@ function renderTeamSetup(session) {
 
     const pickerHtml = activePicker === color ? `
       <div class="picker-grid">
-        ${allPlayers.filter(p => p.photoUrl).map(p => {
+        ${allPlayers.map(p => {
           const disabled = usedIds.has(p.id);
           return `<div class="picker-card ${disabled ? 'disabled' : ''}" data-color="${color}" data-pick="${p.id}">
-            <img src="${esc(p.photoUrl)}"><div>${esc(p.battleName || p.name)}</div>
+            ${p.photoUrl
+              ? `<img src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name)}">`
+              : `<div style="width:40px;height:40px;border-radius:50%;margin:0 auto 3px;background:#e4e4e4;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;">${esc((p.battleName || p.name || '?').slice(0,1))}</div>`}
+            <div>${esc(p.battleName || p.name)}</div>
           </div>`;
         }).join('')}
       </div>
@@ -1317,7 +1348,10 @@ function renderTiebreakPick(session) {
           ${teamObj.members.map(m => `
             <div class="picker-card ${picked === m.id ? '' : ''}" data-tbcolor="${color}" data-tbpick="${m.id}"
               style="${picked === m.id ? 'border-color:#d85a30;border-width:2px;' : ''}">
-              <img src="${esc(m.photoUrl)}"><div>${esc(m.battleName)}</div>
+              ${m.photoUrl
+                ? `<img src="${esc(m.photoUrl)}" alt="${esc(m.battleName)}">`
+                : `<div style="width:40px;height:40px;border-radius:50%;margin:0 auto 3px;background:#e4e4e4;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;">${esc((m.battleName || m.name || '?').slice(0,1))}</div>`}
+              <div>${esc(m.battleName)}</div>
             </div>
           `).join('')}
         </div>
@@ -1562,7 +1596,10 @@ async function recordTeamResult(winner) {
 
 async function awardTeamBonus(team) {
   for (const m of team.members) {
-    await updateDoc(doc(db, 'players', m.id), { totalPoints: increment(TEAM_WIN_BONUS) });
+    await updateDoc(doc(db, 'players', m.id), {
+      totalPoints: increment(TEAM_WIN_BONUS),
+      teamPoints: increment(TEAM_WIN_BONUS)
+    });
   }
 }
 
