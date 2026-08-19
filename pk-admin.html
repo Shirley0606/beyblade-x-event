@@ -568,7 +568,7 @@ function watchManualScoreLog() {
 // ========================================================
 function renderPkMode() {
   let html = `<h1>PK 車輪戰控制台</h1>
-    <p class="sub">主賽手固定不動，其餘選手依序輪流上場挑戰。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
+    <p class="sub">每位主賽手都會與其他所有選手各對戰 1 次；已當過主賽手的人，後續抽籤會自動排除。<a href="#" onclick="location.hash='';return false;" style="color:#298dff;">← 切換賽制</a></p>`;
 
   if (!pkSession) {
     html += renderPkPool();
@@ -590,10 +590,10 @@ function renderPkPool(collapsedTitle) {
   let html = `<div class="card">`;
   if (!collapsedTitle) {
     html += `
-      <p style="font-size:13px;color:#666;margin-bottom:14px;">從尚未抽過的選手中隨機抽出主賽手。已經當過主賽手的人不會再被抽到，但可以在下方手動重新加回。</p>
+      <p style="font-size:13px;color:#666;margin-bottom:14px;">從尚未當過主賽手的選手中隨機抽出 1 位主賽手。主賽手會和目前所有其他選手各比 1 場；已當過主賽手的人後續不再進入主賽手抽籤。</p>
       <div style="text-align:center;">
-        <button class="btn-draw" id="drawBtn" ${eligible.length < 2 ? 'disabled' : ''}>🎲 隨機抽取主賽手</button>
-        <div id="drawStatus" class="${eligible.length < 2 ? 'err' : ''}">${eligible.length < 2 ? '至少需要 2 位尚未抽過、且已上傳照片的選手' : ''}</div>
+        <button class="btn-draw" id="drawBtn" ${eligible.length < 1 || allPlayers.filter(p => p.photoUrl).length < 2 ? 'disabled' : ''}>🎲 隨機抽取主賽手</button>
+        <div id="drawStatus" class="${eligible.length < 1 || allPlayers.filter(p => p.photoUrl).length < 2 ? 'err' : ''}">${allPlayers.filter(p => p.photoUrl).length < 2 ? '至少需要 2 位已上傳照片的選手' : (eligible.length < 1 ? '目前所有選手都已當過主賽手' : '')}</div>
       </div>
     `;
   }
@@ -601,7 +601,7 @@ function renderPkPool(collapsedTitle) {
   html += `<p class="pool-section-title">🟢 可抽籤選手（${eligible.length} 位）</p>`;
   html += `<div class="pool-grid">${eligible.map(p => poolCardHtml(p, false)).join('') || '<p class="sub">目前沒有可抽籤的選手</p>'}</div>`;
 
-  html += `<p class="pool-section-title">⚪ 已抽過的選手（${used.length} 位）</p>`;
+  html += `<p class="pool-section-title">⚪ 已當過主賽手（${used.length} 位）</p>`;
   html += `<div class="pool-grid">${used.map(p => poolCardHtml(p, true)).join('') || '<p class="sub">尚無</p>'}</div>`;
   html += `</div>`;
   return html;
@@ -613,7 +613,7 @@ function poolCardHtml(p, used) {
       <img src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name)}">
       <p class="pn">${esc(p.battleName || p.name)}</p>
       <span class="pool-score">${p.totalPoints || 0} 分</span>
-      ${used ? `<button class="pool-readd" data-id="${p.id}">重新加回</button>` : ''}
+      ${used ? `<button class="pool-readd" data-id="${p.id}">重新加入主賽手抽籤</button>` : ''}
     </div>
   `;
 }
@@ -635,7 +635,7 @@ function renderPkMatch(session) {
 
   return `
     <div class="card">
-      <div class="match-progress">${dotsHtml}</div>
+      <p class="sub" style="text-align:center;margin-top:-4px;">本輪主賽手將依序與其他 ${challengers.length} 位選手各對戰 1 次</p><div class="match-progress">${dotsHtml}</div>
       <div class="vs-row">
         <div class="fighter-card style-${champion.cardStyle || 'red'}">
           <img class="fighter-photo" src="${esc(champion.photoUrl)}" alt="${esc(champion.battleName)}">
@@ -712,19 +712,27 @@ async function drawChampion() {
   statusEl.textContent = '抽取中…';
   statusEl.className = '';
 
-  const eligible = allPlayers.filter(p => p.photoUrl && !p.pkDrawn).map(p => ({
+  const championPool = allPlayers.filter(p => p.photoUrl && !p.pkDrawn).map(p => ({
     id: p.id, name: p.name, battleName: p.battleName || p.name,
     photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
   }));
-  if (eligible.length < 2) {
-    statusEl.textContent = '至少需要 2 位尚未抽過的選手';
+
+  const allAvailable = allPlayers.filter(p => p.photoUrl).map(p => ({
+    id: p.id, name: p.name, battleName: p.battleName || p.name,
+    photoUrl: p.photoUrl, cardStyle: p.cardStyle === 'blue' ? 'blue' : 'red'
+  }));
+
+  if (championPool.length < 1 || allAvailable.length < 2) {
+    statusEl.textContent = allAvailable.length < 2
+      ? '至少需要 2 位已上傳照片的選手'
+      : '目前所有選手都已當過主賽手';
     statusEl.className = 'err';
     btn.disabled = false;
     return;
   }
-  const shuffled = shuffle(eligible);
-  const champion = shuffled[0];
-  const challengers = shuffled.slice(1);
+
+  const champion = shuffle(championPool)[0];
+  const challengers = shuffle(allAvailable.filter(p => p.id !== champion.id));
 
   try {
     await updateDoc(doc(db, 'players', champion.id), { pkDrawn: true });
