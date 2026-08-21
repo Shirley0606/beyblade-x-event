@@ -1,448 +1,824 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>FINAL BATTLE 2026｜AWARD CEREMONY</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PK 車輪戰｜FINAL BATTLE 2026</title>
+<meta name="theme-color" content="#02040a">
 <style>
-:root{
-  --gold:#d7b56e;
-  --gold-soft:#f3dfb0;
-  --gold-bright:#ffe9a7;
-  --ink:#050608;
-  --red:#d21a34;
-  --blue:#1e7bff;
-}
+:root{--red:#ff263d;--blue:#168cff}
 *{box-sizing:border-box}
 html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#040507;
+  margin:0;width:100%;height:100%;overflow:hidden;background:#000;
+  font-family:"PingFang TC","Microsoft JhengHei",Arial,sans-serif
 }
-body{
-  position:fixed;
-  inset:0;
-  color:#fff;
-  font-family:"Noto Serif TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
-}
+body{display:flex;align-items:center;justify-content:center}
 .stage{
-  position:absolute;
-  inset:0;
+  position:relative;
+  width:min(100vw,177.7777778vh);
+  height:min(100vh,56.25vw);
+  aspect-ratio:16/9;
   overflow:hidden;
-  background:
-    radial-gradient(circle at 50% -12%, rgba(255,224,150,.14), transparent 28%),
-    radial-gradient(circle at 12% 50%, rgba(210,26,52,.28), transparent 22%),
-    radial-gradient(circle at 88% 50%, rgba(30,123,255,.28), transparent 22%),
-    linear-gradient(90deg,#2e0710 0%,#12070b 16%,#070708 36%,#070809 64%,#08101b 84%,#0a2141 100%);
+  background:#02040a;
+}
+.stage::before,.stage::after{
+  content:"";position:absolute;width:105%;height:190%;top:-45%;
+  border-radius:50%;z-index:0;pointer-events:none
 }
 .stage::before{
-  content:"";
-  position:absolute;inset:-6% -2%;
-  pointer-events:none;
+  left:-56%;
   background:
-    repeating-linear-gradient(120deg, rgba(255,255,255,.018) 0 26px, transparent 26px 74px),
-    linear-gradient(115deg, transparent 0 18%, rgba(255,219,146,.05) 28%, transparent 36%),
-    linear-gradient(65deg, transparent 0 20%, rgba(255,219,146,.04) 31%, transparent 40%),
-    radial-gradient(ellipse at 50% 108%, rgba(214,169,95,.14), transparent 40%);
-  mix-blend-mode:screen;
+    repeating-conic-gradient(from 0deg,transparent 0deg 7deg,rgba(255,35,55,.24) 8deg 12deg,transparent 13deg 24deg),
+    radial-gradient(circle at center,rgba(255,32,50,.28) 0 11%,transparent 12% 27%,rgba(255,32,50,.13) 28% 29%,transparent 30%);
+  filter:drop-shadow(0 0 22px rgba(255,30,48,.48));
+  animation:redSpin 18s linear infinite
 }
 .stage::after{
-  content:"";
-  position:absolute;inset:0;
-  pointer-events:none;
-  box-shadow:inset 0 0 140px rgba(0,0,0,.72);
-}
-.side-red,.side-blue{
-  position:absolute;top:0;bottom:0;width:23%;pointer-events:none;z-index:1;opacity:.95;
-}
-.side-red{
-  left:0;
+  right:-56%;
   background:
-    linear-gradient(90deg,rgba(115,7,25,.86),rgba(65,4,14,.56) 58%,transparent),
-    repeating-linear-gradient(118deg, rgba(255,53,83,.12) 0 22px, rgba(0,0,0,0) 22px 58px);
-  clip-path:polygon(0 0,100% 0,72% 100%,0 100%);
+    repeating-conic-gradient(from 0deg,transparent 0deg 7deg,rgba(22,140,255,.24) 8deg 12deg,transparent 13deg 24deg),
+    radial-gradient(circle at center,rgba(22,140,255,.28) 0 11%,transparent 12% 27%,rgba(22,140,255,.13) 28% 29%,transparent 30%);
+  filter:drop-shadow(0 0 22px rgba(22,140,255,.48));
+  animation:blueSpin 21s linear infinite
 }
-.side-blue{
-  right:0;
-  background:
-    linear-gradient(270deg,rgba(12,47,104,.86),rgba(7,20,38,.56) 58%,transparent),
-    repeating-linear-gradient(62deg, rgba(52,129,255,.12) 0 22px, rgba(0,0,0,0) 22px 58px);
-  clip-path:polygon(28% 0,100% 0,100% 100%,0 100%);
+@keyframes redSpin{to{transform:rotate(360deg)}}
+@keyframes blueSpin{to{transform:rotate(-360deg)}}
+@media (max-aspect-ratio:16/9){ .stage{width:100vw;height:56.25vw} }
+@media (min-aspect-ratio:16/9){ .stage{width:177.7777778vh;height:100vh} }
+
+/* ---------- top label ---------- */
+.mode-label{
+  position:absolute; z-index:13; top:3.1%; left:3.2%; cursor:pointer;
+  padding:.48% 1.35%; color:#fff;
+  font-size:clamp(13px,1.05vw,21px); font-weight:800; letter-spacing:.12em;
+  background:linear-gradient(90deg,rgba(7,10,16,.92),rgba(8,20,40,.84));
+  border:1px solid rgba(255,255,255,.30); border-left:3px solid var(--red);
+  transform:skew(-8deg);
+  box-shadow:0 0 14px rgba(255,38,61,.18);
 }
-.sparkle-layer,
-.confetti-layer{
-  position:absolute;inset:0;pointer-events:none;z-index:2;
+.mode-label span{display:block;transform:skew(8deg)}
+
+/* ---------- mode select screen ---------- */
+.select-screen{
+  position:absolute; inset:0; z-index:15; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:5%;
 }
-.sparkle-layer{
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255,224,153,.9) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 18% 12%, rgba(255,224,153,.9) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 50% 10%, rgba(255,224,153,.9) 0 1.4px, transparent 2.8px),
-    radial-gradient(circle at 72% 17%, rgba(255,224,153,.82) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 84% 13%, rgba(255,224,153,.82) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 90% 28%, rgba(255,224,153,.7) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 25% 28%, rgba(255,224,153,.72) 0 1px, transparent 2.2px),
-    radial-gradient(circle at 76% 35%, rgba(255,224,153,.72) 0 1px, transparent 2.2px);
-  filter:drop-shadow(0 0 8px rgba(255,220,140,.28));
+.select-title{
+  font-size:clamp(18px,2.2vw,36px); font-weight:900; font-style:italic; color:#fff;
+  letter-spacing:.1em; text-shadow:0 4px 14px rgba(0,0,0,.7);
 }
-.confetti-layer{
-  background:
-    linear-gradient(135deg, transparent 0 91%, rgba(255,208,120,.95) 91% 100%) 10% 16%/18px 18px no-repeat,
-    linear-gradient(135deg, transparent 0 91%, rgba(255,208,120,.9) 91% 100%) 32% 10%/12px 12px no-repeat,
-    linear-gradient(135deg, transparent 0 91%, rgba(255,208,120,.95) 91% 100%) 66% 12%/14px 14px no-repeat,
-    linear-gradient(135deg, transparent 0 91%, rgba(255,208,120,.9) 91% 100%) 82% 18%/16px 16px no-repeat,
-    linear-gradient(135deg, transparent 0 91%, rgba(255,208,120,.92) 91% 100%) 93% 26%/11px 11px no-repeat;
-  opacity:.72;
+.select-btns{ display:flex; gap:6%; }
+.select-btn{
+  width:26vw; max-width:320px; min-width:170px; aspect-ratio:4/3;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5em;
+  color:#fff; font-size:clamp(15px,1.7vw,28px); font-weight:900; font-style:italic; letter-spacing:.05em;
+  border:2px solid rgba(255,255,255,.5); cursor:pointer;
+  clip-path:polygon(6% 0,94% 0,100% 14%,100% 100%,0 100%,0 14%);
+  transition:.18s;
 }
-.header{
-  position:absolute;
-  top:4.2%;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(78vw,1200px);
-  text-align:center;
-  z-index:10;
+.select-btn:hover{ transform:translateY(-4px); filter:brightness(1.12); }
+.select-btn.pk{ background:linear-gradient(160deg,#8e0713,#3a0308); box-shadow:0 0 30px rgba(255,38,61,.3); }
+.select-btn.team{ background:linear-gradient(160deg,#0b3a8e,#031a3a); box-shadow:0 0 30px rgba(22,140,255,.3); }
+.select-btn .emoji{ font-size:1.7em; font-style:normal; }
+
+/* ---------- pk idle marquee ---------- */
+.marquee-wrap{
+  position:absolute; inset:0; z-index:5; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
 }
-.header .line1,
-.header .line2{
-  margin:0;
-  color:var(--gold-soft);
-  font-family:Georgia, "Times New Roman", serif;
-  font-weight:800;
-  text-transform:uppercase;
-  text-shadow:0 0 18px rgba(255,214,126,.18), 0 3px 20px rgba(0,0,0,.45);
+.marquee-heading{ font-size:clamp(13px,1.2vw,22px); letter-spacing:.35em; color:#8ab4ff; margin-bottom:3%; }
+.marquee-viewport{ width:88%; overflow:hidden; }
+.marquee-track{ display:flex; gap:1.2%; width:max-content; animation:marqueeScroll 24s linear infinite; }
+@keyframes marqueeScroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.marquee-card{
+  flex:0 0 clamp(90px,9vw,150px); aspect-ratio:3/4; position:relative;
+  border-radius:10px; overflow:hidden; background:#0d1526; border:1px solid #2a3550;
 }
-.header .line1{
-  font-size:clamp(28px,3.8vw,68px);
-  letter-spacing:.08em;
+.marquee-card img{ width:100%; height:100%; object-fit:contain; display:block; }
+.marquee-empty{ color:#7c8799; font-size:clamp(13px,1.2vw,20px); text-align:center; padding:0 8%; }
+
+/* ---------- team live setup ---------- */
+.team-setup-live{ position:absolute; inset:0; z-index:5; display:flex; }
+.tsl-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2% 3%; }
+.tsl-col.red{ background:linear-gradient(115deg,rgba(255,38,61,.14),transparent 60%); }
+.tsl-col.blue{ background:linear-gradient(245deg,rgba(22,140,255,.14),transparent 60%); }
+.tsl-name{
+  font-size:clamp(18px,2.2vw,38px); font-weight:900; font-style:italic; color:#fff;
+  margin-bottom:5%; text-shadow:0 4px 14px rgba(0,0,0,.6);
 }
-.header .line2{
-  font-size:clamp(24px,3.1vw,52px);
-  letter-spacing:.09em;
-  margin-top:.3vh;
+.tsl-members{ display:flex; flex-wrap:wrap; gap:3%; justify-content:center; }
+.tsl-member{ width:clamp(56px,6vw,100px); text-align:center; }
+.tsl-member img{
+  width:100%; aspect-ratio:1/1; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(255,255,255,.4); background:#14182a; display:block;
 }
-.header .thankyou{
-  margin-top:1.15vh;
-  color:#e6ca87;
-  font:700 clamp(11px,.85vw,16px)/1.2 Arial,sans-serif;
-  letter-spacing:.34em;
-  text-transform:uppercase;
-  white-space:nowrap;
+.tsl-member span{ display:block; font-size:clamp(10px,.8vw,14px); color:#dfe6f2; margin-top:6px; }
+.tsl-vs{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:6;
+  font-size:clamp(20px,2.4vw,40px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 0 20px rgba(255,255,255,.4);
 }
-.header .rule{
-  width:min(56vw,860px);
-  height:1px;
-  margin:1.2vh auto 0;
-  background:linear-gradient(90deg,transparent,rgba(230,198,126,.28) 18%,rgba(255,228,162,.78) 50%,rgba(230,198,126,.28) 82%,transparent);
+
+.back-link{
+  position:absolute; z-index:13; top:3.1%; right:3.2%;
+  color:#cfd6ee; font-size:clamp(11px,.85vw,16px); text-decoration:none;
+  padding:.48% 1.1%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(7,10,16,.7); letter-spacing:.06em;
 }
-.main{
-  position:absolute;
-  z-index:8;
-  left:6.5%;
-  right:6.5%;
-  top:22%;
-  bottom:9%;
-  display:grid;
-  grid-template-columns:minmax(520px,1.02fr) minmax(360px,.98fr);
-  gap:4.5%;
-  align-items:center;
+
+/* ---------- duel stage ---------- */
+.duel{ position:absolute; inset:0; top:9%; bottom:13%; z-index:2; display:flex; }
+.fighter-half{
+  flex:1; position:relative; overflow:hidden; background:#080d15;
 }
-.visual-area{
-  position:relative;
-  min-width:0;
-  height:100%;
+.fighter-half.left{ clip-path:polygon(0 0, 94% 0, 100% 100%, 0 100%); margin-right:-3%; }
+.fighter-half.right{ clip-path:polygon(6% 0, 100% 0, 100% 100%, 0 100%); margin-left:-3%; }
+.fighter-half img{
+  width:100%; height:100%; object-fit:contain; object-position:center; display:block;
+  filter:drop-shadow(0 18px 35px rgba(0,0,0,.7));
+  opacity:0; transition:opacity .5s ease;
 }
-.visual-shell{
-  position:relative;
+.fighter-half img.show{ opacity:1; }
+.fighter-half .placeholder{
+  width:100%; height:100%; display:grid; place-items:center; color:#7c8799; font-size:2.4vw;
+}
+.fighter-half.red-glow{ box-shadow: inset 0 0 60px rgba(255,38,61,.35); }
+.fighter-half.blue-glow{ box-shadow: inset 0 0 60px rgba(22,140,255,.35); }
+
+.fighter-info{
+  position:absolute; z-index:5; bottom:0; padding:1.4% 2.2%;
+  background:linear-gradient(to top, rgba(2,4,9,.92), transparent);
   width:100%;
-  height:100%;
-  min-height:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
-.burst{
-  position:absolute;
-  left:6%;
-  right:14%;
-  top:8%;
-  bottom:14%;
-  z-index:1;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 54%, rgba(255,214,113,.44) 0 6%, rgba(255,214,113,.18) 15%, rgba(255,214,113,0) 52%),
-    repeating-conic-gradient(from 0deg at 50% 54%, rgba(255,214,113,.45) 0deg 2.8deg, rgba(255,214,113,0) 3.8deg 14deg),
-    radial-gradient(circle at 50% 54%, rgba(255,229,162,.45), rgba(255,229,162,0) 62%);
-  filter:blur(.15px) drop-shadow(0 0 34px rgba(255,205,100,.34));
-  opacity:.96;
+.fighter-half.right .fighter-info{ text-align:right; }
+.fighter-tag{
+  font-size:clamp(11px,.95vw,18px); letter-spacing:.14em; color:#cfd6ee; margin-bottom:.3em;
 }
-.gold-dust{
-  position:absolute;
-  inset:10% 12% 16% 8%;
-  z-index:2;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 22% 48%, rgba(255,224,153,.88) 0 1.2px, transparent 2.6px),
-    radial-gradient(circle at 36% 28%, rgba(255,224,153,.82) 0 1.2px, transparent 2.6px),
-    radial-gradient(circle at 61% 36%, rgba(255,224,153,.75) 0 1.2px, transparent 2.6px),
-    radial-gradient(circle at 73% 58%, rgba(255,224,153,.82) 0 1.2px, transparent 2.6px),
-    radial-gradient(circle at 48% 70%, rgba(255,224,153,.78) 0 1.2px, transparent 2.6px),
-    radial-gradient(circle at 59% 50%, rgba(255,224,153,.9) 0 1px, transparent 2.2px);
-  filter:drop-shadow(0 0 8px rgba(255,220,140,.35));
+.fighter-name{
+  font-size:clamp(20px,2.6vw,44px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 4px 14px rgba(0,0,0,.7);
 }
-#photoWrap{
-  position:relative;
-  z-index:3;
-  width:100%;
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.fighter-score{
+  font-size:clamp(13px,1.15vw,22px); font-weight:800; color:#ffce54; margin-top:.35em;
 }
-#photoWrap img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  object-position:center;
-  display:block;
-  filter:drop-shadow(0 18px 28px rgba(0,0,0,.38));
+
+.vs-badge{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:8;
+  display:flex; align-items:center; justify-content:center;
+  width:11%; aspect-ratio:1/1; min-width:56px;
+  color:#fff; font-size:clamp(18px,2.1vw,36px); font-weight:900; font-style:italic;
+  background:linear-gradient(180deg,#2a2f3c,#0c0f16);
+  border:2px solid rgba(255,255,255,.55);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  box-shadow:0 0 30px rgba(255,255,255,.25);
 }
-.photo-placeholder{
-  display:grid;
-  place-items:center;
-  width:min(76%,680px);
-  aspect-ratio:16/9;
-  border:1px dashed rgba(255,231,177,.16);
-  color:rgba(255,238,200,.34);
-  font-size:clamp(38px,4.5vw,80px);
-  font-weight:800;
-  letter-spacing:.08em;
+
+/* ---------- progress dots ---------- */
+.progress-row{
+  position:absolute; left:0; right:0; bottom:2%; z-index:10;
+  display:flex; justify-content:center; gap:.6%;
 }
-.stage-ring{
-  position:absolute;
-  left:8%;right:18%;bottom:3%;height:18%;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse at 50% 55%, rgba(255,205,98,.34) 0 14%, rgba(255,205,98,.14) 18%, rgba(255,205,98,0) 48%),
-    radial-gradient(ellipse at 50% 76%, rgba(255,198,79,.42) 0 13%, rgba(255,198,79,0) 38%);
-  filter:blur(.3px);
+.dot{
+  width:clamp(22px,2.6vw,40px); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(10px,.95vw,16px); font-weight:800; color:#8a94b8;
+  background:#0c0f16; border:1px solid rgba(255,255,255,.22);
+  clip-path:polygon(20% 0,80% 0,100% 50%,80% 100%,20% 100%,0 50%);
 }
-.info-area{
-  position:relative;
-  z-index:4;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  padding:1vh 0 1vh 1vw;
+.dot.win{ background:rgba(79,217,149,.18); border-color:#4fd995; color:#4fd995; }
+.dot.lose{ background:rgba(255,107,107,.14); border-color:#ff6b6b; color:#ff6b6b; }
+.dot.current{ border-color:#ffce54; color:#ffce54; box-shadow:0 0 10px rgba(255,206,84,.5); }
+
+/* ---------- winner banner ---------- */
+.winner-banner{
+  position:absolute; inset:0; z-index:20; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  background:radial-gradient(ellipse at center, rgba(10,14,24,.86), rgba(2,4,9,.97));
 }
-.info-area::before{
-  content:"";
-  position:absolute;
-  inset:8% -6% 8% 12%;
-  background:linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.18) 20%, rgba(0,0,0,.34) 40%, rgba(0,0,0,.12) 82%, rgba(0,0,0,0));
-  filter:blur(14px);
-  z-index:-1;
+.winner-label{
+  font-size:clamp(13px,1.3vw,22px); letter-spacing:.5em; color:#8ab4ff; margin-bottom:.6em;
 }
-.label{
-  color:#cfb370;
-  font:700 clamp(12px,.9vw,17px)/1.2 Arial,sans-serif;
-  letter-spacing:.34em;
-  text-transform:uppercase;
-  margin-bottom:1.8vh;
+.winner-name{
+  font-size:clamp(30px,5vw,84px); font-weight:900; font-style:italic; color:#fff;
+  text-shadow:0 0 40px rgba(90,160,255,.55);
 }
-#awardTitle{
-  margin:0;
-  color:#f7e2ae;
-  font-size:clamp(54px,5.8vw,102px);
-  line-height:1.02;
-  font-weight:900;
-  letter-spacing:.05em;
-  text-shadow:
-    0 0 18px rgba(255,224,130,.22),
-    0 0 2px rgba(255,255,255,.38),
-    0 3px 24px rgba(0,0,0,.65);
+.winner-score{
+  font-size:clamp(16px,1.6vw,28px); color:#ffce54; margin-top:.6em; font-weight:800;
 }
-.title-rule{
-  width:78%;
-  height:1px;
-  margin:2.4vh 0 2.2vh;
-  background:linear-gradient(90deg, rgba(255,221,142,.92) 0%, rgba(255,221,142,.32) 56%, rgba(255,221,142,0) 100%);
+
+.empty-stage{
+  position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
+  color:#7c8799; font-size:clamp(14px,1.4vw,24px); text-align:center; padding:0 8%;
 }
-#awardNote{
-  color:#f0d791;
-  font-size:clamp(30px,2.55vw,46px);
-  line-height:1.35;
-  font-weight:600;
-  letter-spacing:.06em;
-  text-shadow:0 3px 18px rgba(0,0,0,.42);
+
+/* ---------- scoreboard tab ---------- */
+.scoreboard-link{position:absolute;z-index:13;top:3.1%;right:15.2%;color:#fff;font-size:clamp(11px,.9vw,16px);font-weight:800;padding:.48% 1.1%;border:1px solid rgba(255,255,255,.28);background:linear-gradient(90deg,rgba(86,8,18,.82),rgba(5,18,42,.82));letter-spacing:.08em;cursor:pointer}
+.scoreboard-link:hover{filter:brightness(1.12)}
+.scoreboard{position:absolute;inset:8.5% 3.2% 4.5%;z-index:6;display:flex;flex-direction:column}
+.scoreboard-head{display:flex;align-items:end;justify-content:space-between;padding:0 1% 1.1%}
+.scoreboard-title{margin:0;font-size:clamp(22px,2.7vw,46px);font-weight:900;font-style:italic;letter-spacing:.08em;color:#fff}
+.scoreboard-sub{margin:0;font-size:clamp(10px,.85vw,15px);color:#9fb0c9;letter-spacing:.12em}
+.scoreboard-grid{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1%}
+.score-row{position:relative;min-height:0;display:grid;grid-template-columns:14% 1fr 20%;align-items:center;gap:2%;padding:1.15% 1.6%;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,rgba(45,7,14,.62),rgba(5,10,18,.9) 46%,rgba(5,25,57,.62));overflow:hidden}
+.score-row:nth-child(1){border-color:#ffce54;box-shadow:inset 0 0 28px rgba(255,206,84,.08),0 0 16px rgba(255,206,84,.10)}
+.score-avatar{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,.32);background:#111827}
+.score-player{min-width:0}
+.score-name{margin:0;font-size:clamp(14px,1.5vw,25px);font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-realname{margin:.25em 0 0;font-size:clamp(9px,.72vw,13px);color:#8fa0bb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-points{text-align:right;color:#ffce54;font-size:clamp(25px,3vw,50px);font-weight:900;font-style:italic}
+.score-points small{display:block;font-size:clamp(9px,.66vw,12px);color:#aebad0;letter-spacing:.12em;font-style:normal;font-weight:700;margin-bottom:.1em}
+.score-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#7c8799;font-size:clamp(14px,1.4vw,24px)}
+.fighter-total{display:inline-block;margin-top:.42em;padding:.28em .65em;border:1px solid rgba(255,206,84,.45);color:#ffce54;background:rgba(9,12,18,.62);font-size:clamp(11px,.9vw,17px);font-weight:900}
+
+
+/* ===== V5：PK 對戰畫面左右分離，VS 不遮擋資訊 ===== */
+.duel{
+  position:absolute !important;
+  left:3.2% !important;
+  right:3.2% !important;
+  top:10% !important;
+  bottom:13% !important;
+  z-index:2 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 8.5% minmax(0,1fr) !important;
+  gap:1.8% !important;
+  align-items:stretch !important;
 }
-#awardNote::before{content:"「"}
-#awardNote::after{content:"」"}
-.signature-block{
-  margin-top:4.2vh;
-  display:flex;
-  align-items:center;
-  gap:1.2vw;
+
+.fighter-half{
+  min-width:0 !important;
+  width:100% !important;
+  height:100% !important;
+  margin:0 !important;
+  clip-path:none !important;
+  position:relative !important;
+  overflow:hidden !important;
+  background:#080d15 !important;
+  border:1px solid rgba(255,255,255,.18);
 }
-.signature-block .mini-rule{
-  flex:0 0 14%;
-  height:1px;
-  background:linear-gradient(90deg, rgba(255,221,142,.82), rgba(255,221,142,.06));
+
+.fighter-half.left{
+  grid-column:1 !important;
+  clip-path:polygon(3% 0,97% 0,100% 5%,100% 95%,97% 100%,3% 100%,0 95%,0 5%) !important;
 }
-.signature-block .mini-crown{
-  width:26px;height:18px;opacity:.86;flex:0 0 auto;
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'><path fill='%23d7b56e' d='M5 36h54l-4-18-13 7-10-16-10 16-13-7z'/><rect x='10' y='36' width='44' height='5' rx='2' fill='%23d7b56e'/><circle cx='19' cy='12' r='4' fill='%23f3dfb0'/><circle cx='32' cy='6' r='4' fill='%23f3dfb0'/><circle cx='45' cy='12' r='4' fill='%23f3dfb0'/></svg>") center/contain no-repeat;
+.fighter-half.right{
+  grid-column:3 !important;
+  clip-path:polygon(3% 0,97% 0,100% 5%,100% 95%,97% 100%,3% 100%,0 95%,0 5%) !important;
 }
-.signature{
-  color:#b79b62;
-  font:700 clamp(10px,.75vw,13px)/1.2 Arial,sans-serif;
-  letter-spacing:.28em;
-  text-transform:uppercase;
+
+.fighter-half img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
 }
-.back-battle{
-  position:absolute;z-index:20;right:1.4%;top:1.8%;
-  border:1px solid rgba(215,180,106,.16);
-  background:rgba(7,8,10,.22);
-  color:#9f8a5b;
-  padding:.52em .82em;border-radius:8px;
-  font-size:clamp(8px,.6vw,11px);cursor:pointer;opacity:.28;
+
+.fighter-info{
+  bottom:0 !important;
+  padding:1.2% 2.3% 1.7% !important;
+  background:linear-gradient(to top,rgba(2,4,9,.96) 0%,rgba(2,4,9,.80) 50%,transparent 100%) !important;
 }
-.back-battle:hover{opacity:.9}
-.empty-stage .main{opacity:0;pointer-events:none}
-.main.reveal{animation:reveal .55s cubic-bezier(.2,.75,.15,1)}
-@keyframes reveal{
-  from{opacity:0;transform:translateY(10px) scale(.992)}
-  to{opacity:1;transform:none}
+
+.fighter-half.right .fighter-info{
+  text-align:right !important;
 }
-@media (max-aspect-ratio: 4/3){
-  .main{left:4%;right:4%;gap:2.4%;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr)}
-  #awardTitle{font-size:clamp(48px,5vw,86px)}
-  #awardNote{font-size:clamp(24px,2.3vw,40px)}
+
+.fighter-name{
+  font-size:clamp(18px,2.25vw,40px) !important;
+  line-height:1.05 !important;
+  max-width:82% !important;
 }
-@media (max-width: 920px){
-  .header{width:94%}
-  .header .line1{font-size:clamp(26px,8vw,52px)}
-  .header .line2{font-size:clamp(22px,6.8vw,44px)}
-  .header .thankyou{font-size:clamp(10px,2.4vw,14px);letter-spacing:.18em}
-  .main{
-    top:18%;bottom:4%;left:4%;right:4%;
-    display:flex;flex-direction:column;gap:2vh;justify-content:flex-start;
+.fighter-half.right .fighter-name{margin-left:auto !important}
+
+.vs-badge{
+  position:absolute !important;
+  top:48% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+  width:6.2% !important;
+  max-width:82px !important;
+  min-width:52px !important;
+  z-index:9 !important;
+  font-size:clamp(17px,1.8vw,30px) !important;
+  box-shadow:0 0 24px rgba(255,255,255,.20) !important;
+}
+
+/* 團體戰也沿用同樣間距，避免 VS 蓋住隊員名稱 */
+@media(max-width:900px){
+  .duel{
+    left:2% !important;
+    right:2% !important;
+    grid-template-columns:minmax(0,1fr) 7% minmax(0,1fr) !important;
+    gap:1.1% !important;
   }
-  .visual-area{width:100%;height:54%}
-  .info-area{width:100%;padding:0 .5vw;text-align:center;align-items:center}
-  .info-area::before{inset:8% 0 10% 0}
-  .title-rule{width:56%;margin:1.8vh auto}
-  .signature-block{justify-content:center}
-  #awardTitle{font-size:clamp(36px,8vw,60px)}
-  #awardNote{font-size:clamp(18px,4vw,28px)}
-  .stage-ring{left:6%;right:10%;bottom:1%}
-  .back-battle{display:none}
 }
+
+
+/* ===== 記分板：只讓第一名置頂，其餘不做名次排序 ===== */
+.score-row.leader{
+  border-color:#ffce54 !important;
+  box-shadow:inset 0 0 30px rgba(255,206,84,.10),0 0 18px rgba(255,206,84,.13) !important;
+}
+
+.score-row:not(.leader){
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:none !important;
+}
+
+
+/* ===== 修正：選擇賽制畫面時右上角記分板可點擊 ===== */
+.mode-label,
+.scoreboard-link,
+.back-link{
+  z-index:30 !important;
+  pointer-events:auto !important;
+}
+.select-screen{
+  z-index:15 !important;
+}
+
+
+/* ===== V8：Battle 投影全螢幕版 ===== */
+html,body{
+  margin:0 !important;
+  width:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+  background:#000 !important;
+}
+body{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* 和 DISPLAY 相同：固定 16:9 投影舞台 */
+.stage{
+  position:relative !important;
+  width:min(100vw,177.7777778vh) !important;
+  height:min(100vh,56.25vw) !important;
+  aspect-ratio:16/9 !important;
+  overflow:hidden !important;
+  background:#02040a !important;
+}
+
+/* 選擇賽制、PK、團體戰、記分板全部限制在同一個 16:9 舞台 */
+#content,
+.select-screen,
+.marquee-wrap,
+.team-setup-live,
+.winner-banner{
+  max-width:100% !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+}
+
+/* 頂部按鈕在投影畫面內固定 */
+.mode-label{
+  top:2.4% !important;
+  left:2.4% !important;
+}
+.scoreboard-link{
+  top:2.4% !important;
+  right:13.5% !important;
+}
+.back-link{
+  top:2.4% !important;
+  right:2.4% !important;
+}
+
+/* 選擇賽制畫面填滿 16:9，不產生上下空白頁 */
+.select-screen{
+  inset:0 !important;
+  padding:7% 4% 4% !important;
+}
+.select-title{
+  margin:0 0 3% !important;
+}
+.select-btns{
+  width:68% !important;
+  max-width:900px !important;
+  justify-content:center !important;
+}
+.select-btn{
+  width:42% !important;
+  max-width:none !important;
+  min-width:0 !important;
+}
+
+/* 即時記分板也強制在單一 16:9 內完整顯示 */
+.scoreboard{
+  inset:8.2% 3% 3.8% !important;
+}
+.scoreboard-grid{
+  overflow:hidden !important;
+}
+
+/* 不顯示任何進入全螢幕詢問層 */
+.fullscreen-start,
+.fullscreen-box,
+.fullscreen-go{
+  display:none !important;
+}
+
+@media (max-aspect-ratio:16/9){
+  .stage{width:100vw !important;height:56.25vw !important}
+}
+@media (min-aspect-ratio:16/9){
+  .stage{width:177.7777778vh !important;height:100vh !important}
+}
+
 </style>
 </head>
 <body>
-<main class="stage empty-stage" id="stage">
-  <div class="side-red"></div>
-  <div class="side-blue"></div>
-  <div class="sparkle-layer"></div>
-  <div class="confetti-layer"></div>
+<div class="stage" id="stage">
+  <div class="mode-label"><span>選擇賽制</span></div>
+  <button class="scoreboard-link" id="scoreboardBtn" type="button">記分板</button>
+  <a class="back-link" href="display-players.html">← 返回選手登場</a>
 
-  <header class="header">
-    <h1 class="line1">FINAL BATTLE 2026</h1>
-    <h2 class="line2">AWARD CEREMONY</h2>
-    <div class="thankyou">THANK YOU FOR BEING AWESOME!</div>
-    <div class="rule"></div>
-  </header>
-
-  <section class="main" id="awardMain">
-    <div class="visual-area">
-      <div class="visual-shell">
-        <div class="burst"></div>
-        <div class="gold-dust"></div>
-        <div id="photoWrap"><div class="photo-placeholder">FINAL BATTLE</div></div>
-        <div class="stage-ring"></div>
-      </div>
-    </div>
-
-    <div class="info-area">
-      <div class="label">SPECIAL RECOGNITION</div>
-      <h2 id="awardTitle">冠軍陀螺手</h2>
-      <div class="title-rule"></div>
-      <div id="awardNote">稱霸決鬥的王者</div>
-      <div class="signature-block">
-        <div class="mini-rule"></div>
-        <div class="mini-crown"></div>
-        <div class="mini-rule"></div>
-      </div>
-      <div class="signature">FINAL BATTLE 2026 · HONOR THE MOMENT</div>
-    </div>
-  </section>
-
-  <button class="back-battle" id="backBattle" type="button">返回比賽</button>
-</main>
+  <div id="content"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
-  authDomain:"beyblade-x-event.firebaseapp.com",
-  projectId:"beyblade-x-event",
-  storageBucket:"beyblade-x-event.firebasestorage.app",
-  messagingSenderId:"866394169939",
-  appId:"1:866394169939:web:a73222040a99a433425ca6"
+const firebaseConfig = {
+  apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain: "beyblade-x-event.firebaseapp.com",
+  projectId: "beyblade-x-event",
+  storageBucket: "beyblade-x-event.firebasestorage.app",
+  messagingSenderId: "866394169939",
+  appId: "1:866394169939:web:a73222040a99a433425ca6"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const content = document.getElementById('content');
+const stage = document.getElementById('stage');
+const modeLabel = document.querySelector('.mode-label span');
+const scoreboardBtn = document.getElementById('scoreboardBtn');
 
-const stage=document.getElementById("stage");
-const awardMain=document.getElementById("awardMain");
-const photoWrap=document.getElementById("photoWrap");
-const awardTitle=document.getElementById("awardTitle");
-const awardNote=document.getElementById("awardNote");
-
-let players=[];
-
-function esc(v=""){
-  return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function esc(v = "") {
+  return String(v).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 }
-function displayName(p){return p?.battleName||p?.name||"參賽者"}
 
-function render(){
-  const p=players.find(x=>x.awardProjected===true);
-  if(!p){
-    stage.classList.add("empty-stage");
+
+function livePlayerFor(p) {
+  if (!p) return null;
+  return livePlayers.find(x =>
+    (p.id && x.id === p.id) ||
+    (p.playerId && x.id === p.playerId) ||
+    (p.battleName && x.battleName === p.battleName) ||
+    (p.name && x.name === p.name)
+  ) || null;
+}
+function totalPointsOf(p) {
+  const live = livePlayerFor(p);
+  const val = live?.totalPoints ?? p?.totalPoints ?? 0;
+  return Number(val) || 0;
+}
+function renderScoreboard() {
+  const original = [...livePlayers];
+
+  // 只找出目前最高分者。其餘選手維持 Firebase 原本讀取順序，不依分數重新排序。
+  let leader = null;
+  if (original.length) {
+    const maxPoints = Math.max(...original.map(p => Number(p.totalPoints) || 0));
+    // 若同分，只取原始順序最前面的那位作為目前領先者，避免整個版面一直跳動。
+    leader = original.find(p => (Number(p.totalPoints) || 0) === maxPoints) || null;
+  }
+
+  const displayPlayers = leader
+    ? [leader, ...original.filter(p => p.id !== leader.id)]
+    : original;
+
+  const rows = displayPlayers.map((p,i) => `
+    <div class="score-row ${i === 0 && leader ? 'leader' : ''}">
+      ${p.photoUrl
+        ? `<img class="score-avatar" src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name || '')}">`
+        : `<div class="score-avatar"></div>`}
+      <div class="score-player">
+        <p class="score-name">${esc(p.battleName || p.name || '未命名選手')}</p>
+        <p class="score-realname">${esc(p.name || '')}</p>
+      </div>
+      <div class="score-points"><small>總積分</small>${Number(p.totalPoints)||0}</div>
+    </div>
+  `).join('');
+
+  content.innerHTML = `
+    <div class="scoreboard">
+      <div class="scoreboard-head">
+        <div>
+          <p class="scoreboard-title">即時記分板</p>
+          <p class="scoreboard-sub">LIVE SCOREBOARD</p>
+        </div>
+        <p class="scoreboard-sub">${displayPlayers.length} 位選手</p>
+      </div>
+      <div class="scoreboard-grid">
+        ${rows || '<div class="score-empty">目前尚無選手積分資料</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderEmpty(msg) {
+  content.innerHTML = `<div class="empty-stage">${msg || '目前沒有進行中的對戰<br>請至 pk-admin.html 開始一場比賽'}</div>`;
+}
+
+function renderPkActive(session) {
+  const { champion, challengers, currentIndex, results } = session;
+  const currentChallenger = challengers[currentIndex];
+  const winsSoFar = results.filter(r => r.result === 'champion_win').length;
+
+  const dotsHtml = challengers.map((c, i) => {
+    const r = results[i];
+    let cls = 'dot';
+    if (r) cls += r.result === 'champion_win' ? ' win' : ' lose';
+    else if (i === currentIndex) cls += ' current';
+    return `<div class="${cls}">${i + 1}</div>`;
+  }).join('');
+
+  const champGlow = champion.cardStyle === 'blue' ? 'blue-glow' : 'red-glow';
+  const chalGlow = currentChallenger.cardStyle === 'blue' ? 'blue-glow' : 'red-glow';
+
+  content.innerHTML = `
+    <div class="duel">
+      <div class="fighter-half left ${champGlow}">
+        <img class="show" src="${esc(champion.photoUrl)}" alt="${esc(champion.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">👑 主賽手</p>
+          <p class="fighter-name">${esc(champion.battleName)}</p>
+          <p class="fighter-score">本場 ${winsSoFar} 勝</p><span class="fighter-total">總積分 ${totalPointsOf(champion)}</span>
+        </div>
+      </div>
+      <div class="fighter-half right ${chalGlow}">
+        <img class="show" src="${esc(currentChallenger.photoUrl)}" alt="${esc(currentChallenger.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">第 ${currentIndex + 1} / ${challengers.length} 場挑戰者</p>
+          <p class="fighter-name">${esc(currentChallenger.battleName)}</p><span class="fighter-total">總積分 ${totalPointsOf(currentChallenger)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="progress-row">${dotsHtml}</div>
+  `;
+}
+
+function renderPkCompleted(session) {
+  const wins = session.results.filter(r => r.result === 'champion_win').length;
+  const total = session.challengers.length;
+  content.innerHTML = `
+    <div class="winner-banner">
+      <p class="winner-label">WINNER</p>
+      <p class="winner-name">👑 ${esc(session.champion.battleName)}</p>
+      <p class="winner-score">本場戰績　${wins} / ${total} 勝</p>
+    </div>
+  `;
+}
+
+function renderTeamActive(session) {
+  const { teamRed, teamBlue, matches, currentPosition, status, tiebreak } = session;
+
+  if (status === 'tiebreak_pick') {
+    content.innerHTML = `
+      <div class="winner-banner">
+        <p class="winner-label">2 : 2 平手</p>
+        <p class="winner-name" style="font-size:clamp(22px,3.4vw,52px);">準備加賽第五棒</p>
+        <p class="winner-score">各隊選出代表出賽，決定最終勝負</p>
+      </div>
+    `;
     return;
   }
-  stage.classList.remove("empty-stage");
 
-  const label=displayName(p);
-  photoWrap.innerHTML=p.photoUrl
-    ? `<img src="${esc(p.photoUrl)}" alt="${esc(label)}">`
-    : `<div class="photo-placeholder">${esc(label.slice(0,1))}</div>`;
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
 
-  awardTitle.textContent=p.awardTitle || "傳奇陀螺手";
-  awardNote.textContent=p.awardNote || "站上巔峰的傳說";
+  let redPlayer, bluePlayer, tagText;
+  if (status === 'tiebreak_active') {
+    redPlayer = teamRed.members.find(m => m.id === tiebreak.redId);
+    bluePlayer = teamBlue.members.find(m => m.id === tiebreak.blueId);
+    tagText = '加賽・第五棒';
+  } else {
+    const cur = matches[currentPosition];
+    redPlayer = teamRed.members.find(m => m.id === cur.redId);
+    bluePlayer = teamBlue.members.find(m => m.id === cur.blueId);
+    tagText = `第 ${currentPosition + 1} 棒`;
+  }
 
-  awardMain.classList.remove("reveal");
-  void awardMain.offsetWidth;
-  awardMain.classList.add("reveal");
+  const dotsHtml = matches.map((m, i) => {
+    let cls = 'dot';
+    if (m.result === 'red') cls += ' lose';
+    if (m.result === 'blue') cls += ' win';
+    if (!m.result && i === currentPosition && status === 'active') cls += ' current';
+    return `<div class="${cls}">${i + 1}</div>`;
+  }).join('') + (status === 'tiebreak_active' ? `<div class="dot current">TB</div>` : '');
+
+  content.innerHTML = `
+    <div class="duel">
+      <div class="fighter-half left red-glow">
+        <img class="show" src="${esc(redPlayer.photoUrl)}" alt="${esc(redPlayer.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">🔴 ${esc(teamRed.name)}　${redWins} 勝</p>
+          <p class="fighter-name">${esc(redPlayer.battleName)}</p>
+          <p class="fighter-score">${tagText}</p><span class="fighter-total">總積分 ${totalPointsOf(redPlayer)}</span>
+        </div>
+      </div>
+      <div class="fighter-half right blue-glow">
+        <img class="show" src="${esc(bluePlayer.photoUrl)}" alt="${esc(bluePlayer.battleName)}">
+        <div class="fighter-info">
+          <p class="fighter-tag">🔵 ${esc(teamBlue.name)}　${blueWins} 勝</p>
+          <p class="fighter-name">${esc(bluePlayer.battleName)}</p>
+          <p class="fighter-score">${tagText}</p><span class="fighter-total">總積分 ${totalPointsOf(bluePlayer)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="progress-row">${dotsHtml}</div>
+  `;
 }
 
-onSnapshot(collection(db,"players"),snap=>{
-  players=[];
-  snap.forEach(d=>players.push({id:d.id,...d.data()}));
-  render();
-},err=>console.error("[AWARDS LIVE] Firebase 監聽失敗：",err));
+function renderTeamCompleted(session) {
+  const { teamRed, teamBlue, matches, tiebreak } = session;
+  const redWins = matches.filter(m => m.result === 'red').length;
+  const blueWins = matches.filter(m => m.result === 'blue').length;
+  const winnerName = tiebreak ? (tiebreak.result === 'red' ? teamRed.name : teamBlue.name)
+                               : (redWins > blueWins ? teamRed.name : teamBlue.name);
+  const scoreLine = tiebreak ? `${redWins} : ${blueWins}（加賽決勝）` : `${redWins} : ${blueWins}`;
+  content.innerHTML = `
+    <div class="winner-banner">
+      <p class="winner-label">WINNER</p>
+      <p class="winner-name">🏆 ${esc(winnerName)}</p>
+      <p class="winner-score">${esc(teamRed.name)} ${scoreLine} ${esc(teamBlue.name)}</p>
+    </div>
+  `;
+}
 
-document.getElementById("backBattle")?.addEventListener("click",()=>{
-  if(window.parent!==window){
-    window.parent.postMessage({type:"projector:navigate",url:"battle.html"},"*");
-  }else{
-    window.location.href="battle.html";
+let unsubA = null, unsubB = null;
+let livePlayers = [];
+let pkSessionCache = undefined;   // undefined=尚未載入, null=無場次, object=場次資料
+let teamSessionCache = undefined;
+let viewMode = null; // 'pk' | 'team' | 'scoreboard'
+
+function cleanupWatchers() {
+  if (unsubA) { unsubA(); unsubA = null; }
+  if (unsubB) { unsubB(); unsubB = null; }
+  pkSessionCache = undefined;
+  teamSessionCache = undefined;
+  livePlayers = [];
+}
+
+function showModeSelect() {
+  viewMode = null;
+  cleanupWatchers();
+  modeLabel.textContent = '選擇賽制';
+  scoreboardBtn.textContent = '記分板';
+  content.innerHTML = `
+    <div class="select-screen">
+      <p class="select-title">請選擇本場賽制</p>
+      <div class="select-btns">
+        <div class="select-btn pk" id="selPk"><span class="emoji">🥊</span>PK 車輪戰</div>
+        <div class="select-btn team" id="selTeam"><span class="emoji">⚔️</span>團體戰</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('selPk').addEventListener('click', enterPkMode);
+  document.getElementById('selTeam').addEventListener('click', enterTeamMode);
+}
+
+function enterPkMode() {
+  viewMode = 'pk';
+  modeLabel.textContent = 'PK 車輪戰';
+  scoreboardBtn.textContent = '記分板';
+  watchPk();
+}
+
+function enterTeamMode() {
+  viewMode = 'team';
+  modeLabel.textContent = '團體戰';
+  scoreboardBtn.textContent = '記分板';
+  watchTeam();
+}
+
+function watchPk() {
+  cleanupWatchers();
+  unsubA = onSnapshot(doc(db, 'pkSessions', 'current'), (snap) => {
+    pkSessionCache = snap.exists() ? snap.data() : null;
+    renderPkView();
+  }, () => renderEmpty('無法讀取對戰資料'));
+  unsubB = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id: d.id, ...d.data() }));
+    renderPkView();
+  });
+}
+
+function renderPkView() {
+  if (viewMode !== 'pk' || pkSessionCache === undefined) return;
+  if (pkSessionCache === null) { renderPkPoolMarquee(); return; }
+  if (pkSessionCache.status === 'completed') renderPkCompleted(pkSessionCache);
+  else renderPkActive(pkSessionCache);
+}
+
+function renderPkPoolMarquee() {
+  const eligible = livePlayers.filter(p => p.photoUrl && !p.pkDrawn);
+  if (!eligible.length) {
+    content.innerHTML = `<div class="marquee-wrap"><p class="marquee-empty">尚無候選選手<br>請至後台新增選手或抽取主賽手</p></div>`;
+    return;
+  }
+  const cardsHtml = eligible.map(p => `
+    <div class="marquee-card"><img src="${esc(p.photoUrl)}" alt="${esc(p.battleName || p.name)}"></div>
+  `).join('');
+  content.innerHTML = `
+    <div class="marquee-wrap">
+      <p class="marquee-heading">候選選手・準備抽取主賽手</p>
+      <div class="marquee-viewport"><div class="marquee-track">${cardsHtml}${cardsHtml}</div></div>
+    </div>
+  `;
+}
+
+function watchTeam() {
+  cleanupWatchers();
+  unsubA = onSnapshot(doc(db, 'teamSessions', 'current'), (snap) => {
+    teamSessionCache = snap.exists() ? snap.data() : null;
+    renderTeamViewLive();
+  }, () => renderEmpty('無法讀取對戰資料'));
+  unsubB = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id:d.id, ...d.data() }));
+    renderTeamViewLive();
+  });
+}
+
+function renderTeamViewLive() {
+  if (viewMode !== 'team' || teamSessionCache === undefined) return;
+  if (teamSessionCache === null) {
+    content.innerHTML = `<div class="marquee-wrap"><p class="marquee-empty">尚未開始建隊<br>請至後台選擇隊員</p></div>`;
+    return;
+  }
+  if (teamSessionCache.status === 'setup') { renderTeamSetupLive(teamSessionCache); return; }
+  if (teamSessionCache.status === 'completed') { renderTeamCompleted(teamSessionCache); return; }
+  renderTeamActive(teamSessionCache);
+}
+
+function renderTeamSetupLive(session) {
+  const { teamRed, teamBlue } = session;
+  function colHtml(color, team) {
+    const membersHtml = team.members.map(m => `
+      <div class="tsl-member"><img src="${esc(m.photoUrl)}" alt=""><span>${esc(m.battleName)}</span></div>
+    `).join('') || `<p class="marquee-empty" style="font-size:.7em;padding:0;">尚未選人</p>`;
+    return `<div class="tsl-col ${color}"><p class="tsl-name">${esc(team.name)}</p><div class="tsl-members">${membersHtml}</div></div>`;
+  }
+  content.innerHTML = `
+    <div class="team-setup-live">
+      ${colHtml('red', teamRed)}
+      ${colHtml('blue', teamBlue)}
+    </div>
+    <div class="tsl-vs">VS</div>
+  `;
+}
+
+
+function enterScoreboardMode() {
+  viewMode = 'scoreboard';
+  cleanupWatchers();
+  modeLabel.textContent = '即時記分板';
+  scoreboardBtn.textContent = '返回比賽';
+  unsubA = onSnapshot(collection(db, 'players'), (snap) => {
+    livePlayers = [];
+    snap.forEach(d => livePlayers.push({ id:d.id, ...d.data() }));
+    renderScoreboard();
+  }, () => renderEmpty('無法讀取積分資料'));
+}
+scoreboardBtn.addEventListener('click', () => {
+  if (viewMode === 'scoreboard') showModeSelect();
+  else enterScoreboardMode();
+});
+
+modeLabel.parentElement.addEventListener('click', showModeSelect);
+showModeSelect();
+
+
+/* Battle 不顯示全螢幕詢問。
+   若瀏覽器 / kiosk 模式允許自動 fullscreen 就直接進入；
+   一般瀏覽器若阻擋，仍維持完整 16:9 投影版面。 */
+window.addEventListener('load', async () => {
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch (e) {
+    // 瀏覽器安全限制時靜默，不顯示任何詢問或遮罩
+  }
+});
+
+
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'f') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+  if (e.key.toLowerCase() === 'h') {
+    stage.classList.toggle('hide-ui');
   }
 });
 </script>
