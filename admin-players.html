@@ -13,9 +13,28 @@
     padding: 20px;
     color: #1a1a1a;
   }
-  .wrap { max-width: 720px; margin: 0 auto; }
+  .wrap { max-width: 920px; margin: 0 auto; }
   h1 { font-size: 20px; margin-bottom: 4px; }
   .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .admin-tabs {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
+    position:sticky; top:8px; z-index:50; margin:0 0 18px;
+    padding:7px; border-radius:12px; background:rgba(255,255,255,.94);
+    box-shadow:0 4px 18px rgba(15,23,42,.10); backdrop-filter:blur(10px);
+  }
+  .admin-tab {
+    width:100%; min-height:43px; padding:11px 8px; border:1px solid #e2e5e9;
+    background:#f7f8fa; color:#5d6470; font-size:13px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; text-decoration:none;
+    font-weight:600; cursor:pointer;
+  }
+  .admin-tab.admin-link:hover { color:#fff; border-color:#1769aa; background:#1769aa; }
+  .admin-tab.active {
+    color:#fff; border-color:#1f2937; background:#1f2937;
+    box-shadow:0 5px 12px rgba(31,41,55,.18);
+  }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
   .card {
     background: #fff;
     border-radius: 12px;
@@ -264,15 +283,89 @@
     cursor:not-allowed;
   }
 
+  /* ---------- 典禮結尾 ---------- */
+  .ending-card {
+    border-top:4px solid #6d4ed6;
+    background:
+      radial-gradient(circle at 90% 0%, rgba(41,141,255,.10), transparent 36%),
+      radial-gradient(circle at 8% 0%, rgba(255,51,77,.08), transparent 32%),
+      #fff;
+  }
+  .ending-copy {
+    margin:14px 0; padding:16px; border:1px solid #e7e0ff; border-radius:10px;
+    background:#faf8ff; text-align:center; color:#31275a; font-size:14px;
+    font-weight:650; line-height:1.9; white-space:pre-line;
+  }
+  .ending-upload-box {
+    padding:14px; border:1px dashed #aaa0d7; border-radius:10px; background:#fcfbff;
+  }
+  .ending-upload-actions { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+  .ending-upload-actions input { min-width:0; }
+  .ending-upload-btn { background:#6d4ed6; color:#fff; padding:10px 16px; font-size:13px; }
+  .ending-upload-btn:disabled { background:#b7adc9; cursor:not-allowed; }
+  .ending-controls {
+    display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px; margin-top:14px;
+  }
+  .ending-controls button { width:100%; font-size:13px; padding:11px 8px; }
+  .ending-start { color:#fff; background:linear-gradient(135deg,#ff334d,#298dff); }
+  .ending-pause { color:#3d2b7c; background:#f2edff; border:1px solid #cfc1ff; }
+  .ending-stop { color:#c33; background:#fff; border:1px solid #efaaaa; }
+  .ending-settings {
+    display:flex; align-items:center; gap:10px; margin:12px 0 0; flex-wrap:wrap;
+    font-size:12px; color:#666;
+  }
+  .ending-settings label { margin:0; }
+  .ending-settings select {
+    padding:7px 10px; border:1px solid #ddd; border-radius:7px; background:#fff;
+  }
+  .ending-live-badge {
+    margin-left:auto; padding:5px 10px; border-radius:999px;
+    color:#777; background:#eceff3; font-weight:800;
+  }
+  .ending-live-badge.live { color:#087653; background:#e2f7ef; }
+  .ending-photo-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;
+    margin-top:14px;
+  }
+  .ending-photo-card {
+    position:relative; overflow:hidden; border-radius:10px; border:1px solid #e5e5e5;
+    background:#f3f3f3; aspect-ratio:4/3;
+  }
+  .ending-photo-card img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ending-photo-delete {
+    position:absolute; top:7px; right:7px; padding:6px 9px; border-radius:7px;
+    color:#fff; background:rgba(170,24,24,.88); font-size:11px;
+    box-shadow:0 2px 8px rgba(0,0,0,.22);
+  }
+  .ending-photo-empty {
+    grid-column:1/-1; padding:24px; color:#999; text-align:center;
+    border:1px dashed #ddd; border-radius:10px; background:#fafafa; font-size:13px;
+  }
+  #endingStatus { min-height:18px; margin-top:10px; font-size:13px; }
+  @media (max-width:620px){
+    body { padding:12px; }
+    .admin-tabs { grid-template-columns:1fr 1fr; }
+    .admin-tab { font-size:12px; padding:10px 4px; }
+    .ending-upload-actions { grid-template-columns:1fr; }
+    .ending-controls { grid-template-columns:1fr; }
+    .ending-live-badge { margin-left:0; }
+  }
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>參賽者管理</h1>
   <p class="sub">新增選手姓名與照片，大螢幕會即時同步更新，不需要重新整理。</p>
-  <p style="margin:-8px 0 18px;font-size:12px;">
-    <a href="#awardSettings" style="color:#a86e00;text-decoration:none;font-weight:700;">🏆 前往頒獎設定</a>
-  </p>
+
+  <nav class="admin-tabs" aria-label="後台功能分頁">
+    <button class="admin-tab active" type="button" data-tab="playersPanel">👤 選手管理</button>
+    <a class="admin-tab admin-link" href="pk-admin.html">⚔️ 對戰管理</a>
+    <button class="admin-tab" type="button" data-tab="awardsPanel">🏆 頒獎設定</button>
+    <button class="admin-tab" type="button" data-tab="endingPanel">🎬 典禮結尾</button>
+  </nav>
+
+  <section class="tab-panel active" id="playersPanel">
 
   <div class="card">
     <h2>從報名名單匯入</h2>
@@ -322,7 +415,9 @@
     <div class="grid" id="playerGrid"></div>
     <div class="empty" id="emptyMsg" style="display:none;">尚未新增任何參賽者</div>
   </div>
+  </section>
 
+  <section class="tab-panel" id="awardsPanel">
   <div class="card award-settings-card" id="awardSettings">
     <div class="award-settings-head">
       <div>
@@ -339,6 +434,56 @@
     <div class="award-settings-list" id="awardSettingsList"></div>
     <div class="award-status" id="awardSettingsStatus"></div>
   </div>
+  </section>
+
+  <section class="tab-panel" id="endingPanel">
+    <div class="card ending-card">
+      <h2>🎬 典禮結尾投影</h2>
+      <p class="desc">上方祝福文字固定顯示，下方會輪播今天上傳的花絮照片。新增照片後，投影端會即時取得最新清單。</p>
+
+      <div class="ending-copy">謝謝每一位勇敢的小陀螺手，
+今天和我們一起完成了一場精彩的戰鬥！
+
+願你們帶著今天挑戰對手的勇氣，
+勇敢展開全新的小學生活。
+
+希望未來的每一天，都能開開心心上學唷</div>
+
+      <div class="ending-upload-box">
+        <label for="endingPhotoFiles" style="margin-top:0;">上傳花絮照片（可一次選多張）</label>
+        <div class="ending-upload-actions">
+          <input type="file" id="endingPhotoFiles" accept="image/*" multiple>
+          <button class="ending-upload-btn" id="uploadEndingPhotos" type="button">上傳照片</button>
+        </div>
+        <div id="endingStatus"></div>
+      </div>
+
+      <div class="ending-controls">
+        <button class="ending-start" id="startEndingProjection" type="button">▶ 開始結尾投影</button>
+        <button class="ending-pause" id="toggleEndingPlayback" type="button">⏸ 暫停輪播</button>
+        <button class="ending-stop" id="stopEndingProjection" type="button">■ 結束投影</button>
+      </div>
+
+      <div class="ending-settings">
+        <label for="endingInterval">照片切換速度</label>
+        <select id="endingInterval">
+          <option value="4000">每 4 秒</option>
+          <option value="5000" selected>每 5 秒</option>
+          <option value="7000">每 7 秒</option>
+          <option value="10000">每 10 秒</option>
+        </select>
+        <span class="ending-live-badge" id="endingLiveBadge">尚未投影</span>
+      </div>
+
+      <div class="list-title" style="margin-top:22px;">
+        <span>已上傳花絮照片</span>
+        <span class="count" id="endingPhotoCount">0 張</span>
+      </div>
+      <div class="ending-photo-grid" id="endingPhotoGrid">
+        <div class="ending-photo-empty">尚未上傳花絮照片</div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <div class="modal-backdrop" id="editModal" aria-hidden="true">
@@ -407,6 +552,24 @@ const awardSettingsList = document.getElementById('awardSettingsList');
 const awardSettingsStatus = document.getElementById('awardSettingsStatus');
 const clearAwardProjection = document.getElementById('clearAwardProjection');
 let projectedAwardPlayerId = null;
+
+// ---------- 後台分頁 ----------
+const adminTabs = document.querySelectorAll('.admin-tab');
+const tabPanels = document.querySelectorAll('.tab-panel');
+adminTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const targetId = tab.dataset.tab;
+    adminTabs.forEach(item => item.classList.toggle('active', item === tab));
+    tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === targetId));
+    history.replaceState(null, '', `#${targetId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+const initialTabId = location.hash.replace('#', '');
+if (initialTabId && document.getElementById(initialTabId)?.classList.contains('tab-panel')) {
+  document.querySelector(`.admin-tab[data-tab="${initialTabId}"]`)?.click();
+}
 
 let selectedFile = null;
 let currentPlayerNames = new Set();
@@ -827,6 +990,217 @@ clearAwardProjection?.addEventListener('click',async()=>{
     awardSettingsStatus.className='award-status err';
   }
 });
+
+// ---------- 典禮結尾：照片與投影控制 ----------
+const ENDING_MESSAGE = `謝謝每一位勇敢的小陀螺手，
+今天和我們一起完成了一場精彩的戰鬥！
+
+願你們帶著今天挑戰對手的勇氣，
+勇敢展開全新的小學生活。
+
+希望未來的每一天，都能開開心心上學唷`;
+
+const endingPhotoFiles = document.getElementById('endingPhotoFiles');
+const uploadEndingPhotos = document.getElementById('uploadEndingPhotos');
+const startEndingProjection = document.getElementById('startEndingProjection');
+const toggleEndingPlayback = document.getElementById('toggleEndingPlayback');
+const stopEndingProjection = document.getElementById('stopEndingProjection');
+const endingInterval = document.getElementById('endingInterval');
+const endingLiveBadge = document.getElementById('endingLiveBadge');
+const endingPhotoGrid = document.getElementById('endingPhotoGrid');
+const endingPhotoCount = document.getElementById('endingPhotoCount');
+const endingStatus = document.getElementById('endingStatus');
+const endingStateRef = doc(db, 'endingScreen', 'current');
+
+let endingPhotos = [];
+let endingState = { active:false, playing:true, intervalMs:5000 };
+
+function safeFileName(name) {
+  return String(name || 'photo.jpg').replace(/[^a-zA-Z0-9._-]+/g, '_');
+}
+
+async function optimizeEndingPhoto(file) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 1920;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .86));
+    return blob || file;
+  } catch (err) {
+    console.warn('照片壓縮略過，改用原檔：', err);
+    return file;
+  }
+}
+
+uploadEndingPhotos?.addEventListener('click', async () => {
+  const files = Array.from(endingPhotoFiles.files || []);
+  if (!files.length) {
+    setStatus(endingStatus, '請先選擇至少一張照片', 'err');
+    return;
+  }
+
+  uploadEndingPhotos.disabled = true;
+  let completed = 0;
+  let failed = 0;
+
+  for (const file of files) {
+    setStatus(endingStatus, `正在上傳 ${completed + failed + 1}/${files.length}…`, '');
+    try {
+      const optimized = await optimizeEndingPhoto(file);
+      const path = `ending-photos/${Date.now()}_${completed}_${safeFileName(file.name).replace(/\.[^.]+$/, '')}.jpg`;
+      const photoRef = ref(storage, path);
+      await uploadBytes(photoRef, optimized, { contentType:'image/jpeg' });
+      const photoUrl = await getDownloadURL(photoRef);
+      await addDoc(collection(db, 'endingPhotos'), {
+        photoUrl,
+        photoPath:path,
+        originalName:file.name,
+        createdAt:serverTimestamp()
+      });
+      completed++;
+    } catch (err) {
+      console.error(err);
+      failed++;
+    }
+  }
+
+  endingPhotoFiles.value = '';
+  uploadEndingPhotos.disabled = false;
+  if (failed) {
+    setStatus(endingStatus, `已上傳 ${completed} 張，${failed} 張失敗，請再試一次`, 'err');
+  } else {
+    setStatus(endingStatus, `✓ 已成功上傳 ${completed} 張花絮照片`, 'ok');
+  }
+});
+
+startEndingProjection?.addEventListener('click', async () => {
+  startEndingProjection.disabled = true;
+  try {
+    await setDoc(endingStateRef, {
+      active:true,
+      playing:true,
+      intervalMs:Number(endingInterval.value) || 5000,
+      message:ENDING_MESSAGE,
+      updatedAt:serverTimestamp()
+    }, { merge:true });
+    setStatus(endingStatus, '✓ 已切換為典禮結尾投影', 'ok');
+  } catch (err) {
+    console.error(err);
+    setStatus(endingStatus, '啟動投影失敗：' + err.message, 'err');
+  } finally {
+    startEndingProjection.disabled = false;
+  }
+});
+
+toggleEndingPlayback?.addEventListener('click', async () => {
+  try {
+    await setDoc(endingStateRef, {
+      playing:!endingState.playing,
+      updatedAt:serverTimestamp()
+    }, { merge:true });
+  } catch (err) {
+    console.error(err);
+    setStatus(endingStatus, '切換輪播失敗：' + err.message, 'err');
+  }
+});
+
+endingInterval?.addEventListener('change', async () => {
+  try {
+    await setDoc(endingStateRef, {
+      intervalMs:Number(endingInterval.value) || 5000,
+      updatedAt:serverTimestamp()
+    }, { merge:true });
+    setStatus(endingStatus, '✓ 照片切換速度已更新', 'ok');
+  } catch (err) {
+    console.error(err);
+    setStatus(endingStatus, '更新速度失敗：' + err.message, 'err');
+  }
+});
+
+stopEndingProjection?.addEventListener('click', async () => {
+  if (!confirm('確定要結束典禮結尾投影嗎？')) return;
+  try {
+    await setDoc(endingStateRef, {
+      active:false,
+      playing:false,
+      updatedAt:serverTimestamp()
+    }, { merge:true });
+    setStatus(endingStatus, '✓ 典禮結尾投影已結束', 'ok');
+  } catch (err) {
+    console.error(err);
+    setStatus(endingStatus, '結束投影失敗：' + err.message, 'err');
+  }
+});
+
+onSnapshot(endingStateRef, snap => {
+  endingState = snap.exists()
+    ? { active:false, playing:true, intervalMs:5000, ...snap.data() }
+    : { active:false, playing:true, intervalMs:5000 };
+
+  endingLiveBadge.textContent = endingState.active
+    ? (endingState.playing ? '● 投影輪播中' : '● 投影已暫停')
+    : '尚未投影';
+  endingLiveBadge.classList.toggle('live', Boolean(endingState.active));
+  toggleEndingPlayback.textContent = endingState.playing ? '⏸ 暫停輪播' : '▶ 繼續輪播';
+  endingInterval.value = String(endingState.intervalMs || 5000);
+}, err => {
+  console.error(err);
+  setStatus(endingStatus, '讀取結尾投影狀態失敗：' + err.message, 'err');
+});
+
+const endingPhotosQuery = query(collection(db, 'endingPhotos'), orderBy('createdAt', 'asc'));
+onSnapshot(endingPhotosQuery, snapshot => {
+  endingPhotos = snapshot.docs.map(item => ({ id:item.id, ...item.data() }));
+  endingPhotoCount.textContent = `${endingPhotos.length} 張`;
+  endingPhotoGrid.innerHTML = '';
+
+  if (!endingPhotos.length) {
+    endingPhotoGrid.innerHTML = '<div class="ending-photo-empty">尚未上傳花絮照片</div>';
+    return;
+  }
+
+  endingPhotos.forEach(photo => {
+    const card = document.createElement('div');
+    card.className = 'ending-photo-card';
+
+    const img = document.createElement('img');
+    img.src = photo.photoUrl;
+    img.alt = '活動花絮照片';
+    img.loading = 'lazy';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'ending-photo-delete';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = '刪除';
+    deleteBtn.addEventListener('click', async () => {
+      if (!confirm('確定要刪除這張花絮照片嗎？')) return;
+      deleteBtn.disabled = true;
+      try {
+        await deleteDoc(doc(db, 'endingPhotos', photo.id));
+        if (photo.photoPath) deleteObject(ref(storage, photo.photoPath)).catch(() => {});
+        setStatus(endingStatus, '✓ 照片已刪除', 'ok');
+      } catch (err) {
+        console.error(err);
+        deleteBtn.disabled = false;
+        setStatus(endingStatus, '刪除失敗：' + err.message, 'err');
+      }
+    });
+
+    card.append(img, deleteBtn);
+    endingPhotoGrid.appendChild(card);
+  });
+}, err => {
+  console.error(err);
+  setStatus(endingStatus, '讀取花絮照片失敗：' + err.message, 'err');
+});
+
 // ---------- 即時監聽參賽者名單 ----------
 const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
 onSnapshot(q, (snapshot) => {
