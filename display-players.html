@@ -242,6 +242,13 @@ html, body {
   height:88% !important;
 }
 
+
+/* ===== 修正右下角「進入比賽」可點擊 ===== */
+.enter-btn{
+  z-index:999 !important;
+  pointer-events:auto !important;
+}
+
 </style>
 </head>
 <body>
@@ -258,7 +265,7 @@ html, body {
   </div>
 
   <div class="roster" id="roster"></div>
-  <a class="enter-btn" href="battle.html">進入比賽</a>
+  <a class="enter-btn" id="enterBattleBtn" href="battle.html">進入比賽</a>
 </div>
 
 <script type="module">
@@ -394,6 +401,14 @@ window.addEventListener("load",()=>{
       if(document.fullscreenElement) fullscreenStart?.classList.add("hidden");
     }catch(e){}
   },250);
+});
+
+
+
+const enterBattleBtn=document.getElementById("enterBattleBtn");
+enterBattleBtn?.addEventListener("click",(e)=>{
+  e.preventDefault();
+  window.location.href="battle.html";
 });
 
 
