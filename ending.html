@@ -172,6 +172,15 @@
   .connection.online .connection-dot { background:#32d99a; box-shadow:0 0 9px #32d99a; }
   .connection.error { color:#ffb4bf; }
   .connection.error .connection-dot { background:#ff405c; box-shadow:0 0 9px #ff405c; }
+  .fullscreen-btn {
+    position:absolute; z-index:45; left:1.5vw; top:1.5vh;
+    padding:9px 14px; border:1px solid rgba(255,227,161,.55); border-radius:9px;
+    color:#ffe3a1; background:rgba(5,7,17,.72); backdrop-filter:blur(8px);
+    font-size:clamp(11px,.85vw,15px); font-weight:800; letter-spacing:.04em;
+    cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);
+  }
+  .fullscreen-btn:hover { color:#241500; background:#ffe3a1; }
+  :fullscreen .fullscreen-btn { display:none; }
 
   @keyframes spin { to { transform:rotate(360deg); } }
   @keyframes float { 50% { transform:translateY(-10px); } }
@@ -197,6 +206,7 @@
   <div class="connection" id="connectionStatus">
     <span class="connection-dot"></span><span id="connectionText">連線中</span>
   </div>
+  <button class="fullscreen-btn" id="fullscreenBtn" type="button">⛶ 點我進入全螢幕</button>
 
   <section class="view idle-view" id="idleView">
     <div class="idle-inner">
@@ -288,6 +298,7 @@ const slideEmpty = document.getElementById('slideEmpty');
 const slideCount = document.getElementById('slideCount');
 const connectionStatus = document.getElementById('connectionStatus');
 const connectionText = document.getElementById('connectionText');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
 
 let projectedPlayer = null;
 let endingState = { active:true, playing:true, intervalMs:5000 };
@@ -455,6 +466,10 @@ document.addEventListener('keydown', event => {
   }
 });
 document.addEventListener('dblclick', toggleFullscreen);
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+document.addEventListener('fullscreenchange', () => {
+  fullscreenBtn.style.display = document.fullscreenElement ? 'none' : '';
+});
 </script>
 </body>
 </html>
