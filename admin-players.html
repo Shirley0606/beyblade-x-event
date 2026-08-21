@@ -244,6 +244,26 @@
     color:#7c6736;
   }
 
+
+  .award-cancel{
+    background:#fff;
+    color:#d94a4a;
+    border:1px solid #efaaaa;
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:11px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .award-cancel:hover{
+    background:#fff4f4;
+    border-color:#df6b6b;
+  }
+  .award-cancel:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+
 </style>
 </head>
 <body>
@@ -313,7 +333,7 @@
     </div>
 
     <div class="award-hint">
-      每位選手直接從下拉選單選擇頒獎名稱，小標會自動帶入；已被其他選手使用的獎項會自動鎖定，避免重複。
+      每位選手直接從下拉選單選擇頒獎名稱，小標會自動帶入；已被其他選手使用的獎項會自動鎖定。若選錯，可按「取消獎項」立即釋放該獎項重新選擇。
     </div>
 
     <div class="award-settings-list" id="awardSettingsList"></div>
@@ -645,6 +665,7 @@ function renderAwardSettings(players) {
       </div>
       <div class="award-actions">
         <button class="award-save" type="button">儲存</button>
+        <button class="award-cancel" type="button" ${currentTitle ? '' : 'disabled'}>取消獎項</button>
         <button class="award-project ${p.id===projectedAwardPlayerId ? 'active' : ''}" type="button">
           ${p.id===projectedAwardPlayerId ? '投影中' : '投影此選手'}
         </button>
@@ -661,6 +682,49 @@ function renderAwardSettings(players) {
 
     select.addEventListener('change',()=>{
       noteInput.value = awardNoteByTitle(select.value);
+    });
+
+    row.querySelector('.award-cancel').addEventListener('click', async () => {
+      const cancelBtn=row.querySelector('.award-cancel');
+      const currentSelected=select.value.trim();
+
+      if(!currentSelected) return;
+
+      const ok=confirm(
+        `確定要取消「${currentSelected}」的獎項設定嗎？\n\n取消後此獎項會立即重新開放，其他選手就可以選取。`
+      );
+      if(!ok) return;
+
+      cancelBtn.disabled=true;
+      awardSettingsStatus.textContent='取消獎項中…';
+      awardSettingsStatus.className='award-status';
+
+      try{
+        const updateData={
+          awardTitle:'',
+          awardNote:'',
+          updatedAt:serverTimestamp()
+        };
+
+        // 如果目前正在投影的就是這位，也同步取消投影，避免前台繼續顯示舊獎項。
+        if(rowId===projectedAwardPlayerId){
+          updateData.awardProjected=false;
+          projectedAwardPlayerId=null;
+        }
+
+        await updateDoc(doc(db,'players',rowId),updateData);
+
+        select.value='';
+        noteInput.value='';
+
+        awardSettingsStatus.textContent=`✓ 已取消「${currentSelected}」，此獎項已重新開放`;
+        awardSettingsStatus.className='award-status ok';
+      }catch(err){
+        console.error(err);
+        awardSettingsStatus.textContent='取消失敗：'+err.message;
+        awardSettingsStatus.className='award-status err';
+        cancelBtn.disabled=false;
+      }
     });
 
     row.querySelector('.award-project').addEventListener('click', async () => {
