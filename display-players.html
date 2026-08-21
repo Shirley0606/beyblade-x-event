@@ -272,6 +272,39 @@ html, body {
 }
 .projector-home:hover{opacity:1}
 
+
+/* ===== DISPLAY：右下角新增頒獎典禮入口 ===== */
+.projector-entry-actions{
+  position:absolute;
+  right:2.2%;
+  bottom:2.3%;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.projector-entry-actions .enter-btn{
+  position:static !important;
+  right:auto !important;
+  bottom:auto !important;
+}
+.award-entry-btn{
+  border:1px solid rgba(255,214,104,.58);
+  background:linear-gradient(180deg,rgba(86,56,5,.92),rgba(34,22,4,.96));
+  color:#ffe7a1;
+  padding:.72em 1.25em;
+  border-radius:8px;
+  font-size:clamp(10px,.75vw,14px);
+  font-weight:900;
+  letter-spacing:.08em;
+  cursor:pointer;
+  box-shadow:0 0 18px rgba(255,198,58,.12);
+  backdrop-filter:blur(8px);
+}
+.award-entry-btn:hover{
+  filter:brightness(1.12);
+}
+
 </style>
 </head>
 <body>
@@ -288,7 +321,10 @@ html, body {
   </div>
 
   <div class="roster" id="roster"></div>
+  <div class="projector-entry-actions">
+  <button class="award-entry-btn" id="enterAwardsBtn" type="button">頒獎典禮</button>
   <button class="enter-btn" id="enterBattleBtn" type="button">進入比賽</button>
+</div>
 </div>
 
 <div class="projector-shell" id="projectorShell">
@@ -435,6 +471,7 @@ window.addEventListener("load",()=>{
 
 
 const enterBattleBtn=document.getElementById("enterBattleBtn");
+const enterAwardsBtn=document.getElementById("enterAwardsBtn");
 const projectorShell=document.getElementById("projectorShell");
 const projectorFrame=document.getElementById("projectorFrame");
 const projectorHome=document.getElementById("projectorHome");
@@ -453,6 +490,7 @@ async function openProjector(url){
 }
 
 enterBattleBtn?.addEventListener("click",()=>openProjector("battle.html"));
+enterAwardsBtn?.addEventListener("click",()=>openProjector("awards.html"));
 
 projectorHome?.addEventListener("click",()=>{
   projectorFrame.src="about:blank";
