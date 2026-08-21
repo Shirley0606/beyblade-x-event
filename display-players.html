@@ -249,6 +249,29 @@ html, body {
   pointer-events:auto !important;
 }
 
+
+/* ===== 統一投影殼：DISPLAY → BATTLE → AWARDS 全程維持同一 fullscreen session ===== */
+.enter-btn{font-family:inherit}
+.projector-shell{
+  position:fixed; inset:0; z-index:5000;
+  width:100vw; height:100vh; background:#000;
+  display:none; overflow:hidden;
+}
+.projector-shell.active{display:block}
+.projector-frame{
+  width:100%; height:100%; border:0; display:block; background:#000;
+}
+.projector-home{
+  position:absolute; left:1.3%; bottom:1.6%; z-index:5002;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(5,9,15,.72); color:#d7e0ed;
+  padding:.55em .85em; border-radius:7px;
+  font:700 clamp(9px,.65vw,12px)/1 system-ui;
+  cursor:pointer; backdrop-filter:blur(8px);
+  opacity:.55;
+}
+.projector-home:hover{opacity:1}
+
 </style>
 </head>
 <body>
@@ -265,7 +288,12 @@ html, body {
   </div>
 
   <div class="roster" id="roster"></div>
-  <a class="enter-btn" id="enterBattleBtn" href="battle.html">進入比賽</a>
+  <button class="enter-btn" id="enterBattleBtn" type="button">進入比賽</button>
+</div>
+
+<div class="projector-shell" id="projectorShell">
+  <iframe class="projector-frame" id="projectorFrame" title="比賽投影畫面" allow="fullscreen"></iframe>
+  <button class="projector-home" id="projectorHome" type="button">返回選手登場</button>
 </div>
 
 <script type="module">
@@ -405,10 +433,42 @@ window.addEventListener("load",()=>{
 
 
 
+
 const enterBattleBtn=document.getElementById("enterBattleBtn");
-enterBattleBtn?.addEventListener("click",(e)=>{
-  e.preventDefault();
-  window.location.href="battle.html";
+const projectorShell=document.getElementById("projectorShell");
+const projectorFrame=document.getElementById("projectorFrame");
+const projectorHome=document.getElementById("projectorHome");
+
+async function openProjector(url){
+  // 這裡是由「進入比賽」的實際點擊直接觸發，因此瀏覽器允許進入真正 fullscreen。
+  try{
+    if(!document.fullscreenElement && document.documentElement.requestFullscreen){
+      await document.documentElement.requestFullscreen();
+    }
+  }catch(err){
+    console.warn("Fullscreen request blocked:",err);
+  }
+  projectorFrame.src=url;
+  projectorShell.classList.add("active");
+}
+
+enterBattleBtn?.addEventListener("click",()=>openProjector("battle.html"));
+
+projectorHome?.addEventListener("click",()=>{
+  projectorFrame.src="about:blank";
+  projectorShell.classList.remove("active");
+  // 不退出 fullscreen，回到選手登場後仍保持滿版。
+});
+
+// 讓 iframe 裡的 BATTLE / AWARDS 可以要求外層切換畫面
+window.addEventListener("message",(e)=>{
+  if(e.data?.type==="projector:navigate" && e.data?.url){
+    projectorFrame.src=e.data.url;
+  }
+  if(e.data?.type==="projector:home"){
+    projectorFrame.src="about:blank";
+    projectorShell.classList.remove("active");
+  }
 });
 
 
