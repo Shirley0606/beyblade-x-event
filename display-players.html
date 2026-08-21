@@ -207,6 +207,41 @@ body{display:flex;align-items:center;justify-content:center}
 }
 .fullscreen-go:hover{filter:brightness(1.13)}
 
+
+/* ===== 修正最後幾位選手主圖偏移 ===== */
+html, body {
+  overflow-x: hidden !important;
+}
+.stage {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transform: none !important;
+}
+.hero img,
+.placeholder {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.roster {
+  overscroll-behavior-x: contain !important;
+}
+
+
+/* ===== V5 根治：選手列固定、不水平捲動 ===== */
+.roster{
+  overflow-x:hidden !important;
+  overflow-y:hidden !important;
+  scroll-behavior:auto !important;
+  justify-content:flex-start !important;
+  gap:.45% !important;
+}
+.thumb{
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  max-width:11.2% !important;
+  height:88% !important;
+}
+
 </style>
 </head>
 <body>
@@ -288,9 +323,8 @@ function show(index){
   document.querySelectorAll(".thumb").forEach((el,i)=>{
     el.classList.toggle("active", i===currentIndex);
   });
-  document.querySelector(`.thumb[data-index="${currentIndex}"]`)?.scrollIntoView({
-    behavior:"smooth",block:"nearest",inline:"center"
-  });
+  // V5：縮圖列固定顯示，不再進行任何水平捲動。
+  // 避免切換到最後幾位選手時瀏覽器連帶改變舞台的水平位置。
 }
 function next(){
   if(players.length>1) show(currentIndex+1);
