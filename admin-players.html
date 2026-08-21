@@ -303,6 +303,11 @@
   .ending-upload-actions input { min-width:0; }
   .ending-upload-btn { background:#6d4ed6; color:#fff; padding:10px 16px; font-size:13px; }
   .ending-upload-btn:disabled { background:#b7adc9; cursor:not-allowed; }
+  .ending-open-link {
+    display:inline-flex; align-items:center; justify-content:center; margin:0 0 14px;
+    padding:9px 13px; border-radius:8px; color:#1769aa; background:#eef6ff;
+    border:1px solid #b8d5eb; text-decoration:none; font-size:12px; font-weight:800;
+  }
   .ending-controls {
     display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px; margin-top:14px;
   }
@@ -439,7 +444,8 @@
   <section class="tab-panel" id="endingPanel">
     <div class="card ending-card">
       <h2>🎬 典禮結尾投影</h2>
-      <p class="desc">上方祝福文字固定顯示，下方會輪播今天上傳的花絮照片。新增照片後，投影端會即時取得最新清單。</p>
+      <p class="desc">ending.html 一打開就會固定顯示祝福文字；這裡負責上傳花絮照片與控制下方輪播。</p>
+      <a class="ending-open-link" href="ending.html" target="_blank" rel="noopener">↗ 開啟結尾投影頁</a>
 
       <div class="ending-copy">謝謝每一位勇敢的小陀螺手，
 今天和我們一起完成了一場精彩的戰鬥！
@@ -459,9 +465,9 @@
       </div>
 
       <div class="ending-controls">
-        <button class="ending-start" id="startEndingProjection" type="button">▶ 開始結尾投影</button>
+        <button class="ending-start" id="startEndingProjection" type="button">▶ 啟動／繼續照片輪播</button>
         <button class="ending-pause" id="toggleEndingPlayback" type="button">⏸ 暫停輪播</button>
-        <button class="ending-stop" id="stopEndingProjection" type="button">■ 結束投影</button>
+        <button class="ending-stop" id="stopEndingProjection" type="button">■ 停止照片輪播</button>
       </div>
 
       <div class="ending-settings">
@@ -1090,7 +1096,7 @@ startEndingProjection?.addEventListener('click', async () => {
       message:ENDING_MESSAGE,
       updatedAt:serverTimestamp()
     }, { merge:true });
-    setStatus(endingStatus, '✓ 已切換為典禮結尾投影', 'ok');
+    setStatus(endingStatus, '✓ 照片輪播已啟動；ending.html 會固定顯示祝福文字', 'ok');
   } catch (err) {
     console.error(err);
     setStatus(endingStatus, '啟動投影失敗：' + err.message, 'err');
@@ -1125,17 +1131,17 @@ endingInterval?.addEventListener('change', async () => {
 });
 
 stopEndingProjection?.addEventListener('click', async () => {
-  if (!confirm('確定要結束典禮結尾投影嗎？')) return;
+  if (!confirm('確定要停止照片輪播嗎？祝福文字仍會繼續顯示。')) return;
   try {
     await setDoc(endingStateRef, {
-      active:false,
+      active:true,
       playing:false,
       updatedAt:serverTimestamp()
     }, { merge:true });
-    setStatus(endingStatus, '✓ 典禮結尾投影已結束', 'ok');
+    setStatus(endingStatus, '✓ 照片輪播已停止，祝福文字仍會顯示', 'ok');
   } catch (err) {
     console.error(err);
-    setStatus(endingStatus, '結束投影失敗：' + err.message, 'err');
+    setStatus(endingStatus, '停止輪播失敗：' + err.message, 'err');
   }
 });
 
@@ -1144,10 +1150,8 @@ onSnapshot(endingStateRef, snap => {
     ? { active:false, playing:true, intervalMs:5000, ...snap.data() }
     : { active:false, playing:true, intervalMs:5000 };
 
-  endingLiveBadge.textContent = endingState.active
-    ? (endingState.playing ? '● 投影輪播中' : '● 投影已暫停')
-    : '尚未投影';
-  endingLiveBadge.classList.toggle('live', Boolean(endingState.active));
+  endingLiveBadge.textContent = endingState.playing ? '● 照片輪播中' : '● 照片已暫停';
+  endingLiveBadge.classList.toggle('live', Boolean(endingState.playing));
   toggleEndingPlayback.textContent = endingState.playing ? '⏸ 暫停輪播' : '▶ 繼續輪播';
   endingInterval.value = String(endingState.intervalMs || 5000);
 }, err => {
