@@ -263,15 +263,15 @@ html, body {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
-  authDomain:"beyblade-x-event.firebaseapp.com",
-  projectId:"beyblade-x-event",
-  storageBucket:"beyblade-x-event.firebasestorage.app",
-  messagingSenderId:"866394169939",
-  appId:"1:866394169939:web:a73222040a99a433425ca6"
+const firebaseConfig = {
+apiKey: "AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain: "beyblade-x-event.firebaseapp.com",
+  projectId: "beyblade-x-event",
+  storageBucket: "beyblade-x-event.firebasestorage.app",
+  messagingSenderId: "866394169939",
+  appId: "1:866394169939:web:a73222040a99a433425ca6"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -311,7 +311,7 @@ function renderRoster(){
 }
 function show(index){
   if(!players.length){
-    hero.innerHTML='<div class="placeholder">等待選手資料</div>';
+    hero.innerHTML='<div class="placeholder">目前尚無選手資料</div>';
     return;
   }
   currentIndex=(index+players.length)%players.length;
@@ -336,11 +336,24 @@ function startAuto(){
   }
 }
 
-const q=query(collection(db,"players"),orderBy("createdAt","asc"));
-onSnapshot(q,snapshot=>{
+onSnapshot(collection(db,"players"),snapshot=>{
   const oldId=players[currentIndex]?.id;
   players=[];
   snapshot.forEach(d=>players.push({id:d.id,...d.data()}));
+
+  // PLAYER ADMIN 的名單來源就是 players 集合。
+  // DISPLAY 完整顯示同一集合，不要求一定有照片、createdAt 或 cardStyle。
+  players.sort((a,b)=>{
+    const at = a.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+    const bt = b.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+    if(at !== bt) return at - bt;
+    return String(a.name || a.battleName || "").localeCompare(
+      String(b.name || b.battleName || ""),
+      "zh-Hant"
+    );
+  });
+
+  console.log(`[DISPLAY] 已從 PLAYER ADMIN 的 players 集合讀到 ${players.length} 位選手`, players);
   renderRoster();
   if(!players.length){
     clearInterval(timer);
@@ -353,7 +366,7 @@ onSnapshot(q,snapshot=>{
   startAuto();
 },err=>{
   console.error(err);
-  hero.innerHTML='<div class="placeholder">無法讀取選手資料</div>';
+  hero.innerHTML='<div class="placeholder">無法讀取選手資料，請重新整理頁面</div>';
 });
 
 
