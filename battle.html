@@ -300,24 +300,6 @@ body{
   letter-spacing:.28em;
   text-transform:uppercase;
 }
-#namePlate{
-  position:absolute;
-  left:18%;
-  bottom:6.4%;
-  z-index:4;
-  min-width:240px;
-  max-width:46%;
-  padding:1.2vh 2.2vw;
-  text-align:center;
-  color:#f6dfaa;
-  font-size:clamp(30px,3.2vw,56px);
-  font-weight:900;
-  letter-spacing:.12em;
-  background:linear-gradient(180deg, rgba(25,18,10,.96), rgba(7,7,9,.97));
-  border:2px solid rgba(242,201,112,.96);
-  clip-path:polygon(6% 0,94% 0,100% 50%,94% 100%,6% 100%,0 50%);
-  box-shadow:0 0 0 1px rgba(84,58,18,.7) inset, 0 8px 24px rgba(0,0,0,.38), 0 0 16px rgba(255,212,117,.18);
-}
 .back-battle{
   position:absolute;z-index:20;right:1.4%;top:1.8%;
   border:1px solid rgba(215,180,106,.16);
@@ -337,7 +319,6 @@ body{
   .main{left:4%;right:4%;gap:2.4%;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr)}
   #awardTitle{font-size:clamp(48px,5vw,86px)}
   #awardNote{font-size:clamp(24px,2.3vw,40px)}
-  #namePlate{left:14%;max-width:54%}
 }
 @media (max-width: 920px){
   .header{width:94%}
@@ -355,7 +336,6 @@ body{
   .signature-block{justify-content:center}
   #awardTitle{font-size:clamp(36px,8vw,60px)}
   #awardNote{font-size:clamp(18px,4vw,28px)}
-  #namePlate{left:50%;transform:translateX(-50%);bottom:1.6%;max-width:72%;min-width:160px;padding:10px 20px;font-size:clamp(24px,5.2vw,38px)}
   .stage-ring{left:6%;right:10%;bottom:1%}
   .back-battle{display:none}
 }
@@ -382,7 +362,6 @@ body{
         <div class="gold-dust"></div>
         <div id="photoWrap"><div class="photo-placeholder">FINAL BATTLE</div></div>
         <div class="stage-ring"></div>
-        <div id="namePlate">旋風熙熙</div>
       </div>
     </div>
 
@@ -424,7 +403,6 @@ const awardMain=document.getElementById("awardMain");
 const photoWrap=document.getElementById("photoWrap");
 const awardTitle=document.getElementById("awardTitle");
 const awardNote=document.getElementById("awardNote");
-const namePlate=document.getElementById("namePlate");
 
 let players=[];
 
@@ -442,7 +420,6 @@ function render(){
   stage.classList.remove("empty-stage");
 
   const label=displayName(p);
-  namePlate.textContent=label;
   photoWrap.innerHTML=p.photoUrl
     ? `<img src="${esc(p.photoUrl)}" alt="${esc(label)}">`
     : `<div class="photo-placeholder">${esc(label.slice(0,1))}</div>`;
