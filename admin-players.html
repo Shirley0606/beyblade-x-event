@@ -334,14 +334,17 @@
   }
   .ending-photo-card {
     position:relative; overflow:hidden; border-radius:10px; border:1px solid #e5e5e5;
-    background:#f3f3f3; aspect-ratio:4/3;
+    background:#fff; display:flex; flex-direction:column;
   }
-  .ending-photo-card img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ending-photo-card img {
+    width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; display:block;
+  }
   .ending-photo-delete {
-    position:absolute; top:7px; right:7px; padding:6px 9px; border-radius:7px;
-    color:#fff; background:rgba(170,24,24,.88); font-size:11px;
-    box-shadow:0 2px 8px rgba(0,0,0,.22);
+    position:static; width:100%; padding:9px 8px; border-radius:0;
+    color:#c93636; background:#fff2f2; border-top:1px solid #f0caca;
+    font-size:11px; box-shadow:none;
   }
+  .ending-photo-delete:hover { color:#fff; background:#c93636; }
   .ending-photo-empty {
     grid-column:1/-1; padding:24px; color:#999; text-align:center;
     border:1px dashed #ddd; border-radius:10px; background:#fafafa; font-size:13px;
@@ -1182,7 +1185,7 @@ onSnapshot(endingPhotosQuery, snapshot => {
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'ending-photo-delete';
     deleteBtn.type = 'button';
-    deleteBtn.textContent = '刪除';
+    deleteBtn.textContent = '🗑 刪除這張照片';
     deleteBtn.addEventListener('click', async () => {
       if (!confirm('確定要刪除這張花絮照片嗎？')) return;
       deleteBtn.disabled = true;
