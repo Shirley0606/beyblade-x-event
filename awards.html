@@ -413,7 +413,7 @@ body{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
@@ -434,7 +434,6 @@ const awardTitle=document.getElementById("awardTitle");
 const awardNote=document.getElementById("awardNote");
 
 let players=[];
-let selectedPlayerId=null;
 
 function esc(v=""){
   return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
@@ -442,7 +441,7 @@ function esc(v=""){
 function displayName(p){return p?.battleName||p?.name||"參賽者"}
 
 function render(){
-  const p=players.find(x=>x.id===selectedPlayerId);
+  const p=players.find(x=>x.awardProjected===true);
   if(!p){
     stage.classList.add("empty-stage");
     return;
@@ -464,12 +463,7 @@ function render(){
 onSnapshot(collection(db,"players"),snap=>{
   players=[];
   snap.forEach(d=>players.push({id:d.id,...d.data()}));
-  render();
-});
-
-onSnapshot(doc(db,"awardSession","current"),snap=>{
-  const data=snap.exists()?snap.data():null;
-  selectedPlayerId=data?.selectedPlayerId || null;
+  console.log("[AWARDS] projected:", players.find(p=>p.awardProjected===true));
   render();
 });
 
