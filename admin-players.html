@@ -140,12 +140,64 @@
   .btn-save:disabled { background: #aeb9c2; cursor: not-allowed; }
   #editStatus { font-size: 13px; margin-top: 10px; min-height: 18px; }
 
+
+  /* ---------- 頒獎設定 ---------- */
+  .award-settings-card {
+    border-top: 4px solid #d7a52f;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(215,165,47,.08), transparent 34%),
+      #fff;
+  }
+  .award-settings-head {
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-bottom:12px; flex-wrap:wrap;
+  }
+  .award-settings-head h2 { margin:0; }
+  .award-settings-list { display:flex; flex-direction:column; gap:10px; }
+  .award-row {
+    display:grid; grid-template-columns:52px minmax(110px,1fr) minmax(220px,2fr) auto;
+    gap:10px; align-items:center;
+    padding:10px; border:1px solid #eee; border-radius:10px; background:#fafafa;
+  }
+  .award-avatar {
+    width:52px; height:52px; border-radius:50%; object-fit:cover; background:#ddd;
+  }
+  .award-avatar-ph {
+    width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:#e6e6e6; color:#aaa; font-size:18px; font-weight:800;
+  }
+  .award-player-name strong { display:block; font-size:13px; }
+  .award-player-name span { display:block; font-size:11px; color:#999; margin-top:2px; }
+  .award-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .award-fields input {
+    width:100%; padding:9px 10px; border:1px solid #ddd; border-radius:7px; font-size:13px;
+  }
+  .award-save {
+    background:linear-gradient(180deg,#d7a52f,#a86e00);
+    color:#fff; border:0; border-radius:8px; padding:10px 14px; font-size:12px; font-weight:800;
+    cursor:pointer;
+  }
+  .award-save:disabled { opacity:.5; cursor:not-allowed; }
+  .award-status { font-size:12px; min-height:18px; margin-top:8px; }
+  .award-hint {
+    padding:10px 12px; border-radius:8px; background:#fff8e6; border:1px solid #f0d58a;
+    color:#775b17; font-size:12px; line-height:1.5; margin-bottom:12px;
+  }
+  @media (max-width:700px){
+    .award-row { grid-template-columns:52px 1fr; }
+    .award-fields { grid-column:1 / -1; grid-template-columns:1fr; }
+    .award-save { grid-column:1 / -1; width:100%; }
+  }
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>參賽者管理</h1>
   <p class="sub">新增選手姓名與照片，大螢幕會即時同步更新，不需要重新整理。</p>
+  <p style="margin:-8px 0 18px;font-size:12px;">
+    <a href="#awardSettings" style="color:#a86e00;text-decoration:none;font-weight:700;">🏆 前往頒獎設定</a>
+  </p>
 
   <div class="card">
     <h2>從報名名單匯入</h2>
@@ -194,6 +246,22 @@
     </div>
     <div class="grid" id="playerGrid"></div>
     <div class="empty" id="emptyMsg" style="display:none;">尚未新增任何參賽者</div>
+  </div>
+
+  <div class="card award-settings-card" id="awardSettings">
+    <div class="award-settings-head">
+      <div>
+        <h2>🏆 頒獎設定</h2>
+        <p class="desc" style="margin-top:4px;">直接使用目前 PLAYER ADMIN 的選手名單。設定後會寫入同一筆 players 資料，頒獎畫面可直接讀取。</p>
+      </div>
+    </div>
+
+    <div class="award-hint">
+      每位選手可設定「頒獎名稱」與「頒獎小語」。例如：神速陀螺手／超越極速的疾風。可隨時修改。
+    </div>
+
+    <div class="award-settings-list" id="awardSettingsList"></div>
+    <div class="award-status" id="awardSettingsStatus"></div>
   </div>
 </div>
 
@@ -259,6 +327,8 @@ const editBattleName = document.getElementById('editBattleName');
 const editStatus = document.getElementById('editStatus');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
 const saveEditBtn = document.getElementById('saveEditBtn');
+const awardSettingsList = document.getElementById('awardSettingsList');
+const awardSettingsStatus = document.getElementById('awardSettingsStatus');
 
 let selectedFile = null;
 let currentPlayerNames = new Set();
@@ -457,6 +527,61 @@ importBtn.addEventListener('click', async () => {
   importBtn.disabled = false;
 });
 
+
+function renderAwardSettings(players) {
+  if (!awardSettingsList) return;
+
+  awardSettingsList.innerHTML = players.map(p => `
+    <div class="award-row" data-award-id="${p.id}">
+      ${p.photoUrl
+        ? `<img class="award-avatar" src="${p.photoUrl}" alt="">`
+        : `<div class="award-avatar-ph">${(p.battleName || p.name || '?').slice(0,1)}</div>`}
+      <div class="award-player-name">
+        <strong>${p.battleName || p.name || '未命名選手'}</strong>
+        <span>${p.name || ''}</span>
+      </div>
+      <div class="award-fields">
+        <input type="text" class="award-title-input"
+               value="${(p.awardTitle || '').replace(/"/g,'&quot;')}"
+               placeholder="頒獎名稱，例如：神速陀螺手">
+        <input type="text" class="award-note-input"
+               value="${(p.awardNote || '').replace(/"/g,'&quot;')}"
+               placeholder="頒獎小語，例如：超越極速的疾風">
+      </div>
+      <button class="award-save" type="button">儲存</button>
+    </div>
+  `).join('') || '<p class="empty">目前沒有選手資料</p>';
+
+  awardSettingsList.querySelectorAll('.award-row').forEach(row => {
+    row.querySelector('.award-save').addEventListener('click', async () => {
+      const id = row.dataset.awardId;
+      const btn = row.querySelector('.award-save');
+      const awardTitle = row.querySelector('.award-title-input').value.trim();
+      const awardNote = row.querySelector('.award-note-input').value.trim();
+
+      btn.disabled = true;
+      awardSettingsStatus.textContent = '儲存中…';
+      awardSettingsStatus.className = 'award-status';
+
+      try {
+        await updateDoc(doc(db, 'players', id), {
+          awardTitle,
+          awardNote,
+          updatedAt: serverTimestamp()
+        });
+        awardSettingsStatus.textContent = '✓ 頒獎設定已儲存';
+        awardSettingsStatus.className = 'award-status ok';
+      } catch (err) {
+        console.error(err);
+        awardSettingsStatus.textContent = '儲存失敗：' + err.message;
+        awardSettingsStatus.className = 'award-status err';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
 // ---------- 即時監聽參賽者名單 ----------
 const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
 onSnapshot(q, (snapshot) => {
@@ -464,8 +589,10 @@ onSnapshot(q, (snapshot) => {
   playerCount.textContent = snapshot.size + ' 位';
   emptyMsg.style.display = snapshot.empty ? 'block' : 'none';
   currentPlayerNames = new Set();
+  const awardPlayers = [];
 
   snapshot.forEach((docSnap) => {
+    awardPlayers.push({ id: docSnap.id, ...docSnap.data() });
     const p = docSnap.data();
     currentPlayerNames.add(p.name);
 
@@ -536,6 +663,8 @@ onSnapshot(q, (snapshot) => {
 
     playerGrid.appendChild(card);
   });
+
+  renderAwardSettings(awardPlayers);
 });
 </script>
 </body>
