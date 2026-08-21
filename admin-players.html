@@ -224,6 +224,26 @@
     cursor:pointer;
   }
 
+
+  .award-select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #ddd;
+    border-radius:7px;
+    font-size:13px;
+    background:#fff;
+    color:#222;
+  }
+  .award-select:focus{
+    outline:none;
+    border-color:#d7a52f;
+    box-shadow:0 0 0 2px rgba(215,165,47,.10);
+  }
+  .award-note-input[readonly]{
+    background:#f7f3e8;
+    color:#7c6736;
+  }
+
 </style>
 </head>
 <body>
@@ -293,7 +313,7 @@
     </div>
 
     <div class="award-hint">
-      每位選手可設定「頒獎名稱」與「頒獎小語」。例如：神速陀螺手／超越極速的疾風。可隨時修改。
+      每位選手直接從下拉選單選擇頒獎名稱，小標會自動帶入；已被其他選手使用的獎項會自動鎖定，避免重複。
     </div>
 
     <div class="award-settings-list" id="awardSettingsList"></div>
@@ -566,10 +586,48 @@ importBtn.addEventListener('click', async () => {
 });
 
 
+
+const AWARD_CATALOG = [
+  { title:'傳奇陀螺手', note:'站上巔峰的傳說' },
+  { title:'冠軍陀螺手', note:'稱霸決鬥的王者' },
+  { title:'極限陀螺手', note:'突破極限的挑戰者' },
+  { title:'王牌陀螺手', note:'決勝一擊的最強王牌' },
+  { title:'萬能陀螺手', note:'攻守兼備的全能高手' },
+  { title:'爆擊陀螺手', note:'一擊逆轉的破壞王' },
+  { title:'神速陀螺手', note:'超越極速的疾風' },
+  { title:'不敗陀螺手', note:'屹立不倒的守護者' },
+  { title:'天才陀螺手', note:'掌控戰局的戰術家' },
+  { title:'熱血陀螺手', note:'燃燒到底的戰鬥魂' }
+];
+
+function awardNoteByTitle(title){
+  return AWARD_CATALOG.find(x=>x.title===title)?.note || '';
+}
+
 function renderAwardSettings(players) {
   if (!awardSettingsList) return;
 
-  awardSettingsList.innerHTML = players.map(p => `
+  const usedAwardTitles = new Map();
+  players.forEach(p=>{
+    if(p.awardTitle) usedAwardTitles.set(p.awardTitle, p.id);
+  });
+
+  awardSettingsList.innerHTML = players.map(p => {
+    const currentTitle = p.awardTitle || '';
+    const currentNote = p.awardNote || awardNoteByTitle(currentTitle);
+
+    const options = [
+      `<option value="">請選擇頒獎名稱</option>`,
+      ...AWARD_CATALOG.map(a=>{
+        const usedBy = usedAwardTitles.get(a.title);
+        const disabled = usedBy && usedBy !== p.id;
+        return `<option value="${a.title}" ${currentTitle===a.title ? 'selected' : ''} ${disabled ? 'disabled' : ''}>
+          ${a.title}${disabled ? '（已使用）' : ''}
+        </option>`;
+      })
+    ].join('');
+
+    return `
     <div class="award-row" data-award-id="${p.id}">
       ${p.photoUrl
         ? `<img class="award-avatar" src="${p.photoUrl}" alt="">`
@@ -579,12 +637,11 @@ function renderAwardSettings(players) {
         <span>${p.name || ''}</span>
       </div>
       <div class="award-fields">
-        <input type="text" class="award-title-input"
-               value="${(p.awardTitle || '').replace(/"/g,'&quot;')}"
-               placeholder="頒獎名稱，例如：神速陀螺手">
+        <select class="award-select">${options}</select>
         <input type="text" class="award-note-input"
-               value="${(p.awardNote || '').replace(/"/g,'&quot;')}"
-               placeholder="頒獎小語，例如：超越極速的疾風">
+               value="${String(currentNote).replace(/"/g,'&quot;')}"
+               placeholder="選取頒獎名稱後自動帶入小標"
+               readonly>
       </div>
       <div class="award-actions">
         <button class="award-save" type="button">儲存</button>
@@ -592,25 +649,43 @@ function renderAwardSettings(players) {
           ${p.id===projectedAwardPlayerId ? '投影中' : '投影此選手'}
         </button>
       </div>
-    </div>
-  `).join('') || '<p class="empty">目前沒有選手資料</p>';
+    </div>`;
+  }).join('') || '<p class="empty">目前沒有選手資料</p>';
 
   awardSettingsList.querySelectorAll('.award-row').forEach(row => {
     const rowId=row.dataset.awardId;
     row.classList.toggle('active-project', rowId===projectedAwardPlayerId);
 
+    const select=row.querySelector('.award-select');
+    const noteInput=row.querySelector('.award-note-input');
+
+    select.addEventListener('change',()=>{
+      noteInput.value = awardNoteByTitle(select.value);
+    });
+
     row.querySelector('.award-project').addEventListener('click', async () => {
       const btn=row.querySelector('.award-project');
       btn.disabled=true;
       awardSettingsStatus.textContent='切換投影中…';
+      awardSettingsStatus.className='award-status';
       try{
-        await setDoc(doc(db,'awardSession','current'),{
-          selectedPlayerId:rowId,
-          updatedAt:serverTimestamp()
-        },{merge:true});
+        const snap=await getDocs(collection(db,'players'));
+        const jobs=[];
+        snap.forEach(d=>{
+          const shouldProject=d.id===rowId;
+          if(Boolean(d.data().awardProjected)!==shouldProject){
+            jobs.push(updateDoc(doc(db,'players',d.id),{
+              awardProjected:shouldProject,
+              updatedAt:serverTimestamp()
+            }));
+          }
+        });
+        await Promise.all(jobs);
+        projectedAwardPlayerId=rowId;
         awardSettingsStatus.textContent='✓ 已切換頒獎投影選手';
         awardSettingsStatus.className='award-status ok';
       }catch(err){
+        console.error(err);
         awardSettingsStatus.textContent='投影切換失敗：'+err.message;
         awardSettingsStatus.className='award-status err';
       }finally{
@@ -621,8 +696,26 @@ function renderAwardSettings(players) {
     row.querySelector('.award-save').addEventListener('click', async () => {
       const id = row.dataset.awardId;
       const btn = row.querySelector('.award-save');
-      const awardTitle = row.querySelector('.award-title-input').value.trim();
-      const awardNote = row.querySelector('.award-note-input').value.trim();
+      const awardTitle = select.value.trim();
+      const awardNote = noteInput.value.trim();
+
+      if(!awardTitle){
+        awardSettingsStatus.textContent='請先選擇頒獎名稱';
+        awardSettingsStatus.className='award-status err';
+        return;
+      }
+
+      // 儲存前再次檢查，避免多裝置同時操作造成重複
+      const freshSnap = await getDocs(collection(db,'players'));
+      let duplicate = false;
+      freshSnap.forEach(d=>{
+        if(d.id !== id && d.data().awardTitle === awardTitle) duplicate = true;
+      });
+      if(duplicate){
+        awardSettingsStatus.textContent='此獎項已被其他選手使用，請重新選擇';
+        awardSettingsStatus.className='award-status err';
+        return;
+      }
 
       btn.disabled = true;
       awardSettingsStatus.textContent = '儲存中…';
@@ -650,33 +743,26 @@ function renderAwardSettings(players) {
 
 clearAwardProjection?.addEventListener('click',async()=>{
   try{
-    await setDoc(doc(db,'awardSession','current'),{
-      selectedPlayerId:null,
-      updatedAt:serverTimestamp()
-    },{merge:true});
+    const snap=await getDocs(collection(db,'players'));
+    const jobs=[];
+    snap.forEach(d=>{
+      if(d.data().awardProjected){
+        jobs.push(updateDoc(doc(db,'players',d.id),{
+          awardProjected:false,
+          updatedAt:serverTimestamp()
+        }));
+      }
+    });
+    await Promise.all(jobs);
+    projectedAwardPlayerId=null;
     awardSettingsStatus.textContent='✓ 頒獎投影已清空';
     awardSettingsStatus.className='award-status ok';
   }catch(err){
+    console.error(err);
     awardSettingsStatus.textContent='清空失敗：'+err.message;
     awardSettingsStatus.className='award-status err';
   }
 });
-
-onSnapshot(doc(db,'awardSession','current'),snap=>{
-  projectedAwardPlayerId=snap.exists() ? (snap.data().selectedPlayerId || null) : null;
-  // 讓目前畫面即時重畫「投影中」狀態
-  const rows=[...document.querySelectorAll('.award-row')];
-  rows.forEach(row=>{
-    const active=row.dataset.awardId===projectedAwardPlayerId;
-    row.classList.toggle('active-project',active);
-    const btn=row.querySelector('.award-project');
-    if(btn){
-      btn.classList.toggle('active',active);
-      btn.textContent=active?'投影中':'投影此選手';
-    }
-  });
-});
-
 // ---------- 即時監聽參賽者名單 ----------
 const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
 onSnapshot(q, (snapshot) => {
@@ -685,10 +771,13 @@ onSnapshot(q, (snapshot) => {
   emptyMsg.style.display = snapshot.empty ? 'block' : 'none';
   currentPlayerNames = new Set();
   const awardPlayers = [];
+  projectedAwardPlayerId = null;
 
   snapshot.forEach((docSnap) => {
-    awardPlayers.push({ id: docSnap.id, ...docSnap.data() });
-    const p = docSnap.data();
+    const data = docSnap.data();
+    awardPlayers.push({ id: docSnap.id, ...data });
+    if (data.awardProjected) projectedAwardPlayerId = docSnap.id;
+    const p = data;
     currentPlayerNames.add(p.name);
 
     const card = document.createElement('div');
