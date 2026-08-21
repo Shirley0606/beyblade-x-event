@@ -189,6 +189,41 @@
     .award-save { grid-column:1 / -1; width:100%; }
   }
 
+
+  .award-row.active-project{
+    border-color:#d7a52f;
+    box-shadow:0 0 0 2px rgba(215,165,47,.10),0 0 16px rgba(215,165,47,.10);
+    background:#fffaf0;
+  }
+  .award-actions{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .award-project{
+    background:#1f2937;
+    color:#fff;
+    border:0;
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:11px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .award-project.active{
+    background:linear-gradient(180deg,#d7a52f,#a86e00);
+  }
+  .award-clear{
+    background:#fff;
+    color:#8a6a1a;
+    border:1px solid #d9bf78;
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
 </style>
 </head>
 <body>
@@ -254,6 +289,7 @@
         <h2>🏆 頒獎設定</h2>
         <p class="desc" style="margin-top:4px;">直接使用目前 PLAYER ADMIN 的選手名單。設定後會寫入同一筆 players 資料，頒獎畫面可直接讀取。</p>
       </div>
+      <button class="award-clear" id="clearAwardProjection" type="button">清空投影畫面</button>
     </div>
 
     <div class="award-hint">
@@ -288,7 +324,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, serverTimestamp, getDocs
+  onSnapshot, query, orderBy, serverTimestamp, getDocs, setDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -329,6 +365,8 @@ const cancelEditBtn = document.getElementById('cancelEditBtn');
 const saveEditBtn = document.getElementById('saveEditBtn');
 const awardSettingsList = document.getElementById('awardSettingsList');
 const awardSettingsStatus = document.getElementById('awardSettingsStatus');
+const clearAwardProjection = document.getElementById('clearAwardProjection');
+let projectedAwardPlayerId = null;
 
 let selectedFile = null;
 let currentPlayerNames = new Set();
@@ -548,11 +586,38 @@ function renderAwardSettings(players) {
                value="${(p.awardNote || '').replace(/"/g,'&quot;')}"
                placeholder="頒獎小語，例如：超越極速的疾風">
       </div>
-      <button class="award-save" type="button">儲存</button>
+      <div class="award-actions">
+        <button class="award-save" type="button">儲存</button>
+        <button class="award-project ${p.id===projectedAwardPlayerId ? 'active' : ''}" type="button">
+          ${p.id===projectedAwardPlayerId ? '投影中' : '投影此選手'}
+        </button>
+      </div>
     </div>
   `).join('') || '<p class="empty">目前沒有選手資料</p>';
 
   awardSettingsList.querySelectorAll('.award-row').forEach(row => {
+    const rowId=row.dataset.awardId;
+    row.classList.toggle('active-project', rowId===projectedAwardPlayerId);
+
+    row.querySelector('.award-project').addEventListener('click', async () => {
+      const btn=row.querySelector('.award-project');
+      btn.disabled=true;
+      awardSettingsStatus.textContent='切換投影中…';
+      try{
+        await setDoc(doc(db,'awardSession','current'),{
+          selectedPlayerId:rowId,
+          updatedAt:serverTimestamp()
+        },{merge:true});
+        awardSettingsStatus.textContent='✓ 已切換頒獎投影選手';
+        awardSettingsStatus.className='award-status ok';
+      }catch(err){
+        awardSettingsStatus.textContent='投影切換失敗：'+err.message;
+        awardSettingsStatus.className='award-status err';
+      }finally{
+        btn.disabled=false;
+      }
+    });
+
     row.querySelector('.award-save').addEventListener('click', async () => {
       const id = row.dataset.awardId;
       const btn = row.querySelector('.award-save');
@@ -581,6 +646,36 @@ function renderAwardSettings(players) {
     });
   });
 }
+
+
+clearAwardProjection?.addEventListener('click',async()=>{
+  try{
+    await setDoc(doc(db,'awardSession','current'),{
+      selectedPlayerId:null,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    awardSettingsStatus.textContent='✓ 頒獎投影已清空';
+    awardSettingsStatus.className='award-status ok';
+  }catch(err){
+    awardSettingsStatus.textContent='清空失敗：'+err.message;
+    awardSettingsStatus.className='award-status err';
+  }
+});
+
+onSnapshot(doc(db,'awardSession','current'),snap=>{
+  projectedAwardPlayerId=snap.exists() ? (snap.data().selectedPlayerId || null) : null;
+  // 讓目前畫面即時重畫「投影中」狀態
+  const rows=[...document.querySelectorAll('.award-row')];
+  rows.forEach(row=>{
+    const active=row.dataset.awardId===projectedAwardPlayerId;
+    row.classList.toggle('active-project',active);
+    const btn=row.querySelector('.award-project');
+    if(btn){
+      btn.classList.toggle('active',active);
+      btn.textContent=active?'投影中':'投影此選手';
+    }
+  });
+});
 
 // ---------- 即時監聽參賽者名單 ----------
 const q = query(collection(db, 'players'), orderBy('createdAt', 'asc'));
