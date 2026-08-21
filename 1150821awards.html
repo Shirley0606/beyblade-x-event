@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>頒獎典禮｜FINAL BATTLE 2026</title>
+<meta name="theme-color" content="#03050a">
+<style>
+:root{
+  --gold:#f6c44f;
+  --gold2:#ff9f1a;
+  --red:#ff263d;
+  --blue:#168cff;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;width:100%;height:100%;overflow:hidden;background:#000;
+  font-family:"PingFang TC","Microsoft JhengHei",Arial,sans-serif;
+}
+body{display:flex;align-items:center;justify-content:center}
+.stage{
+  position:relative;
+  width:min(100vw,177.7777778vh);
+  height:min(100vh,56.25vw);
+  aspect-ratio:16/9;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 15%,rgba(255,190,57,.18),transparent 26%),
+    linear-gradient(90deg,rgba(80,4,14,.5),rgba(3,5,10,.94) 38%,rgba(3,5,10,.94) 62%,rgba(4,28,78,.5));
+}
+.stage::before,.stage::after{
+  content:"";position:absolute;top:-48%;width:105%;height:190%;border-radius:50%;
+  pointer-events:none;z-index:0;
+}
+.stage::before{
+  left:-55%;
+  background:
+    repeating-conic-gradient(from 0deg,transparent 0 8deg,rgba(255,38,61,.20) 9deg 12deg,transparent 13deg 25deg),
+    radial-gradient(circle at center,rgba(255,38,61,.18),transparent 46%);
+  animation:redSpin 20s linear infinite;
+}
+.stage::after{
+  right:-55%;
+  background:
+    repeating-conic-gradient(from 0deg,transparent 0 8deg,rgba(22,140,255,.20) 9deg 12deg,transparent 13deg 25deg),
+    radial-gradient(circle at center,rgba(22,140,255,.18),transparent 46%);
+  animation:blueSpin 23s linear infinite reverse;
+}
+@keyframes redSpin{to{transform:rotate(360deg)}}
+@keyframes blueSpin{to{transform:rotate(360deg)}}
+
+.gold-rays{
+  position:absolute;inset:-30% 12% auto 12%;height:90%;z-index:0;pointer-events:none;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 0%,transparent 0 7deg,rgba(255,196,79,.10) 8deg 11deg,transparent 12deg 21deg);
+  filter:blur(.2px);
+}
+.confetti{
+  position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.9;
+  background-image:
+    radial-gradient(circle at 12% 13%,#ffd66c 0 2px,transparent 3px),
+    radial-gradient(circle at 23% 27%,#ffb43b 0 2px,transparent 3px),
+    radial-gradient(circle at 78% 18%,#ffe7a1 0 2px,transparent 3px),
+    radial-gradient(circle at 88% 33%,#ffb43b 0 2px,transparent 3px),
+    radial-gradient(circle at 66% 9%,#ffd66c 0 2px,transparent 3px);
+  background-size:220px 170px,280px 220px,240px 180px,320px 230px,260px 210px;
+  animation:confettiMove 14s linear infinite;
+}
+@keyframes confettiMove{to{background-position:0 170px,0 220px,0 180px,0 230px,0 210px}}
+
+.header{
+  position:absolute;left:0;right:0;top:2.6%;z-index:5;text-align:center;color:#fff;
+}
+.kicker{
+  font-size:clamp(12px,1.15vw,20px);letter-spacing:.26em;color:#ffe099;font-weight:800;
+}
+.title{
+  margin:.2% 0 0;
+  font-size:clamp(38px,5vw,86px);line-height:1;
+  font-weight:1000;font-style:italic;letter-spacing:.08em;
+  color:#fff1b8;
+  text-shadow:
+    0 2px 0 #9a5b00,
+    0 0 14px rgba(255,203,86,.9),
+    0 0 34px rgba(255,170,0,.5);
+}
+.tagline{
+  display:inline-block;margin-top:.8%;
+  padding:.34% 1.25%;
+  font-size:clamp(10px,.9vw,16px);
+  color:#3e2b00;background:linear-gradient(180deg,#ffe99a,#eebf46);
+  border:1px solid rgba(255,255,255,.55);
+  clip-path:polygon(5% 0,95% 0,100% 50%,95% 100%,5% 100%,0 50%);
+  font-weight:900;letter-spacing:.10em;
+}
+
+.main{
+  position:absolute;left:7.4%;right:7.4%;top:23%;height:56%;z-index:4;
+  display:grid;grid-template-columns:7% 1fr 7%;gap:1.2%;align-items:center;
+}
+.nav-btn{
+  width:100%;aspect-ratio:1/1;border-radius:50%;
+  border:1px solid rgba(255,215,105,.45);color:#ffe09b;background:rgba(10,10,14,.72);
+  font-size:clamp(20px,2.4vw,42px);font-weight:900;cursor:pointer;
+  box-shadow:0 0 22px rgba(255,185,50,.2);
+}
+.nav-btn:hover{filter:brightness(1.18)}
+
+.award-card{
+  position:relative;width:100%;height:100%;overflow:hidden;
+  border:2px solid rgba(255,213,94,.75);
+  background:
+    linear-gradient(90deg,rgba(60,20,0,.32),rgba(3,5,10,.95) 43%,rgba(3,5,10,.94) 60%,rgba(66,35,0,.25));
+  clip-path:polygon(3% 0,97% 0,100% 7%,100% 93%,97% 100%,3% 100%,0 93%,0 7%);
+  box-shadow:
+    inset 0 0 0 5px rgba(20,14,2,.8),
+    0 0 25px rgba(255,189,51,.25),
+    0 0 70px rgba(255,155,0,.14);
+}
+.award-card::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 34% 50%,rgba(255,197,76,.28),transparent 22%),
+    repeating-conic-gradient(from 0deg at 34% 50%,transparent 0 7deg,rgba(255,190,60,.13) 8deg 11deg,transparent 12deg 23deg);
+  animation:goldSpin 16s linear infinite;pointer-events:none;
+}
+@keyframes goldSpin{to{transform:rotate(360deg)}}
+
+.photo-wrap{
+  position:absolute;left:2%;top:4%;bottom:4%;width:44%;display:flex;align-items:flex-end;justify-content:center;z-index:2;
+}
+.photo-wrap img{
+  max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 12px 20px rgba(0,0,0,.75));
+}
+.photo-placeholder{
+  width:72%;aspect-ratio:1/1;border-radius:50%;display:grid;place-items:center;
+  color:#7f735d;font-size:clamp(42px,7vw,100px);font-weight:900;
+  background:radial-gradient(circle,#41371e,#171308 70%);
+  border:2px solid rgba(255,205,90,.4);
+}
+.award-info{
+  position:absolute;right:3.5%;top:17%;width:50%;z-index:3;color:#fff;
+}
+.small-label{
+  display:inline-block;padding:.45% 1.4%;margin-bottom:2%;
+  color:#fff0b1;background:rgba(22,18,10,.76);border:1px solid rgba(255,208,93,.35);
+  font-size:clamp(10px,.9vw,16px);font-weight:800;letter-spacing:.14em;
+}
+.player-name{
+  margin:0;color:#fff;
+  font-size:clamp(32px,4.6vw,78px);line-height:1;font-weight:1000;font-style:italic;
+  text-shadow:0 4px 0 rgba(90,55,0,.45),0 0 24px rgba(255,210,92,.18);
+}
+.award-title{
+  margin-top:4.2%;padding:2.2% 3%;
+  color:#ffe39b;
+  background:linear-gradient(90deg,rgba(107,57,0,.60),rgba(33,21,5,.74),rgba(107,57,0,.44));
+  border:1px solid rgba(255,207,90,.55);
+  font-size:clamp(18px,2.2vw,38px);font-weight:900;text-align:center;letter-spacing:.08em;
+  clip-path:polygon(3% 0,97% 0,100% 50%,97% 100%,3% 100%,0 50%);
+}
+.award-note{
+  margin-top:3%;font-size:clamp(10px,.9vw,16px);color:#cdbf9a;line-height:1.5;text-align:center;
+}
+
+.counter{
+  position:absolute;left:50%;top:80.7%;transform:translateX(-50%);z-index:5;
+  min-width:7.5%;padding:.35% 1.2%;text-align:center;color:#fff1b5;
+  background:rgba(18,13,5,.82);border:1px solid rgba(255,214,104,.55);
+  font-size:clamp(12px,1vw,18px);font-weight:900;
+  clip-path:polygon(9% 0,91% 0,100% 50%,91% 100%,9% 100%,0 50%);
+}
+
+.roster{
+  position:absolute;left:2.4%;right:2.4%;bottom:2.4%;height:14.2%;z-index:6;
+  display:flex;gap:.55%;align-items:center;overflow:hidden;
+}
+.thumb{
+  flex:1 1 0;min-width:0;height:100%;position:relative;cursor:pointer;overflow:hidden;
+  border:1px solid rgba(255,214,107,.28);
+  background:linear-gradient(135deg,rgba(66,8,15,.92),rgba(6,11,18,.96) 50%,rgba(6,32,73,.92));
+  clip-path:polygon(4% 0,96% 0,100% 9%,100% 91%,96% 100%,4% 100%,0 91%,0 9%);
+  opacity:.72;transition:.18s;
+}
+.thumb.active{
+  opacity:1;border-color:#ffdb77;
+  box-shadow:0 0 18px rgba(255,205,85,.35);
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .ph{
+  width:100%;height:100%;display:grid;place-items:center;color:#726a59;font-weight:900;
+  font-size:clamp(18px,2.5vw,42px);
+}
+.thumb-label{
+  position:absolute;left:0;right:0;bottom:0;padding:6% 5% 5%;
+  color:#fff;font-size:clamp(8px,.72vw,13px);font-weight:900;text-align:center;
+  background:linear-gradient(to top,rgba(0,0,0,.95),transparent);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:900px){
+  .main{left:3%;right:3%}
+  .photo-wrap{width:47%}
+  .award-info{width:47%;right:2.8%}
+}
+
+html,body{width:100% !important;height:100% !important;margin:0 !important;overflow:hidden !important;background:#000 !important}
+.stage{width:100vw !important;height:100vh !important;max-width:none !important;max-height:none !important;aspect-ratio:auto !important;margin:0 !important}
+.back-battle{
+  position:fixed;right:1.5%;top:1.5%;z-index:9999;
+  border:1px solid rgba(255,221,135,.35);background:rgba(31,22,6,.68);
+  color:#ffe6a8;border-radius:7px;padding:.55em .85em;
+  font:800 clamp(9px,.65vw,12px)/1 system-ui;cursor:pointer;
+  backdrop-filter:blur(8px);
+}
+
+</style>
+</head>
+<body><button class="back-battle" id="backBattle" type="button">返回比賽</button>
+<div class="stage" id="stage">
+  <div class="gold-rays"></div>
+  <div class="confetti"></div>
+
+  <div class="header">
+    <div class="kicker">FINAL BATTLE 2026</div>
+    <div class="title">頒獎典禮</div>
+    <div class="tagline">THANK YOU FOR BEING AWESOME!</div>
+  </div>
+
+  <div class="main">
+    <button class="nav-btn" id="prevBtn">‹</button>
+
+    <div class="award-card">
+      <div class="photo-wrap" id="photoWrap"></div>
+      <div class="award-info">
+        <div class="small-label">戰鬥陀螺手</div>
+        <h2 class="player-name" id="playerName">等待選手資料</h2>
+        <div class="award-title" id="awardTitle">榮耀稱號</div>
+        <div class="award-note" id="awardNote"></div>
+      </div>
+    </div>
+
+    <button class="nav-btn" id="nextBtn">›</button>
+  </div>
+
+  <div class="counter" id="counter">0 / 0</div>
+  <div class="roster" id="roster"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain:"beyblade-x-event.firebaseapp.com",
+  projectId:"beyblade-x-event",
+  storageBucket:"beyblade-x-event.firebasestorage.app",
+  messagingSenderId:"866394169939",
+  appId:"1:866394169939:web:a73222040a99a433425ca6"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const photoWrap=document.getElementById("photoWrap");
+const playerName=document.getElementById("playerName");
+const awardTitle=document.getElementById("awardTitle");
+const awardNote=document.getElementById("awardNote");
+const counter=document.getElementById("counter");
+const roster=document.getElementById("roster");
+
+let players=[];
+let currentIndex=0;
+
+function esc(v=""){
+  return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function displayName(p){return p?.battleName||p?.name||"參賽者"}
+
+function renderRoster(){
+  roster.innerHTML="";
+  players.forEach((p,i)=>{
+    const el=document.createElement("div");
+    el.className="thumb";
+    el.dataset.index=i;
+    el.innerHTML=p.photoUrl
+      ? `<img src="${esc(p.photoUrl)}" alt="${esc(displayName(p))}"><div class="thumb-label">${esc(displayName(p))}</div>`
+      : `<div class="ph">${esc(displayName(p).slice(0,1))}</div><div class="thumb-label">${esc(displayName(p))}</div>`;
+    el.addEventListener("click",()=>show(i));
+    roster.appendChild(el);
+  });
+}
+
+function show(index){
+  if(!players.length){
+    photoWrap.innerHTML='<div class="photo-placeholder">?</div>';
+    playerName.textContent="等待選手資料";
+    awardTitle.textContent="榮耀稱號";
+    awardNote.textContent="";
+    counter.textContent="0 / 0";
+    return;
+  }
+
+  currentIndex=(index+players.length)%players.length;
+  const p=players[currentIndex];
+
+  photoWrap.innerHTML=p.photoUrl
+    ? `<img src="${esc(p.photoUrl)}" alt="${esc(displayName(p))}">`
+    : `<div class="photo-placeholder">${esc(displayName(p).slice(0,1))}</div>`;
+
+  playerName.textContent=displayName(p);
+  awardTitle.textContent=p.awardTitle || "榮耀陀螺手";
+  awardNote.textContent=p.awardNote || "";
+  counter.textContent=`${currentIndex+1} / ${players.length}`;
+
+  document.querySelectorAll(".thumb").forEach((el,i)=>el.classList.toggle("active",i===currentIndex));
+}
+
+document.getElementById("prevBtn").addEventListener("click",()=>show(currentIndex-1));
+document.getElementById("nextBtn").addEventListener("click",()=>show(currentIndex+1));
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft") show(currentIndex-1);
+  if(e.key==="ArrowRight") show(currentIndex+1);
+  if(e.key.toLowerCase()==="f"){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+});
+
+onSnapshot(collection(db,"players"),snap=>{
+  players=[];
+  snap.forEach(d=>players.push({id:d.id,...d.data()}));
+  players.sort((a,b)=>{
+    const at=a.createdAt?.seconds??Number.MAX_SAFE_INTEGER;
+    const bt=b.createdAt?.seconds??Number.MAX_SAFE_INTEGER;
+    if(at!==bt)return at-bt;
+    return String(a.name||a.battleName||"").localeCompare(String(b.name||b.battleName||""),"zh-Hant");
+  });
+  renderRoster();
+  show(Math.min(currentIndex,Math.max(0,players.length-1)));
+});
+
+document.getElementById("backBattle")?.addEventListener("click",()=>{
+  if(window.parent!==window){
+    window.parent.postMessage({type:"projector:navigate",url:"battle.html"},"*");
+  }else{
+    window.location.href="battle.html";
+  }
+});
+
+</script>
+</body>
+</html>
