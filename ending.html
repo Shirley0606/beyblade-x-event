@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FINAL BATTLE 2026｜頒獎典禮投影</title>
+<style>
+  :root {
+    --red:#ff2948;
+    --blue:#278cff;
+    --gold:#ffd66b;
+    --ink:#050711;
+    --panel:rgba(10,14,29,.78);
+  }
+  * { box-sizing:border-box; }
+  html, body { width:100%; height:100%; margin:0; overflow:hidden; }
+  body {
+    font-family:-apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color:#fff; background:#03050d;
+  }
+  button { font:inherit; }
+  .screen {
+    position:relative; width:100vw; height:100vh; min-height:420px; overflow:hidden;
+    background:
+      radial-gradient(circle at 12% 50%, rgba(255,31,65,.28), transparent 30%),
+      radial-gradient(circle at 88% 48%, rgba(28,129,255,.30), transparent 31%),
+      linear-gradient(135deg,#070510 0%,#070b18 48%,#03050d 100%);
+    isolation:isolate;
+  }
+  .screen::before,
+  .screen::after {
+    content:""; position:absolute; inset:-35%; z-index:-3; pointer-events:none;
+    background:conic-gradient(from 10deg,transparent 0 18%,rgba(255,38,71,.13) 24%,transparent 31% 61%,rgba(39,140,255,.14) 69%,transparent 77%);
+    animation:spin 28s linear infinite;
+  }
+  .screen::after { inset:-55%; opacity:.45; animation-duration:43s; animation-direction:reverse; }
+  .grid-overlay {
+    position:absolute; inset:0; z-index:-1; opacity:.18; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:linear-gradient(to bottom,transparent,black 22%,black 78%,transparent);
+  }
+  .beam { position:absolute; top:-20%; bottom:-20%; width:2px; z-index:-1; opacity:.55; transform:rotate(18deg); }
+  .beam.red { left:19%; background:linear-gradient(transparent,var(--red),transparent); box-shadow:0 0 28px 5px var(--red); }
+  .beam.blue { right:19%; background:linear-gradient(transparent,var(--blue),transparent); box-shadow:0 0 28px 5px var(--blue); }
+  .top-rule {
+    position:absolute; top:0; left:0; right:0; height:5px; z-index:20;
+    background:linear-gradient(90deg,var(--red),#9d3bff 50%,var(--blue));
+    box-shadow:0 0 20px rgba(133,71,255,.8);
+  }
+  .view {
+    position:absolute; inset:0; opacity:0; visibility:hidden; transform:scale(1.015);
+    transition:opacity .65s ease, transform .65s ease, visibility .65s;
+  }
+  .view.active { opacity:1; visibility:visible; transform:scale(1); }
+  .ceremony-tag {
+    display:inline-flex; align-items:center; gap:11px; color:#dce6ff;
+    font-size:clamp(11px,1vw,17px); font-weight:800; letter-spacing:.28em;
+  }
+  .ceremony-tag::before,
+  .ceremony-tag::after { content:""; width:clamp(26px,4vw,72px); height:1px; background:linear-gradient(90deg,transparent,#aebeff); }
+  .ceremony-tag::after { transform:scaleX(-1); }
+
+  /* 待機 */
+  .idle-view { display:grid; place-items:center; text-align:center; padding:5vh 5vw; }
+  .idle-inner { animation:float 4.8s ease-in-out infinite; }
+  .trophy-mark {
+    width:clamp(86px,10vw,160px); aspect-ratio:1; margin:4vh auto 2vh;
+    display:grid; place-items:center; border-radius:50%; font-size:clamp(48px,6vw,94px);
+    background:radial-gradient(circle,#fff7cf 0 6%,#ffd66b 7% 36%,#a86d00 72%,#3d2600 100%);
+    box-shadow:0 0 0 5px rgba(255,214,107,.2),0 0 65px rgba(255,192,55,.44);
+  }
+  .idle-view h1 {
+    margin:0; font-size:clamp(45px,7.3vw,126px); line-height:1; letter-spacing:.09em;
+    background:linear-gradient(180deg,#fffbe1,#ffd66b 55%,#ad6e00);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 8px 12px rgba(0,0,0,.5));
+  }
+  .idle-sub { margin:2.1vh 0 0; color:#d5dcf0; font-size:clamp(15px,1.6vw,28px); letter-spacing:.18em; }
+  .fullscreen-hint {
+    position:absolute; right:2vw; bottom:2vh; color:rgba(255,255,255,.5);
+    font-size:clamp(10px,.8vw,14px); letter-spacing:.08em;
+  }
+
+  /* 頒獎 */
+  .award-view { padding:5vh 6vw; }
+  .award-header { height:9vh; display:flex; align-items:center; justify-content:center; }
+  .award-layout {
+    height:80vh; display:grid; grid-template-columns:minmax(300px,.82fr) minmax(520px,1.28fr);
+    align-items:center; gap:5vw; max-width:1740px; margin:0 auto;
+  }
+  .portrait-wrap { position:relative; justify-self:end; width:min(31vw,500px); }
+  .portrait-glow {
+    position:absolute; inset:8% -8% -6%; z-index:-1; border-radius:42%; filter:blur(34px);
+    background:linear-gradient(145deg,rgba(255,41,72,.68),rgba(39,140,255,.68)); opacity:.8;
+  }
+  .portrait-frame {
+    position:relative; width:100%; aspect-ratio:4/5; padding:7px; overflow:hidden;
+    border-radius:26px; background:linear-gradient(135deg,var(--red),#fff 46%,var(--blue));
+    box-shadow:0 28px 70px rgba(0,0,0,.55);
+  }
+  .portrait-frame::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg,transparent 36%,rgba(255,255,255,.34) 48%,transparent 60%);
+    transform:translateX(-130%); animation:shine 5s ease-in-out infinite;
+  }
+  .portrait-frame img { width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:20px; background:#161b27; }
+  .portrait-placeholder {
+    width:100%; height:100%; display:grid; place-items:center; border-radius:20px;
+    background:linear-gradient(145deg,#1d2233,#080b13); color:#74809a;
+    font-size:clamp(70px,9vw,150px); font-weight:900;
+  }
+  .award-copy { min-width:0; }
+  .award-kicker { color:#b9c5e0; font-size:clamp(12px,1.15vw,20px); font-weight:800; letter-spacing:.34em; }
+  .award-title {
+    margin:1.8vh 0 .8vh; font-size:clamp(52px,6.2vw,112px); line-height:1.08; letter-spacing:.03em;
+    background:linear-gradient(180deg,#fffce7 3%,#ffe28a 48%,#d59516 88%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 7px 15px rgba(0,0,0,.5));
+  }
+  .award-note { color:#fff; font-size:clamp(20px,2vw,36px); font-weight:700; letter-spacing:.08em; }
+  .award-divider { width:min(600px,85%); height:2px; margin:4.6vh 0 3.2vh; background:linear-gradient(90deg,var(--red),#a34cff,var(--blue),transparent); }
+  .battle-name { margin:0; font-size:clamp(34px,4.2vw,78px); line-height:1.1; font-weight:900; letter-spacing:.04em; text-shadow:0 5px 22px rgba(0,0,0,.6); }
+  .real-name { margin:1.1vh 0 0; color:#bac4dc; font-size:clamp(15px,1.5vw,27px); letter-spacing:.18em; }
+
+  /* 結尾 */
+  .ending-view { padding:3.2vh 5vw 3.5vh; display:flex; flex-direction:column; align-items:center; }
+  .ending-header { flex:0 0 5vh; display:flex; align-items:center; justify-content:center; }
+  .ending-message {
+    flex:0 0 44vh; width:min(1320px,92vw); display:flex; flex-direction:column;
+    justify-content:center; align-items:center; text-align:center;
+    font-weight:800; line-height:1.5; letter-spacing:.05em;
+    font-size:clamp(18px,2.15vw,39px); text-shadow:0 4px 18px rgba(0,0,0,.75);
+  }
+  .ending-message p { margin:.65vh 0; }
+  .ending-message .highlight {
+    background:linear-gradient(90deg,#ffced6,#fff4bf,#cce5ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .slideshow-shell {
+    position:relative; flex:1 1 auto; width:min(1150px,86vw); min-height:0;
+    overflow:hidden; border-radius:22px; padding:5px;
+    background:linear-gradient(100deg,var(--red),rgba(255,255,255,.82),var(--blue));
+    box-shadow:0 18px 52px rgba(0,0,0,.55),0 0 30px rgba(110,80,255,.28);
+  }
+  .slideshow-inner { position:relative; width:100%; height:100%; overflow:hidden; border-radius:17px; background:#080a12; }
+  .slide-backdrop {
+    position:absolute; inset:-8%; background-position:center; background-size:cover;
+    filter:blur(28px) brightness(.42) saturate(1.2); transform:scale(1.13); transition:background-image .6s ease;
+  }
+  .slide-img {
+    position:absolute; inset:0; width:100%; height:100%; padding:1.3vh 1vw;
+    object-fit:contain; opacity:0; transform:scale(1.015); transition:opacity .85s ease,transform 3.8s ease;
+    filter:drop-shadow(0 9px 18px rgba(0,0,0,.55));
+  }
+  .slide-img.active { opacity:1; transform:scale(1); }
+  .slide-empty {
+    position:absolute; inset:0; display:grid; place-items:center; color:#c2c8d8;
+    font-size:clamp(15px,1.5vw,27px); letter-spacing:.12em;
+  }
+  .slide-count {
+    position:absolute; right:18px; bottom:13px; z-index:4; padding:6px 11px;
+    color:rgba(255,255,255,.82); background:rgba(0,0,0,.42); border-radius:999px;
+    font-size:clamp(10px,.8vw,14px); letter-spacing:.08em;
+  }
+
+  .connection {
+    position:absolute; z-index:30; right:1.7vw; top:2vh; display:flex; align-items:center; gap:7px;
+    color:rgba(255,255,255,.55); font-size:clamp(9px,.7vw,12px); letter-spacing:.08em;
+  }
+  .connection-dot { width:7px; height:7px; border-radius:50%; background:#ffc34e; box-shadow:0 0 9px #ffc34e; }
+  .connection.online .connection-dot { background:#32d99a; box-shadow:0 0 9px #32d99a; }
+  .connection.error { color:#ffb4bf; }
+  .connection.error .connection-dot { background:#ff405c; box-shadow:0 0 9px #ff405c; }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes float { 50% { transform:translateY(-10px); } }
+  @keyframes shine { 0%,62% { transform:translateX(-135%); } 82%,100% { transform:translateX(135%); } }
+  @media (max-aspect-ratio:4/3) {
+    .award-layout { grid-template-columns:.85fr 1.15fr; gap:4vw; }
+    .portrait-wrap { width:min(39vw,450px); }
+    .award-view { padding-left:4vw; padding-right:4vw; }
+    .ending-message { flex-basis:43vh; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation:none !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="screen" id="screen">
+  <div class="top-rule"></div>
+  <div class="grid-overlay"></div>
+  <div class="beam red"></div>
+  <div class="beam blue"></div>
+
+  <div class="connection" id="connectionStatus">
+    <span class="connection-dot"></span><span id="connectionText">連線中</span>
+  </div>
+
+  <section class="view idle-view active" id="idleView">
+    <div class="idle-inner">
+      <div class="ceremony-tag">FINAL BATTLE · 2026</div>
+      <div class="trophy-mark" aria-hidden="true">🏆</div>
+      <h1>頒獎典禮</h1>
+      <p class="idle-sub">AWARD CEREMONY</p>
+    </div>
+    <div class="fullscreen-hint">按 F 鍵進入全螢幕｜雙擊畫面也可以</div>
+  </section>
+
+  <section class="view award-view" id="awardView">
+    <header class="award-header">
+      <div class="ceremony-tag">FINAL BATTLE · 2026 AWARD CEREMONY</div>
+    </header>
+    <div class="award-layout">
+      <div class="portrait-wrap">
+        <div class="portrait-glow"></div>
+        <div class="portrait-frame" id="awardPortraitFrame">
+          <img id="awardPhoto" alt="得獎選手照片">
+          <div class="portrait-placeholder" id="awardPhotoPlaceholder">★</div>
+        </div>
+      </div>
+      <div class="award-copy">
+        <div class="award-kicker">HONORARY TITLE</div>
+        <h2 class="award-title" id="awardTitle">傳奇陀螺手</h2>
+        <div class="award-note" id="awardNote">站上巔峰的傳說</div>
+        <div class="award-divider"></div>
+        <h3 class="battle-name" id="awardBattleName">戰鬥陀螺手</h3>
+        <p class="real-name" id="awardRealName"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="view ending-view" id="endingView">
+    <header class="ending-header">
+      <div class="ceremony-tag">FINAL BATTLE · 2026</div>
+    </header>
+    <div class="ending-message">
+      <p class="highlight">謝謝每一位勇敢的小陀螺手，</p>
+      <p>今天和我們一起完成了一場精彩的戰鬥！</p>
+      <p class="highlight">願你們帶著今天挑戰對手的勇氣，</p>
+      <p>勇敢展開全新的小學生活。</p>
+      <p class="highlight">希望未來的每一天，都能開開心心上學唷</p>
+    </div>
+    <div class="slideshow-shell">
+      <div class="slideshow-inner">
+        <div class="slide-backdrop" id="slideBackdrop"></div>
+        <img class="slide-img active" id="slideA" alt="活動花絮">
+        <img class="slide-img" id="slideB" alt="活動花絮">
+        <div class="slide-empty" id="slideEmpty">花絮照片即將登場</div>
+        <div class="slide-count" id="slideCount"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCPkvZj2_Z7ZgiG0itfP2YCjTvDkaSaPew",
+  authDomain:"beyblade-x-event.firebaseapp.com",
+  projectId:"beyblade-x-event",
+  storageBucket:"beyblade-x-event.firebasestorage.app",
+  messagingSenderId:"866394169939",
+  appId:"1:866394169939:web:a73222040a99a433425ca6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const idleView = document.getElementById('idleView');
+const awardView = document.getElementById('awardView');
+const endingView = document.getElementById('endingView');
+const awardPhoto = document.getElementById('awardPhoto');
+const awardPhotoPlaceholder = document.getElementById('awardPhotoPlaceholder');
+const awardTitle = document.getElementById('awardTitle');
+const awardNote = document.getElementById('awardNote');
+const awardBattleName = document.getElementById('awardBattleName');
+const awardRealName = document.getElementById('awardRealName');
+const slideBackdrop = document.getElementById('slideBackdrop');
+const slideA = document.getElementById('slideA');
+const slideB = document.getElementById('slideB');
+const slideEmpty = document.getElementById('slideEmpty');
+const slideCount = document.getElementById('slideCount');
+const connectionStatus = document.getElementById('connectionStatus');
+const connectionText = document.getElementById('connectionText');
+
+let projectedPlayer = null;
+let endingState = { active:false, playing:true, intervalMs:5000 };
+let endingPhotos = [];
+let photoIndex = 0;
+let activeSlide = 'A';
+let carouselTimer = null;
+let successfulListeners = 0;
+
+function setConnection(ok, message) {
+  connectionStatus.classList.toggle('online', ok);
+  connectionStatus.classList.toggle('error', !ok);
+  connectionText.textContent = message;
+}
+
+function markConnected() {
+  successfulListeners++;
+  if (successfulListeners >= 2) setConnection(true, '即時連線');
+}
+
+function activateView(target) {
+  [idleView, awardView, endingView].forEach(view => view.classList.toggle('active', view === target));
+}
+
+function updateVisibleView() {
+  if (endingState.active) {
+    activateView(endingView);
+    restartCarousel();
+  } else if (projectedPlayer) {
+    activateView(awardView);
+    stopCarousel();
+  } else {
+    activateView(idleView);
+    stopCarousel();
+  }
+}
+
+function renderAward(player) {
+  projectedPlayer = player || null;
+  if (!player) {
+    updateVisibleView();
+    return;
+  }
+
+  awardTitle.textContent = player.awardTitle || '榮耀陀螺手';
+  awardNote.textContent = player.awardNote || '為今天的精彩戰鬥喝采';
+  awardBattleName.textContent = player.battleName || player.name || '戰鬥陀螺手';
+  awardRealName.textContent = player.name && player.name !== player.battleName ? player.name : '';
+
+  if (player.photoUrl) {
+    awardPhoto.src = player.photoUrl;
+    awardPhoto.style.display = 'block';
+    awardPhotoPlaceholder.style.display = 'none';
+  } else {
+    awardPhoto.removeAttribute('src');
+    awardPhoto.style.display = 'none';
+    awardPhotoPlaceholder.style.display = 'grid';
+    awardPhotoPlaceholder.textContent = (player.battleName || player.name || '★').slice(0,1);
+  }
+  updateVisibleView();
+}
+
+function stopCarousel() {
+  if (carouselTimer) clearInterval(carouselTimer);
+  carouselTimer = null;
+}
+
+function showPhoto(index, immediate=false, attempt=0) {
+  if (!endingPhotos.length) {
+    slideA.removeAttribute('src');
+    slideB.removeAttribute('src');
+    slideA.classList.remove('active');
+    slideB.classList.remove('active');
+    slideBackdrop.style.backgroundImage = '';
+    slideEmpty.style.display = 'grid';
+    slideCount.textContent = '';
+    return;
+  }
+
+  photoIndex = ((index % endingPhotos.length) + endingPhotos.length) % endingPhotos.length;
+  const photo = endingPhotos[photoIndex];
+  const incoming = activeSlide === 'A' ? slideB : slideA;
+  const outgoing = activeSlide === 'A' ? slideA : slideB;
+  const preload = new Image();
+
+  preload.onload = () => {
+    incoming.src = photo.photoUrl;
+    if (immediate || !outgoing.src) {
+      outgoing.classList.remove('active');
+      incoming.classList.add('active');
+    } else {
+      incoming.classList.add('active');
+      outgoing.classList.remove('active');
+    }
+    activeSlide = incoming === slideA ? 'A' : 'B';
+    slideBackdrop.style.backgroundImage = `url("${photo.photoUrl.replace(/"/g, '%22')}")`;
+    slideEmpty.style.display = 'none';
+    slideCount.textContent = `${photoIndex + 1} / ${endingPhotos.length}`;
+  };
+  preload.onerror = () => {
+    if (attempt < endingPhotos.length - 1) showPhoto(photoIndex + 1, immediate, attempt + 1);
+  };
+  preload.src = photo.photoUrl;
+}
+
+function restartCarousel() {
+  stopCarousel();
+  if (!endingState.active) return;
+
+  if (!endingPhotos.length) {
+    showPhoto(0, true);
+    return;
+  }
+
+  if (photoIndex >= endingPhotos.length) photoIndex = 0;
+  showPhoto(photoIndex, true);
+
+  if (endingState.playing && endingPhotos.length > 1) {
+    carouselTimer = setInterval(() => showPhoto(photoIndex + 1), Math.max(2500, Number(endingState.intervalMs) || 5000));
+  }
+}
+
+onSnapshot(collection(db, 'players'), snapshot => {
+  const players = snapshot.docs.map(item => ({ id:item.id, ...item.data() }));
+  renderAward(players.find(player => player.awardProjected) || null);
+  markConnected();
+}, err => {
+  console.error(err);
+  setConnection(false, '選手資料連線失敗');
+});
+
+onSnapshot(doc(db, 'endingScreen', 'current'), snapshot => {
+  endingState = snapshot.exists()
+    ? { active:false, playing:true, intervalMs:5000, ...snapshot.data() }
+    : { active:false, playing:true, intervalMs:5000 };
+  updateVisibleView();
+  markConnected();
+}, err => {
+  console.error(err);
+  setConnection(false, '結尾狀態連線失敗');
+});
+
+const photosQuery = query(collection(db, 'endingPhotos'), orderBy('createdAt', 'asc'));
+onSnapshot(photosQuery, snapshot => {
+  endingPhotos = snapshot.docs.map(item => ({ id:item.id, ...item.data() })).filter(item => item.photoUrl);
+  if (photoIndex >= endingPhotos.length) photoIndex = 0;
+  restartCarousel();
+  markConnected();
+}, err => {
+  console.error(err);
+  setConnection(false, '花絮照片連線失敗');
+});
+
+async function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (err) {
+    console.warn('無法切換全螢幕：', err);
+  }
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key.toLowerCase() === 'f') toggleFullscreen();
+  if (event.key === 'ArrowRight' && endingState.active) {
+    stopCarousel();
+    showPhoto(photoIndex + 1);
+  }
+  if (event.key === 'ArrowLeft' && endingState.active) {
+    stopCarousel();
+    showPhoto(photoIndex - 1);
+  }
+});
+document.addEventListener('dblclick', toggleFullscreen);
+</script>
+</body>
+</html>
